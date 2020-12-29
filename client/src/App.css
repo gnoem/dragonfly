@@ -1,0 +1,223 @@
+@import url('https://fonts.googleapis.com/css2?family=Work+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Abril+Fatface&display=swap');
+
+* {
+    box-sizing: border-box;
+}
+:root {
+    --default-font: 'Work Sans';
+    --display-font: 'Abril Fatface';
+    --deep-gradient: linear-gradient(135deg, #43a8a3, #75c964);
+    --med-gradient: linear-gradient(135deg, #5ebbb6, #99da8c);
+    --light-gradient: linear-gradient(135deg, #bbf5f2, #cdf3c7);
+    --deep-theme-color: #238f8a;
+    --med-theme-color: #58bbb6;
+    --light-theme-color: #a2e0dd;
+    --lighter-theme-color: #c9eceb;
+}
+html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    font-family: var(--default-font);
+    font-size: 16px;
+    font-weight: 300;
+}
+b {
+    font-weight: 600;
+}
+a, a:visited {
+    color: var(--deep-theme-color);
+    font-weight: 600;
+    text-decoration: none;
+    position: relative;
+}
+a::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 0.5rem;
+    background: var(--light-gradient);
+    opacity: 0.7;
+    transition: transform 0.2s;
+    transform: scaleX(0);
+    transform-origin: bottom right;
+    z-index: -1;
+}
+a:hover::after {
+    transform: scaleX(1);
+    transform-origin: bottom left;
+}
+h1, h2, h3, h4, h5, h6 {
+    margin-top: 0;
+}
+h1 {
+    font-weight: normal;
+}
+button, select, textarea, input {
+    font-family: inherit;
+    outline: none;
+}
+button, input[type=submit] {
+    cursor: pointer;
+    border: 0;
+    background: var(--med-gradient);
+    color: #fff;
+    font-weight: normal;
+    padding: 1rem 1.5rem;
+    border-radius: 0.5rem;
+    display: block;
+    margin-top: 1.5rem;
+}
+button.stealth, .Sidebar button {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: 0;
+}
+.Home {
+    padding: 5vw;
+}
+.Home h1 {
+    font-family: var(--display-font);
+    font-size: 5rem;
+    font-weight: normal;
+    margin-bottom: 1rem;
+}
+.Home button {
+    background: var(--deep-gradient);
+}
+#root, .App {
+    width: 100%;
+    height: 100%;
+}
+.Welcome {
+    width: 65%;
+}
+.Dashboard {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-rows: auto;
+    grid-template-columns: 300px 350px 1fr;
+    grid-template-areas: 'sidebar list view';
+}
+.Dashboard .Sidebar {
+    grid-area: sidebar;
+    background: var(--med-theme-color);
+    padding: 2rem;
+    color: #fff;
+}
+.Dashboard .List {
+    grid-area: list;
+    border-right: 1px solid #ccc;
+}
+.Dashboard .View {
+    grid-area: view;
+}
+.Dashboard .Panel {
+    grid-column: 2 / -1;
+    padding: 2rem;
+}
+.Sidebar h1 {
+    font-family: var(--display-font);
+    font-size: 2.5rem;
+    font-weight: normal;
+    margin-left: 0.5rem;
+    margin-bottom: 1rem;
+    text-shadow: 2px 2px 0.5rem var(--deep-theme-color);
+}
+.Sidebar nav + nav {
+    margin-top: 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.3);
+    padding-top: 0.5rem;
+}
+.Sidebar ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.Sidebar button {
+    font-weight: normal;
+    margin: 1.5rem 0.5rem;
+    display: grid;
+    grid-template-columns: 2rem 1fr;
+    align-items: center;
+}
+.Sidebar button::before {
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    font-size: 1.2rem;
+    grid-column: 1 / 2;
+    margin-right: 0.5rem;
+    transition: 0.2s;
+}
+.Sidebar button:hover::before {
+    transform: scale(1.2);
+    text-shadow: 0 0 0.5rem #fff;
+}
+button.notes::before {
+    content: '\f01c';
+}
+button.collections::before {
+    content: '\f02d';
+}
+button.tags::before {
+    content: '\f02c';
+}
+button.starred::before {
+    content: '\f005';
+}
+button.trash::before {
+    content: '\f2ed';
+}
+button.user::before {
+    content: '\f007';
+}
+button.settings::before {
+    content: '\f013';
+}
+button.help::before {
+    content: '\f059';
+}
+.NoteEditor {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-rows: auto 1fr;
+}
+.EditorControls {
+    background: #f7f7f7;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    display: flex;
+    place-items: center;
+    margin-bottom: 2rem;
+}
+.EditorControls hr {
+    width: 1px;
+    height: 1.5rem;
+    background: #ddd;
+    border: 0;
+    margin: 0 1.5rem;
+}
+.EditorControls button {
+    width: 1.5rem;
+    height: 1.5rem;
+    background: 0;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    color: #666;
+    display: grid;
+    place-items: center;
+}
+.EditorControls button.active {
+    background: #ddd;
+    border-radius: 0.2rem;
+}
+.EditorControls button + button {
+    margin-left: 0.5rem;
+}
