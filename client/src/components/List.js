@@ -15,19 +15,33 @@ export default function List(props) {
         //if (content.length > 100) return content += '...';
         return getTextContent(content);
     }
-    createdAt = dayjs(createdAt).format('MM/DD/YYYY'); // if createdAt is undefined, defaults to today's date
-    lastModified = dayjs(lastModified).format('MM/DD/YYYY'); // ditto
     title = title ? title : `Note from ${createdAt}`;
     const isCurrent = (id) => {
         if (id === props.current) return ' current';
         if (id === 'temp') return ' temp';
         else return '';
     }
+    const dateInfo = () => {
+        const untouched = createdAt === lastModified;
+        let createdAtMMDDYYYY = dayjs(createdAt).format('MM/DD/YYYY');
+        let lastModifiedMMDDYYYY = dayjs(lastModified).format('MM/DD/YYYY');
+        createdAt = (createdAtMMDDYYYY === dayjs().format('MM/DD/YYYY'))
+            ? dayjs(createdAt).format('h:mm a')
+            : createdAtMMDDYYYY;
+        lastModified = (lastModifiedMMDDYYYY === dayjs().format('MM/DD/YYYY'))
+            ? dayjs(lastModified).format('h:mm a')
+            : lastModifiedMMDDYYYY;
+        const created = `Created ${createdAt}`;
+        const modified = `• Last modified ${lastModified}`;
+        return (
+            <span className="meta">{created} {!untouched && modified}</span>
+        )
+    }
     return (
         <div className={`NotePreview${isCurrent(_id)}`} onClick={() => props.makeActive(_id)}>
             <h2>{title}</h2>
             {noteExcerpt(content)}
-            <span className="meta">Created {createdAt} {lastModified !== createdAt && `• Last modified ${lastModified}`}</span>
+            {dateInfo()}
         </div>
     )
 }

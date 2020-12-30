@@ -228,7 +228,15 @@ button.help::before {
     width: 100%;
     height: 100%;
     display: grid;
-    grid-template-rows: auto 1fr;
+    grid-template-rows: auto auto 1fr;
+}
+.NoteEditor input[type=text] {
+    margin-bottom: 1rem;
+    padding: 0;
+    border: 0;
+    background: 0;
+    font-size: 1.5rem;
+    font-weight: 500;
 }
 .EditorControls {
     background: #f7f7f7;
@@ -315,4 +323,11 @@ button.help::before {
     margin-top: 0.5rem;
     font-size: 0.7rem;
     color: #666;
+}
+.Editable blockquote {
+    margin-left: 0;
+    border-left: 0.3rem solid #ddd;
+    padding: 0.5rem 1rem;
+    font-style: oblique;
+    font-size: 0.9rem;
 }

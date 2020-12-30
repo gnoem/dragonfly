@@ -17,7 +17,7 @@ module.exports = (app) => {
         User.findOne({ _id: id }, (err, user) => {
             if (err) return console.error('error finding user', err);
             if (!user) return console.log(`user ${id} not found`);
-            Note.find({ userId: id }, (err, notes) => {
+            Note.find({ userId: id }).sort({ lastModified: 'desc' }).exec((err, notes) => {
                 if (err) return console.error('error finding notes');
                 let preparedNotes = [];
                 for (let i = 0; i < notes.length; i++) {
@@ -35,9 +35,10 @@ module.exports = (app) => {
         });
     });
     app.post('/add/note', (req, res) => {
-        const { id, content } = req.body;
+        const { id, title, content } = req.body;
         const newNote = new Note({
             userId: id,
+            title,
             content: JSON.stringify(content)
         });
         newNote.save(err => {
@@ -49,10 +50,11 @@ module.exports = (app) => {
         });
     });
     app.post('/edit/note', (req, res) => {
-        const { id, content } = req.body;
+        const { id, title, content } = req.body;
         Note.findOne({ _id: id }, (err, note) => {
             if (err) return console.error('error finding note', err);
             if (!note) return console.log(`note ${id} not found`);
+            note.title = title;
             note.content = JSON.stringify(content);
             note.lastModified = Date.now();
             note.save(err => {

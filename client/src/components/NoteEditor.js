@@ -5,6 +5,7 @@ import 'draft-js/dist/Draft.css';
 export default function NoteEditor(props) {
     const [currentStyles, setCurrentStyles] = useState([]);
     const [edited, setEdited] = useState(false);
+    const [editorTitle, setEditorTitle] = useState('');
     const [editorState, setEditorState] = useState(
         props.currentNote ? EditorState.createWithContent(convertFromRaw(props.currentNote.content)) : () => EditorState.createEmpty()
     );
@@ -12,6 +13,7 @@ export default function NoteEditor(props) {
     useEffect(() => {
         if (props.currentNote) setEditorState(EditorState.createWithContent(convertFromRaw(props.currentNote.content)));
         else setEditorState(EditorState.createEmpty());
+        setEditorTitle('');
         setEdited(false);
     }, [props.currentNote]);
     const handleKeyCommand = (command, editorState) => {
@@ -23,9 +25,9 @@ export default function NoteEditor(props) {
         }
         return 'not-handled';
     }
-    const controlStyle = (e, value) => {
+    const controlStyle = (e, type, value) => {
         e.preventDefault(); // onMouseDown + e.preventDefault rather than onClick preserves focus state in text editor
-        const newState = RichUtils.toggleInlineStyle(editorState, value);
+        const newState = (type === 'inline') ? RichUtils.toggleInlineStyle(editorState, value) : RichUtils.toggleBlockType(editorState, value);
         setEditorState(newState);
         if (!currentStyles.includes(value)) {
             setCurrentStyles([...currentStyles, value]);
@@ -49,6 +51,7 @@ export default function NoteEditor(props) {
             },
             body: JSON.stringify({
                 id: props.currentNote ? props.currentNote._id : props.user._id,
+                title: editorTitle,
                 content: convertToRaw(contentState)
             })
         });
@@ -65,9 +68,23 @@ export default function NoteEditor(props) {
         if (!inputTypes.includes(state.getLastChangeType())) return;
         setEdited(true);
     }
+    const noteTitle = () => {
+        const title = props.currentNote ? props.currentNote.title : '';
+        const handleInput = (e) => {
+            if (!edited) setEdited(true);
+            setEditorTitle(e.target.value);
+        }
+        const updatePreview = (e) => {
+            
+        }
+        return (
+            <input type="text" key={title} defaultValue={title || ''} placeholder="Add a title" onInput={handleInput} onChange={updatePreview} />
+        )
+    }
     return (
         <div className="NoteEditor">
             <EditorControls controlStyle={controlStyle} currentStyles={currentStyles} />
+            {noteTitle()}
             <div className="Editable" onClick={focus}>
                 <Editor
                     editorState={editorState}
@@ -90,19 +107,19 @@ function EditorControls(props) {
     }
     return (
         <div className="EditorControls">
-            <button onMouseDown={(e) => props.controlStyle(e, 'H1')}><i className="fas fa-heading"></i></button>
-            <button onMouseDown={(e) => props.controlStyle(e, 'BOLD')}><i className="fas fa-bold"></i></button>
-            <button onMouseDown={(e) => props.controlStyle(e, 'ITALIC')}><i className="fas fa-italic"></i></button>
-            <button onMouseDown={(e) => props.controlStyle(e, 'UNDERLINE')}><i className="fas fa-underline"></i></button>
-            <button onMouseDown={(e) => props.controlStyle(e, 'STRIKETHROUGH')}><i className="fas fa-strikethrough"></i></button>
+            <button onMouseDown={(e) => props.controlStyle(e, 'inline', 'BOLD')}><i className="fas fa-bold"></i></button>
+            <button onMouseDown={(e) => props.controlStyle(e, 'inline', 'ITALIC')}><i className="fas fa-italic"></i></button>
+            <button onMouseDown={(e) => props.controlStyle(e, 'inline', 'UNDERLINE')}><i className="fas fa-underline"></i></button>
+            <button onMouseDown={(e) => props.controlStyle(e, 'inline', 'STRIKETHROUGH')}><i className="fas fa-strikethrough"></i></button>
             <hr />
-            <button onMouseDown={(e) => props.controlStyle(e, 'UNDERLINE')}><i className="fas fa-align-left"></i></button>
-            <button onMouseDown={(e) => props.controlStyle(e, 'UNDERLINE')}><i className="fas fa-align-center"></i></button>
-            <button onMouseDown={(e) => props.controlStyle(e, 'UNDERLINE')}><i className="fas fa-align-right"></i></button>
-            <button onMouseDown={(e) => props.controlStyle(e, 'UNDERLINE')}><i className="fas fa-align-justify"></i></button>
+            <button onMouseDown={(e) => props.controlStyle(e, 'block', 'ALIGN-LEFT')}><i className="fas fa-align-left"></i></button>
+            <button onMouseDown={(e) => props.controlStyle(e, 'block', 'ALIGNCENTER')}><i className="fas fa-align-center"></i></button>
+            <button onMouseDown={(e) => props.controlStyle(e, 'block', 'UNDERLINE')}><i className="fas fa-align-right"></i></button>
+            <button onMouseDown={(e) => props.controlStyle(e, 'block', 'UNDERLINE')}><i className="fas fa-align-justify"></i></button>
             <hr />
-            <button onMouseDown={(e) => props.controlStyle(e, 'UNDERLINE')}><i className="fas fa-list-ul"></i></button>
-            <button onMouseDown={(e) => props.controlStyle(e, 'UNDERLINE')}><i className="fas fa-list-ol"></i></button>
+            <button onMouseDown={(e) => props.controlStyle(e, 'block', 'blockquote')}><i className="fas fa-quote-left"></i></button>
+            <button onMouseDown={(e) => props.controlStyle(e, 'block', 'unordered-list-item')}><i className="fas fa-list-ul"></i></button>
+            <button onMouseDown={(e) => props.controlStyle(e, 'block', 'ordered-list-item')}><i className="fas fa-list-ol"></i></button>
         </div>
     )
 }

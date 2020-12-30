@@ -39,14 +39,18 @@ export default function Notes(props) {
             updateTemporaryNotePreview(false);
             updateCurrentNote(notes[0]);
         }
-        
+    }
+    const cancelNewNote = () => {
+        if (!temporaryNotePreview) return;
+        updateTemporaryNotePreview(false);
+        updateCurrentNote(notes[0]);
     }
     const temporaryNote = {
         title: 'New note'
     }
     return (
         <div className="Notes">
-            <div className="List">
+            <div className="List" onClick={cancelNewNote}>
                 <div className="Header">
                     <div className="h1"><h1>All Notes</h1></div>
                     <div className="button">
