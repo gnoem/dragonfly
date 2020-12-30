@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
+import Notes from './Notes';
 import NoteEditor from './NoteEditor';
 
 export default function Dashboard(props) {
@@ -7,6 +8,7 @@ export default function Dashboard(props) {
     const [user, updateUser] = useState(null);
     const [notes, updateNotes] = useState([]);
     const [isLoaded, updateIsLoaded] = useState(false);
+    const [triggerGetData, updateTrigger] = useState(null);
     useEffect(() => {
         const getData = async () => {
             const response = await fetch('/get/data', {
@@ -24,19 +26,16 @@ export default function Dashboard(props) {
             updateIsLoaded(true);
         }
         getData();
-    }, [id]);
+    }, [id, triggerGetData]);
     if (!isLoaded) return <Loading />
     const displayNotes = () => {
         if (!notes.length) return (
             <div className="Panel">
-                <Welcome />
+                <Welcome user={user} refreshData={() => updateTrigger(Date.now())} />
             </div>
         );
         else return (
-            <>
-                <div className="List"></div>
-                <div className="View">hi {user._id}</div>
-            </>
+            <Notes user={user} notes={notes} refreshData={() => updateTrigger(Date.now())} />
         )
     }
     return (
@@ -47,15 +46,7 @@ export default function Dashboard(props) {
     )
 }
 
-function NoNotes() {
-    return (
-        <>
-            <h1>You don't have any notes saved.</h1>
-        </>
-    )
-}
-
-function Welcome() {
+function Welcome(props) {
     const [writingNote, updateWritingNote] = useState(false);
     if (!writingNote) return (
         <div className="Welcome">
@@ -67,7 +58,7 @@ function Welcome() {
         </div>
     )
     return (
-        <NoteEditor />
+        <NoteEditor user={props.user} refreshData={props.refreshData} />
     )
 }
 

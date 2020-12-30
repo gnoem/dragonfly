@@ -19,10 +19,47 @@ module.exports = (app) => {
             if (!user) return console.log(`user ${id} not found`);
             Note.find({ userId: id }, (err, notes) => {
                 if (err) return console.error('error finding notes');
+                let preparedNotes = [];
+                for (let i = 0; i < notes.length; i++) {
+                    const { _id, userId, title, content, tags, collections, createdAt, lastModified } = notes[i];
+                    preparedNotes.push({
+                        _id, userId, title, content: JSON.parse(content), tags, collections, createdAt, lastModified
+                    });
+                }
                 res.send({
                     success: true,
                     user,
-                    notes
+                    notes: preparedNotes
+                });
+            });
+        });
+    });
+    app.post('/add/note', (req, res) => {
+        const { id, content } = req.body;
+        const newNote = new Note({
+            userId: id,
+            content: JSON.stringify(content)
+        });
+        newNote.save(err => {
+            if (err) return console.error('error saving note', err);
+            console.log('success!');
+            res.send({
+                success: true
+            });
+        });
+    });
+    app.post('/edit/note', (req, res) => {
+        const { id, content } = req.body;
+        Note.findOne({ _id: id }, (err, note) => {
+            if (err) return console.error('error finding note', err);
+            if (!note) return console.log(`note ${id} not found`);
+            note.content = JSON.stringify(content);
+            note.lastModified = Date.now();
+            note.save(err => {
+                if (err) return console.error('error saving note', err);
+                console.log('successfully edited note');
+                res.send({
+                    success: true
                 });
             });
         });

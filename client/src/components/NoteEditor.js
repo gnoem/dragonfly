@@ -1,17 +1,24 @@
-import { useState, useRef } from 'react';
-import { Editor, EditorState, RichUtils } from 'draft-js';
+import { useState, useEffect, useRef } from 'react';
+import { Editor, EditorState, RichUtils, convertToRaw, convertFromRaw } from 'draft-js';
 import 'draft-js/dist/Draft.css';
 
-export default function NoteEditor() {
+export default function NoteEditor(props) {
     const [currentStyles, setCurrentStyles] = useState([]);
+    const [edited, setEdited] = useState(false);
     const [editorState, setEditorState] = useState(
-        () => EditorState.createEmpty(),
+        props.currentNote ? EditorState.createWithContent(convertFromRaw(props.currentNote.content)) : () => EditorState.createEmpty()
     );
     const editorRef = useRef(null);
+    useEffect(() => {
+        if (props.currentNote) setEditorState(EditorState.createWithContent(convertFromRaw(props.currentNote.content)));
+        else setEditorState(EditorState.createEmpty());
+        setEdited(false);
+    }, [props.currentNote]);
     const handleKeyCommand = (command, editorState) => {
         const newState = RichUtils.handleKeyCommand(editorState, command);
         if (newState) {
             setEditorState(newState);
+            setEdited(true);
             return 'handled';
         }
         return 'not-handled';
@@ -28,8 +35,35 @@ export default function NoteEditor() {
             if (index > -1) currentStyles.splice(index, 1);
         }
     }
-    const focus = () => {
-        editorRef.current.focus();
+    const focus = (e) => {
+        //editorRef.current.focus();
+        if (!editorRef.current.editor.contains(e.target)) setEditorState(EditorState.moveFocusToEnd(editorState))
+    }
+    const handleSubmit = async () => {
+        const contentState = editorState.getCurrentContent();
+        let ROUTE = props.currentNote ? '/edit/note' : '/add/note';
+        const response = await fetch(ROUTE, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                id: props.currentNote ? props.currentNote._id : props.user._id,
+                content: convertToRaw(contentState)
+            })
+        });
+        const body = await response.json();
+        if (!body) return console.log('no response from server');
+        if (!body.success) return console.log('no success: true response from server');
+        setEdited(false);
+        props.refreshData();
+    }
+    const handleChange = (state) => {
+        setEditorState(state);
+        if (edited) return;
+        const inputTypes = ['insert-characters', 'backspace-character', 'insert-fragment', 'remove-range'];
+        if (!inputTypes.includes(state.getLastChangeType())) return;
+        setEdited(true);
     }
     return (
         <div className="NoteEditor">
@@ -39,15 +73,17 @@ export default function NoteEditor() {
                     editorState={editorState}
                     handleKeyCommand={handleKeyCommand}
                     placeholder="Enter some text..."
-                    onChange={setEditorState}
+                    onChange={handleChange}
                     ref={editorRef}
                 />
             </div>
+            {edited && <button onClick={handleSubmit}>Save Changes</button>}
         </div>
     )
 }
 
 function EditorControls(props) {
+    //eslint-disable-next-line
     const isStyleActive = (style) => {
         if (props.currentStyles.includes(style)) return 'active';
         else return false;

@@ -6,10 +6,18 @@ module.exports = mongoose.model(
     new Schema({
         userId: String,
         title: String,
-        body: String,
+        content: String,
         tags: [String],
-        createdAt: Date,
-        lastModified: Date
+        collections: [String],
+        starred: Boolean,
+        createdAt: {
+            type: Date,
+            default: Date.now()
+        },
+        lastModified: {
+            type: Date,
+            default: Date.now()
+        }
     }),
     'notes'
 );

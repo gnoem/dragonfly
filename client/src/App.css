@@ -1,6 +1,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Work+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Abril+Fatface&display=swap');
 
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
 * {
     box-sizing: border-box;
 }
@@ -22,6 +31,7 @@ html, body {
     font-family: var(--default-font);
     font-size: 16px;
     font-weight: 300;
+    overflow: hidden;
 }
 b {
     font-weight: 600;
@@ -55,6 +65,9 @@ h1, h2, h3, h4, h5, h6 {
 }
 h1 {
     font-weight: normal;
+}
+h2 {
+    font-weight: 500;
 }
 button, select, textarea, input {
     font-family: inherit;
@@ -102,7 +115,7 @@ button.stealth, .Sidebar button {
     display: grid;
     grid-template-rows: auto;
     grid-template-columns: 300px 350px 1fr;
-    grid-template-areas: 'sidebar list view';
+    grid-template-areas: 'sidebar list editor';
 }
 .Dashboard .Sidebar {
     grid-area: sidebar;
@@ -110,16 +123,45 @@ button.stealth, .Sidebar button {
     padding: 2rem;
     color: #fff;
 }
-.Dashboard .List {
-    grid-area: list;
-    border-right: 1px solid #ccc;
-}
-.Dashboard .View {
-    grid-area: view;
-}
 .Dashboard .Panel {
     grid-column: 2 / -1;
     padding: 2rem;
+}
+.Dashboard .Notes {
+    grid-column: 2 / -1;
+    display: grid;
+    grid-template-columns: 350px 1fr auto;
+    grid-template-areas: 'list editor options';
+}
+.Dashboard .Editor {
+    grid-area: editor;
+    padding: 2rem;
+}
+.Dashboard .Options {
+    grid-area: options;
+    padding: 1rem;
+    border-left: 1px solid #ccc;
+    text-align: center;
+}
+button.newNote {
+    margin: 0;
+    padding: 0;
+    width: 2.5rem;
+    height: 2.5rem;
+    font-size: 1.4rem;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+}
+.Dashboard .Options button {
+    background: none;
+    font-size: 1.2rem;
+    color: #aaa;
+    padding: 0;
+    margin: 0 auto;
+}
+.Dashboard .Options button + button {
+    margin-top: 1rem;
 }
 .Sidebar h1 {
     font-family: var(--display-font);
@@ -220,4 +262,57 @@ button.help::before {
 }
 .EditorControls button + button {
     margin-left: 0.5rem;
+}
+.Dashboard .List {
+    grid-area: list;
+    border-right: 1px solid #ccc;
+    background: #f7f7f7;
+    display: grid;
+    grid-template-rows: auto 1fr;
+}
+.List .Header {
+    padding: 1rem;
+    padding-left: 1.5rem;
+    background: #fff;
+    border-bottom: 1px solid #ccc;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+}
+.List .Header div.h1 {
+    grid-column: 1 / 2;
+}
+.List .Header h1 {
+    margin: 0;
+}
+.List .Header div.button {
+    grid-column: 2 / -1;
+}
+.NotePreview {
+    cursor: pointer;
+    padding: 1rem;
+    margin: 1rem;
+    border-radius: 1rem;
+    background: #fff;
+    transition: 0.2s;
+}
+.NotePreview.current, .NotePreview.temp {
+    transform: translate3d(-0.2rem, -0.2rem, 0);
+    box-shadow: 0.2rem 0.2rem 1.5rem #ddd;
+}
+.NotePreview.temp {
+    animation: 0.4s scaleIn 1;
+}
+.NotePreview h2 {
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+}
+.NotePreview span.excerpt {
+    font-size: 0.9rem;
+}
+.NotePreview span.meta {
+    display: block;
+    margin-top: 0.5rem;
+    font-size: 0.7rem;
+    color: #666;
 }
