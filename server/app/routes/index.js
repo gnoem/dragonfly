@@ -35,6 +35,7 @@ module.exports = (app) => {
         });
     });
     app.post('/add/note', (req, res) => {
+        console.log('well its working');
         const { id, title, content } = req.body;
         const newNote = new Note({
             userId: id,
@@ -45,7 +46,8 @@ module.exports = (app) => {
             if (err) return console.error('error saving note', err);
             console.log('success!');
             res.send({
-                success: true
+                success: true,
+                id: newNote._id
             });
         });
     });
@@ -66,4 +68,15 @@ module.exports = (app) => {
             });
         });
     });
+    app.post('/delete/note', (req, res) => {
+        const { id } = req.body;
+        Note.findOneAndDelete({ _id: id }, (err, note) => {
+            if (err) return console.error('error finding note', err);
+            if (!note) return console.log(`note ${id} not found`);
+            console.log('deleting note');
+            res.send({
+                success: true
+            });
+        })
+    })
 }

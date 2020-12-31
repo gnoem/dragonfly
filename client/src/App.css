@@ -9,7 +9,17 @@
         opacity: 1;
     }
 }
-
+#demo {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    border: 1px solid #ccc;
+    background: #fff;
+    cursor: pointer;
+}
 * {
     box-sizing: border-box;
 }
@@ -89,6 +99,13 @@ button.stealth, .Sidebar button {
     padding: 0;
     border: 0;
     background: 0;
+}
+.nowrap {
+    display: inline-block;
+}
+.nowrap::after {
+    content: '';
+    padding-left: 0.5ch;
 }
 .Home {
     padding: 5vw;
@@ -271,12 +288,9 @@ button.help::before {
 .EditorControls button + button {
     margin-left: 0.5rem;
 }
-.Dashboard .List {
-    grid-area: list;
+.List {
     border-right: 1px solid #ccc;
     background: #f7f7f7;
-    display: grid;
-    grid-template-rows: auto 1fr;
 }
 .List .Header {
     padding: 1rem;
@@ -286,6 +300,7 @@ button.help::before {
     display: grid;
     grid-template-columns: 1fr auto;
     align-items: center;
+    height: 5rem;
 }
 .List .Header div.h1 {
     grid-column: 1 / 2;
@@ -295,6 +310,10 @@ button.help::before {
 }
 .List .Header div.button {
     grid-column: 2 / -1;
+}
+.List .NotePreviews {
+    height: calc(100vh - 5rem);
+    overflow: auto;
 }
 .NotePreview {
     cursor: pointer;
@@ -323,6 +342,12 @@ button.help::before {
     margin-top: 0.5rem;
     font-size: 0.7rem;
     color: #666;
+}
+.endofnotes {
+    padding: 1rem 3rem;
+    text-align: center;
+    font-weight: normal;
+    color: #aaa;
 }
 .Editable blockquote {
     margin-left: 0;

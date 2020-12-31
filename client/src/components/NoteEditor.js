@@ -7,15 +7,21 @@ export default function NoteEditor(props) {
     const [edited, setEdited] = useState(false);
     const [editorTitle, setEditorTitle] = useState('');
     const [editorState, setEditorState] = useState(
-        props.currentNote ? EditorState.createWithContent(convertFromRaw(props.currentNote.content)) : () => EditorState.createEmpty()
+        props.currentNote.content ? EditorState.createWithContent(convertFromRaw(props.currentNote.content)) : () => EditorState.createEmpty()
     );
     const editorRef = useRef(null);
+    const titleInput = useRef(null);
     useEffect(() => {
-        if (props.currentNote) setEditorState(EditorState.createWithContent(convertFromRaw(props.currentNote.content)));
-        else setEditorState(EditorState.createEmpty());
-        setEditorTitle('');
+        if (props.currentNote.content) {
+            setEditorState(EditorState.createWithContent(convertFromRaw(props.currentNote.content)));
+            setEditorTitle(props.currentNote.title);
+        }
+        else {
+            setEditorState(EditorState.createEmpty());
+            setEditorTitle('');
+        }
         setEdited(false);
-    }, [props.currentNote]);
+    }, [props.currentNote.content, props.currentNote.title]);
     const handleKeyCommand = (command, editorState) => {
         const newState = RichUtils.handleKeyCommand(editorState, command);
         if (newState) {
@@ -39,18 +45,18 @@ export default function NoteEditor(props) {
     }
     const focus = (e) => {
         //editorRef.current.focus();
-        if (!editorRef.current.editor.contains(e.target)) setEditorState(EditorState.moveFocusToEnd(editorState))
+        if (!editorRef.current.editor.contains(e.target)) setEditorState(EditorState.moveFocusToEnd(editorState));
     }
     const handleSubmit = async () => {
         const contentState = editorState.getCurrentContent();
-        let ROUTE = props.currentNote ? '/edit/note' : '/add/note';
+        let ROUTE = props.currentNote.content ? '/edit/note' : '/add/note';
         const response = await fetch(ROUTE, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                id: props.currentNote ? props.currentNote._id : props.user._id,
+                id: props.currentNote.content ? props.currentNote._id : props.user._id,
                 title: editorTitle,
                 content: convertToRaw(contentState)
             })
@@ -60,6 +66,7 @@ export default function NoteEditor(props) {
         if (!body.success) return console.log('no success: true response from server');
         setEdited(false);
         props.refreshData();
+        if (body.id) props.updateOnNoteSubmit(body.id); // only get body.id if creating note, not editing note
     }
     const handleChange = (state) => {
         setEditorState(state);
@@ -67,18 +74,20 @@ export default function NoteEditor(props) {
         const inputTypes = ['insert-characters', 'backspace-character', 'insert-fragment', 'remove-range'];
         if (!inputTypes.includes(state.getLastChangeType())) return;
         setEdited(true);
+        props.updateUnsavedChanges(true); // tell parent component there are unsaved changes
     }
     const noteTitle = () => {
-        const title = props.currentNote ? props.currentNote.title : '';
+        const title = props.currentNote.content ? props.currentNote.title : '';
         const handleInput = (e) => {
             if (!edited) setEdited(true);
             setEditorTitle(e.target.value);
+            props.updateUnsavedChanges(true); // tell parent component there are unsaved changes
         }
         const updatePreview = (e) => {
             
         }
         return (
-            <input type="text" key={title} defaultValue={title || ''} placeholder="Add a title" onInput={handleInput} onChange={updatePreview} />
+            <input type="text" ref={titleInput} key={title} defaultValue={title} placeholder="Add a title" onInput={handleInput} onChange={updatePreview} />
         )
     }
     return (

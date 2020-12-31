@@ -15,7 +15,7 @@ export default function List(props) {
         //if (content.length > 100) return content += '...';
         return getTextContent(content);
     }
-    title = title ? title : `Note from ${createdAt}`;
+    title = title ? title : `Note from ${dayjs(createdAt).format('MM/DD/YYYY')}`; // not always working
     const isCurrent = (id) => {
         if (id === props.current) return ' current';
         if (id === 'temp') return ' temp';
