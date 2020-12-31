@@ -42,7 +42,6 @@ export default function Notes(props) {
         updateTemporaryNotePreview(false);
         updateUnsavedChanges(false);
         updateCurrentNote(notes[getIndex(id)]);
-        console.log(unsavedChanges);
     }
     const generateNotesList = () => {
         let notesList = [];
@@ -119,13 +118,44 @@ export default function Notes(props) {
         /* when notes prop is updated with the new note added, useEffect up above - the one w/ [notes.length]
         as a dependency array - is triggered and there updateView() is called using id of newest note */
     }
+    const modalContent = useRef(null);
+    const gracefullyCloseModal = (modal) => {
+        console.dir(modal);
+        let container = modal.classList.contains('Modal')
+            ? modal
+            : modal.closest('.Modal');
+        console.dir(container);
+        container.classList.add('goodbye');
+        setTimeout(() => updateShowingModal(false), 200);
+    }
+    const showModal = (content) => {
+        if (!content) return;
+        return (
+            <Modal exitModal={gracefullyCloseModal}>
+                {content}
+            </Modal>
+        )
+    }
+    const confirmDeletion = (id) => {
+        const content = (
+            <div className="modalContent" ref={modalContent}>
+                <h2>Are you sure?</h2>
+                This action can't be undone.
+                <div className="buttons">
+                    <button onClick={() => deleteNote(id)}>Yes, I'm sure</button>
+                    <button className="greyed" onClick={() => gracefullyCloseModal(modalContent.current)}>Cancel</button>
+                </div>
+            </div>
+        );
+        updateShowingModal(content);
+    }
     const temporaryNote = {
         title: 'New note'
     }
     return (
         <div className="Notes">
             <div id="demo" onClick={() => console.dir(unsavedChanges)}></div>
-            {showingModal && <Modal />}
+            {showModal(showingModal)}
             <div className="List" onClick={cancelNewNote}>
                 <div className="Header">
                     <div className="h1"><h1>All Notes</h1></div>
@@ -162,7 +192,7 @@ export default function Notes(props) {
             <div className="Options">
                 <button><i className="fas fa-share-square"></i></button>
                 <button><i className="fas fa-file-download"></i></button>
-                <button onClick={() => deleteNote(currentNote._id)}><i className="fas fa-trash"></i></button>
+                <button onClick={() => confirmDeletion(currentNote._id)}><i className="fas fa-trash"></i></button>
             </div>
         </div>
     )
