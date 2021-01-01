@@ -3,15 +3,16 @@ import { Editor, EditorState, RichUtils, convertToRaw, convertFromRaw } from 'dr
 import 'draft-js/dist/Draft.css';
 
 export default function NoteEditor(props) {
+    const { updateUnsavedChanges } = props;
     const [currentStyles, setCurrentStyles] = useState([]);
-    const [edited, setEdited] = useState(false);
     const [editorTitle, setEditorTitle] = useState('');
     const [editorState, setEditorState] = useState(
         props.currentNote.content ? EditorState.createWithContent(convertFromRaw(props.currentNote.content)) : () => EditorState.createEmpty()
     );
     const editorRef = useRef(null);
     const titleInput = useRef(null);
-    useEffect(() => {
+    useEffect(() => { // switching between notes
+        console.log('effect')
         if (props.currentNote.content) {
             setEditorState(EditorState.createWithContent(convertFromRaw(props.currentNote.content)));
             setEditorTitle(props.currentNote.title);
@@ -20,13 +21,13 @@ export default function NoteEditor(props) {
             setEditorState(EditorState.createEmpty());
             setEditorTitle('');
         }
-        setEdited(false);
-    }, [props.currentNote.content, props.currentNote.title]);
+        updateUnsavedChanges(false);
+    }, [updateUnsavedChanges, props.currentNote.content, props.currentNote.title]);
     const handleKeyCommand = (command, editorState) => {
         const newState = RichUtils.handleKeyCommand(editorState, command);
         if (newState) {
             setEditorState(newState);
-            setEdited(true);
+            updateUnsavedChanges(true);
             return 'handled';
         }
         return 'not-handled';
@@ -64,24 +65,25 @@ export default function NoteEditor(props) {
         const body = await response.json();
         if (!body) return console.log('no response from server');
         if (!body.success) return console.log('no success: true response from server');
-        setEdited(false);
+        updateUnsavedChanges(false);
         props.refreshData();
         if (body.id) props.updateOnNoteSubmit(body.id); // only get body.id if creating note, not editing note
     }
     const handleChange = (state) => {
         setEditorState(state);
-        if (edited) return;
+        if (props.unsavedChanges) return;
         const inputTypes = ['insert-characters', 'backspace-character', 'insert-fragment', 'remove-range'];
         if (!inputTypes.includes(state.getLastChangeType())) return;
-        setEdited(true);
-        props.updateUnsavedChanges(true); // tell parent component there are unsaved changes
+        updateUnsavedChanges(true); // tell parent component there are unsaved changes
     }
     const noteTitle = () => {
         const title = props.currentNote.content ? props.currentNote.title : '';
         const handleInput = (e) => {
-            if (!edited) setEdited(true);
             setEditorTitle(e.target.value);
-            props.updateUnsavedChanges(true); // tell parent component there are unsaved changes
+            updateUnsavedChanges(true);
+            if (!props.currentNote.content) {
+                props.updatePreview({ title: e.target.value });
+            }
         }
         const updatePreview = (e) => {
             
@@ -103,7 +105,7 @@ export default function NoteEditor(props) {
                     ref={editorRef}
                 />
             </div>
-            {edited && <button onClick={handleSubmit}>Save Changes</button>}
+            {props.unsavedChanges && <button onClick={handleSubmit}>Save Changes</button>}
         </div>
     )
 }

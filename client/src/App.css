@@ -364,11 +364,19 @@ button.help::before {
     color: #aaa;
 }
 .Editable blockquote {
-    margin-left: 0;
+    margin: 0;
+    margin-top: 1rem;
     border-left: 0.3rem solid #ddd;
     padding: 0.5rem 1rem;
     font-style: oblique;
     font-size: 0.9rem;
+    color: #666;
+}
+.Editable blockquote + div {
+    margin-top: 1rem;
+}
+.Editable blockquote + blockquote {
+    margin-top: 0;
 }
 .Modal {
     position: fixed;
@@ -415,5 +423,8 @@ button.exit:hover {
     color: #666;
 }
 .Modal .buttons {
-    margin-top: 2rem;
+    margin-top: 1rem;
+}
+.Modal .buttons button {
+    margin-top: 1rem;
 }

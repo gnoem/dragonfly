@@ -1,8 +1,12 @@
 import dayjs from 'dayjs';
+import { useEffect } from 'react';
 
 export default function List(props) {
     let { _id, title, content, createdAt, lastModified } = props;
     _id = _id ? _id : 'temp';
+    useEffect(() => {
+        console.log('title changed!!');
+    }, [title]);
     const noteExcerpt = (content) => {
         if (_id === 'temp') return;
         const getTextContent = (content) => {
@@ -15,7 +19,7 @@ export default function List(props) {
         //if (content.length > 100) return content += '...';
         return getTextContent(content);
     }
-    title = title ? title : `Note from ${dayjs(createdAt).format('MM/DD/YYYY')}`; // not always working
+    title = title ? title : `Note from ${dayjs(createdAt).format('MM/DD/YYYY')}`;
     const isCurrent = (id) => {
         if (id === props.current) return ' current';
         if (id === 'temp') return ' temp';
@@ -38,7 +42,7 @@ export default function List(props) {
         )
     }
     return (
-        <div className={`NotePreview${isCurrent(_id)}`} onClick={() => props.makeActive(_id)}>
+        <div className={`NotePreview${isCurrent(_id)}`} data-id={_id} onClick={() => props.makeActive(_id, !props.unsavedChanges)}>
             <h2>{title}</h2>
             {noteExcerpt(content)}
             {dateInfo()}
