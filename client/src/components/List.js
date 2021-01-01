@@ -1,12 +1,8 @@
 import dayjs from 'dayjs';
-import { useEffect } from 'react';
 
 export default function List(props) {
     let { _id, title, content, createdAt, lastModified } = props;
     _id = _id ? _id : 'temp';
-    useEffect(() => {
-        console.log('title changed!!');
-    }, [title]);
     const noteExcerpt = (content) => {
         if (_id === 'temp') return;
         const getTextContent = (content) => {

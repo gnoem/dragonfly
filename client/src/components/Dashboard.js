@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import Loading from './Loading';
 import Sidebar from './Sidebar';
 import Notes from './Notes';
 import NoteEditor from './NoteEditor';
@@ -59,13 +60,5 @@ function Welcome(props) {
     )
     return (
         <NoteEditor user={props.user} refreshData={props.refreshData} />
-    )
-}
-
-function Loading() {
-    return (
-        <div className="Loading">
-            Loading...
-        </div>
     )
 }

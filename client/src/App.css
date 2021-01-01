@@ -428,3 +428,12 @@ button.exit:hover {
 .Modal .buttons button {
     margin-top: 1rem;
 }
+.Loading {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    place-items: center;
+}
+.Loading svg circle {
+    fill: var(--med-theme-color);
+}

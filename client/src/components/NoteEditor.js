@@ -12,7 +12,6 @@ export default function NoteEditor(props) {
     const editorRef = useRef(null);
     const titleInput = useRef(null);
     useEffect(() => { // switching between notes
-        console.log('effect')
         if (props.currentNote.content) {
             setEditorState(EditorState.createWithContent(convertFromRaw(props.currentNote.content)));
             setEditorTitle(props.currentNote.title);

@@ -176,7 +176,7 @@ export default function Notes(props) {
     }
     return (
         <div className="Notes">
-            <div id="demo" onClick={() => console.dir()}></div>
+            <div id="demo" onClick={() => {}}></div>
             {showModal(showingModal)}
             <div className="List">
                 <div className="Header">
@@ -213,11 +213,11 @@ export default function Notes(props) {
                     </div>
                 }
             </div>
-            <div className="Options">
+            {currentNote && <div className="Options">
                 <button><i className="fas fa-share-square"></i></button>
                 <button><i className="fas fa-file-download"></i></button>
                 <button onClick={() => confirmDeletion(currentNote._id)}><i className="fas fa-trash"></i></button>
-            </div>
+            </div>}
         </div>
     )
 }
