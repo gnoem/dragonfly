@@ -70,7 +70,7 @@ export default function Dashboard(props) {
     }
     return (
         <div className="Dashboard">
-            <Sidebar updateView={updateView} />
+            <Sidebar user={user} updateView={updateView} />
             {appContent()}
         </div>
     )

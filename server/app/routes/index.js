@@ -189,4 +189,47 @@ module.exports = (app) => {
             });
         });
     });
+    app.post('/edit/account', [
+        check('email')
+            .isEmail().withMessage('Please enter a valid email address'),
+        check('username')
+            .isAlphanumeric().withMessage('Your username may not contain any special characters')
+            .isLength({ min: 1, max: 23 }).withMessage('Username must be between 1 and 23 characters'),
+        check('password')
+            .isLength({ min: 6 }).withMessage('Minimum is 6 characters')
+    ], (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            const generateError = (type) => {
+                let error = errors.errors.find(error => error.param === type);
+                if (error) return error.msg; else return false;
+            }
+            const errorReport = {
+                emailError: generateError('email'),
+                usernameError: generateError('username'),
+                passwordError: generateError('password')
+            }
+            res.send({
+                success: false,
+                errorReport
+            });
+            return;
+        }
+        const { _id, firstName, lastName, email, username, password } = req.body;
+        User.findOne({ _id }, (err, user) => {
+            if (err) return console.error('error finding user', err);
+            if (!user) return console.log(`user ${_id} not found`);
+            user.firstName = firstName;
+            user.lastName = lastName;
+            user.email = email;
+            user.username = username;
+            user.password = bcrypt.hashSync(password, 8);
+            user.save(err => {
+                if (err) return console.error('error saving user', err);
+                res.send({
+                    success: true
+                });
+            });
+        });
+    });
 }

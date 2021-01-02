@@ -33,6 +33,7 @@
     --med-theme-color: #58bbb6;
     --light-theme-color: #a2e0dd;
     --lighter-theme-color: #c9eceb;
+    --caution: #c55a63;
 }
 html, body {
     width: 100%;
@@ -43,7 +44,7 @@ html, body {
     font-weight: 300;
     overflow: hidden;
 }
-b {
+b, strong {
     font-weight: 600;
 }
 a, a:visited {
@@ -83,6 +84,10 @@ button, select, textarea, input {
     font-family: inherit;
     outline: none;
 }
+input:not([type=submit]) {
+    font-size: inherit;
+    font-weight: inherit;
+}
 button, input[type=submit] {
     cursor: pointer;
     border: 0;
@@ -102,6 +107,9 @@ button.stealth, .Sidebar button {
 }
 button.greyed {
     background: #aaa;
+}
+button.caution {
+    background: var(--caution);
 }
 .buttons {
     text-align: center;
@@ -252,6 +260,9 @@ button.settings::before {
 }
 button.help::before {
     content: '\f059';
+}
+button.logout::before {
+    content: '\f2f5';
 }
 .NoteEditor {
     width: 100%;
@@ -449,23 +460,45 @@ form input:not([type=submit]):not([type=checkbox]) {
     border-radius: 0.5rem;
     transition: 0.2s;
 }
-.Signup {
+.Account {
     display: flex;
     flex-wrap: wrap;
 }
-.Signup > div {
+.Account > div {
     flex: 0 0 100%;
     margin-top: 1rem;
 }
-.Signup > div.half {
+.Account > div.half {
     flex: 0 1 calc(50% - 0.5rem);
     margin-top: 0;
 }
-.Signup > div.half + div.half {
+.Account > div.half + div.half {
     margin-left: 1rem;
 }
-.Signup .toc {
+.Account .toc {
     margin-top: 1.5rem;
+}
+.deleteAccount {
+    margin-top: 2rem;
+    border-top: 1px solid #ccc;
+    padding-top: 1.5rem;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+}
+.deleteAccount .text {
+    font-size: 0.8rem;
+}
+.deleteAccount strong {
+    font-size: 1rem;
+    font-weight: 500;
+    display: block;
+    margin-bottom: 0.2rem;
+}
+.deleteAccount button {
+    margin: 0;
+    padding: 0.5rem 1rem;
 }
 form input:not([type=submit]):focus {
     border-color: var(--med-theme-color);
