@@ -15,6 +15,7 @@ export default function MyAccount(props) {
 function Account(props) {
     const { user } = props;
     const [formData, updateFormData] = useState({ user });
+    const [newPassword, updateNewPassword] = useState({ password: null, confirmPassword: null })
     const [showingModal, updateShowingModal] = useState(false);
     const modalContent = useRef(null);
     const handleSubmit = async (e) => {
@@ -61,6 +62,27 @@ function Account(props) {
     }
     const handleChange = (field, value) => {
         updateFormData({ ...user, [field]: value });
+    }
+    const passwordsMatch = (newPassword.password === newPassword.confirmPassword) && (newPassword.password !== null);
+    const handleSubmitPassword = async (e) => {
+        e.preventDefault();
+        if (!passwordsMatch) return;
+        const response = await fetch('/edit/password', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                username: user.username,
+                password: newPassword.password
+            })
+        });
+        const body = await response.json();
+        if (!body) return console.log('no response from server');
+        if (!body.success) return console.log('no success: true response from server');
+    }
+    const handleChangePassword = async (field, value) => {
+        updateNewPassword({ ...newPassword, [field]: value });
     }
     const confirmDeleteAccount = () => {
         const content = (
@@ -115,10 +137,28 @@ function Account(props) {
                         <label htmlFor="username">Username:</label>
                         <input type="text" defaultValue={user.username} name="username" onInput={(e) => handleChange('username', e.target.value)} />
                     </div>
-                    <input type="submit" value="Save Changes" />
+                    <input type="submit" value="Save changes" />
                 </div>
             </form>
-            <div className="deleteAccount">
+            <div className="formSection">
+                <div className="text">
+                    <strong>Change password</strong>
+                    <form className="changePassword" onSubmit={handleSubmitPassword} autoComplete="off">
+                        <div>
+                            <label htmlFor="newPassword">Enter new password:</label>
+                            <input type="password" name="newPassword" onInput={(e) => handleChangePassword('password', e.target.value)} />
+                        </div>
+                        <div>
+                            <label htmlFor="confirmPassword">Confirm new password:</label>
+                            <input type="password" name="confirmPassword" onInput={(e) => handleChangePassword('confirmPassword', e.target.value)} />
+                        </div>
+                        <div className="buttonDiv">
+                            <button disabled={!passwordsMatch} onClick={handleSubmitPassword}>Change password</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div className="formSection formGrid">
                 <div className="text">
                     <strong>Delete my account</strong>
                     Deleting your account will permanently delete all notes, settings, and other data associated with this account. This cannot be undone.

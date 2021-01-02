@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 
 export default function List(props) {
-    let { _id, title, content, createdAt, lastModified } = props;
+    let { _id, title, content, starred, createdAt, lastModified } = props;
     _id = _id ? _id : 'temp';
     const noteExcerpt = (content) => {
         if (_id === 'temp') return;
@@ -20,6 +20,11 @@ export default function List(props) {
         if (id === props.current) return ' current';
         if (id === 'temp') return ' temp';
         else return '';
+    }
+    const isStarred = () => {
+        if (starred) return (
+            <div className="hasStar"><i className="fas fa-star"></i></div>
+        )
     }
     const dateInfo = () => {
         const untouched = createdAt === lastModified;
@@ -42,6 +47,7 @@ export default function List(props) {
             <h2>{title}</h2>
             {noteExcerpt(content)}
             {dateInfo()}
+            {isStarred()}
         </div>
     )
 }

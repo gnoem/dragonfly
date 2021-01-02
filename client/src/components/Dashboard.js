@@ -23,6 +23,8 @@ export default function Dashboard(props) {
             updateAccessToken(body.accessToken);
         }
         authorize();
+    // reauthorizes fires every time getData is called
+    // eslint-disable-next-line
     }, [user]);
     useEffect(() => {
         const getData = async () => {
@@ -50,12 +52,19 @@ export default function Dashboard(props) {
             </div>
         );
         else return (
-            <Notes user={user} notes={notes} refreshData={() => updateTrigger(Date.now())} />
+            <Notes view="all-notes" user={user} notes={notes} refreshData={() => updateTrigger(Date.now())} />
+        )
+    }
+    const starredNotes = () => {
+        let starred = notes.filter(note => note.starred);
+        return (
+            <Notes view="starred-notes" user={user} notes={starred} refreshData={() => updateTrigger(Date.now())} />
         )
     }
     const appContent = () => {
         switch (view) {
             case 'all-notes': return allNotes();
+            case 'starred-notes': return starredNotes();
             case 'my-account': return (
                 <MyAccount updateIsLoaded={updateIsLoaded} refreshData={() => updateTrigger(Date.now())} user={user} />
             );

@@ -5,7 +5,7 @@ import Modal from './Modal';
 import { elementHasParent } from '../utils';
 
 export default function Notes(props) {
-    const { user, notes } = props;
+    const { view, user, notes } = props;
     const [addingNewNote, updateNewNote] = useState(false); // need to close on submit in NoteEditor
     const [tempNotePreview, updateTempNotePreview] = useState({
         title: 'New note',
@@ -27,18 +27,39 @@ export default function Notes(props) {
         return ref.current;
     }
     const prevNotesCount = usePrevious(notes.length);
+    const prevView = usePrevious(view);
+    const currentNoteIndex = currentNote ? getIndex(currentNote._id) : 0;
+    useEffect(() => {
+        // this is for when note data changes and currentNote needs to update
+        if (prevNotesCount !== notes.length) return; // want it to go to a different useEffect for if note is added/deleted
+        if (prevView !== view) return;
+        updateCurrentNote(notes[currentNoteIndex]);
+    // we don't need prevNotesCount in the dependency array
+    // eslint-disable-next-line
+    }, [notes]);
     useEffect(() => {
         if (prevNotesCount === undefined) return;
-        if (prevNotesCount < notes.length) {
+        if (prevView !== view) return;
+        console.log('is working')
+        if (prevNotesCount < notes.length) { // a note has been added
             updateCurrentNote(notes[getIndex(newestNote)]);
         }
-        if (prevNotesCount > notes.length) {
-            // that means a note has been deleted
-            // do something?
+        if (prevNotesCount > notes.length) { // a note has been deleted or removed via unstar, etc.
+            updateCurrentNote(false); // for now
         }
     // we don't need prevNotesCount in the dependency array
     // eslint-disable-next-line
-    }, [notes.length]);
+    }, [notes.length]); // if notes.length changes but view stays the same, that means something has been added or deleted *****(or unstarred, etc)*****
+    useEffect(() => {
+        let firstNote = notes[0];
+        if (!notes.length) firstNote = false;
+        updateCurrentNote(firstNote);
+        updateNewNote(false);
+        updateTempNotePreview({ title: 'New note', content: '' });
+        updateUnsavedChanges(false);
+    // we don't need prevView or notes in the dependency array
+    // eslint-disable-next-line
+    }, [view]);
     const updateView = (id, confirmed = false) => {
         if (!unsavedChanges || confirmed) {
             updateNewNote(false);
@@ -174,26 +195,50 @@ export default function Notes(props) {
         updateUnsavedChanges(false);
         gracefullyCloseModal(modalContent.current);
     }
+    const starNote = async (id) => {
+        const response = await fetch('/star/note', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ _id: id })
+        });
+        const body = await response.json();
+        if (!body) return console.log('no response from server');
+        if (!body.success) return console.log('no success: true response from server');
+        props.refreshData();
+    }
+    const listHeader = () => {
+        switch (view) {
+            case 'all-notes': return 'All notes';
+            case 'starred-notes': return 'Starred notes';
+            default: return 'All notes';
+        }
+    }
     return (
         <div className="Notes">
-            <div id="demo" onClick={() => {}}></div>
+            <div id="demo" onClick={() => {
+                console.dir(currentNote);
+            }}></div>
             {showModal(showingModal)}
             <div className="List">
                 <div className="Header">
-                    <div className="h1"><h1>All Notes</h1></div>
+                    <div className="h1"><h1>{listHeader()}</h1></div>
                     <div className="button">
-                        <button className="newNote" onClick={createNewNote}>
+                        {view === 'all-notes' ? <button className="newNote" onClick={createNewNote}>
                             <i className="fas fa-plus"></i>
-                        </button>
+                        </button> : null}
                     </div>
                 </div>
                 <div className="NotePreviews" onClick={cancelNewNote} ref={NotePreviews}>
                     {addingNewNote && <List {...tempNotePreview} makeActive={() => {}} />}
                     {generateNotesList()}
-                    {<div className="endofnotes">
-                        <span className="nowrap">You've reached the</span>
-                        <span className="nowrap">end of your notes.</span>
-                    </div>}
+                    {notes.length
+                        ?   <div className="endofnotes">
+                                <span className="nowrap">You've reached the</span>
+                                <span className="nowrap">end of your notes.</span>
+                            </div>
+                        :   <div className="endofnotes" style={{ marginTop: '1rem' }}>None found</div>}
                 </div>
             </div>
             <div className="Editor">
@@ -214,6 +259,7 @@ export default function Notes(props) {
                 }
             </div>
             {currentNote && <div className="Options">
+                <button className={currentNote.starred ? 'hasStar' : null} onClick={() => {starNote(currentNote._id)}}><i className="fas fa-star"></i></button>
                 <button><i className="fas fa-share-square"></i></button>
                 <button><i className="fas fa-file-download"></i></button>
                 <button onClick={() => confirmDeletion(currentNote._id)}><i className="fas fa-trash"></i></button>

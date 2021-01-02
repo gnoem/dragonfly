@@ -105,6 +105,10 @@ button.stealth, .Sidebar button {
     border: 0;
     background: 0;
 }
+button:disabled {
+    background: #aaa;
+    cursor: not-allowed;
+}
 button.greyed {
     background: #aaa;
 }
@@ -158,11 +162,15 @@ button.caution {
     background: var(--med-theme-color);
     padding: 2rem;
     color: #fff;
+    height: 100%;
+    overflow: auto;
 }
 .Dashboard .Panel {
     grid-column: 2 / -1;
     padding: 2rem;
-    width: 65%;
+    padding-right: 35%;
+    height: 100%;
+    overflow: auto;
 }
 .Dashboard .Notes {
     grid-column: 2 / -1;
@@ -345,6 +353,13 @@ button.logout::before {
     border-radius: 1rem;
     background: #fff;
     transition: 0.2s;
+    position: relative;
+}
+.NotePreview .hasStar {
+    position: absolute;
+    top: 0.7rem;
+    right: 0.7rem;
+    font-size: 0.9rem;
 }
 .NotePreview.current, .NotePreview.temp {
     transform: translate3d(0, -0.2rem, 0);
@@ -356,6 +371,7 @@ button.logout::before {
 .NotePreview h2 {
     font-size: 1.2rem;
     margin-bottom: 0.5rem;
+    padding-right: 2rem;
 }
 .NotePreview span.excerpt {
     font-size: 0.9rem;
@@ -427,6 +443,7 @@ button.exit {
     right: 1.3rem;
     font-size: 1.5rem;
     color: #aaa;
+    transition: color 0.2s;
 }
 button.exit:hover {
     color: #666;
@@ -463,6 +480,7 @@ form input:not([type=submit]):not([type=checkbox]) {
 .Account {
     display: flex;
     flex-wrap: wrap;
+    margin-bottom: 0.5rem;
 }
 .Account > div {
     flex: 0 0 100%;
@@ -478,27 +496,51 @@ form input:not([type=submit]):not([type=checkbox]) {
 .Account .toc {
     margin-top: 1.5rem;
 }
-.deleteAccount {
-    margin-top: 2rem;
+.formSection {
+    margin-top: 1.5rem;
     border-top: 1px solid #ccc;
     padding-top: 1.5rem;
     width: 100%;
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: center;
-}
-.deleteAccount .text {
     font-size: 0.8rem;
 }
-.deleteAccount strong {
+.formSection strong {
     font-size: 1rem;
     font-weight: 500;
     display: block;
     margin-bottom: 0.2rem;
 }
-.deleteAccount button {
+.formSection .buttonDiv {
+    flex: 1 0 100%;
     margin: 0;
-    padding: 0.5rem 1rem;
+}
+.formGrid {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+}
+.formGrid .text {
+    padding-right: 1.5rem;
+}
+.formGrid button {
+    margin: 0;
+    padding: 0.8rem 1rem;
+}
+.changePassword {
+    display: flex;
+    width: 100%;
+    margin-top: 0.5rem;
+    flex-wrap: wrap;
+}
+.changePassword > div {
+    flex: 1 0 auto;
+    place-content: center;
+}
+.changePassword > div + div {
+    margin-left: 1rem;
+}
+.changePassword button {
+    margin-top: 1.5rem;
+    padding: 1rem 2rem;
 }
 form input:not([type=submit]):focus {
     border-color: var(--med-theme-color);
@@ -547,4 +589,7 @@ span.urlpreview {
     width: 300px;
     max-width: 100%;
     margin: 0.4rem auto 0;
+}
+.hasStar, .Dashboard .Options button.hasStar {
+    color: rgb(247, 189, 0);
 }

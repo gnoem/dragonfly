@@ -77,9 +77,9 @@ module.exports = (app) => {
                 if (err) return console.error('error finding notes');
                 let preparedNotes = [];
                 for (let i = 0; i < notes.length; i++) {
-                    const { _id, userId, title, content, tags, collections, createdAt, lastModified } = notes[i];
+                    const { _id, userId, title, content, tags, collections, starred, createdAt, lastModified } = notes[i];
                     preparedNotes.push({
-                        _id, userId, title, content: JSON.parse(content), tags, collections, createdAt, lastModified
+                        _id, userId, title, content: JSON.parse(content), tags, collections, starred, createdAt, lastModified
                     });
                 }
                 res.send({
@@ -134,6 +134,22 @@ module.exports = (app) => {
                 success: true
             });
         })
+    });
+    app.post('/star/note', (req, res) => {
+        const { _id } = req.body;
+        console.log('starring note');
+        Note.findOne({ _id }, (err, note) => {
+            console.log('findig note');
+            if (err) return console.error('error finding note', err);
+            if (!note) return console.log(`note ${_id} not found`);
+            note.starred = !note.starred;
+            note.save(err => {
+                if (err) return console.error('error saving note', err);
+                res.send({
+                    success: true
+                });
+            });
+        });
     });
     app.post('/create/account', [
         check('email').isEmail().withMessage('Please enter a valid email address')
@@ -231,5 +247,9 @@ module.exports = (app) => {
                 });
             });
         });
+    });
+    app.post('/edit/password', (req, res) => {
+        const { username, password } = req.body;
+        console.dir(req.body);
     });
 }
