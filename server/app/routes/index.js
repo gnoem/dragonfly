@@ -33,13 +33,12 @@ module.exports = (app) => {
             if (err) return console.error('error finding user', err);
             if (!user) return console.log(`user ${username} not found`);
             const passwordIsValid = () => {
-                bcrypt.compareSync(password, user.password);
+                return bcrypt.compareSync(password, user.password);
             }
-            if (!passwordIsValid) {
-                console.log('invalid password');
+            if (!passwordIsValid()) {
                 res.send({
                     success: false,
-                    error: 'Invalid password'
+                    error: 'invalid-password'
                 });
                 return;
             }
@@ -250,6 +249,16 @@ module.exports = (app) => {
     });
     app.post('/edit/password', (req, res) => {
         const { username, password } = req.body;
-        console.dir(req.body);
+        User.findOne({ username }, (err, user) => {
+            if (err) return console.error('error finding user', err);
+            if (!user) return console.log(`user ${username} not found`);
+            user.password = bcrypt.hashSync(password, 8);
+            user.save(err => {
+                if (err) return console.error('error saving user', err);
+                res.send({
+                    success: true
+                });
+            });
+        });
     });
 }
