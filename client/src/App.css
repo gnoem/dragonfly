@@ -24,8 +24,8 @@
     box-sizing: border-box;
 }
 :root {
-    --default-font: 'Work Sans';
-    --display-font: 'Abril Fatface';
+    --default-font: 'Work Sans', sans-serif;
+    --display-font: 'Abril Fatface', serif;
     --deep-gradient: linear-gradient(135deg, #43a8a3, #75c964);
     --med-gradient: linear-gradient(135deg, #5ebbb6, #99da8c);
     --light-gradient: linear-gradient(135deg, #bbf5f2, #cdf3c7);
@@ -124,7 +124,7 @@ button.greyed {
 .Home {
     padding: 5vw;
 }
-.Home h1 {
+.Home h1, h1.display {
     font-family: var(--display-font);
     font-size: 5rem;
     font-weight: normal;
@@ -136,9 +136,6 @@ button.greyed {
 #root, .App {
     width: 100%;
     height: 100%;
-}
-.Welcome {
-    width: 65%;
 }
 .Dashboard {
     width: 100%;
@@ -157,6 +154,7 @@ button.greyed {
 .Dashboard .Panel {
     grid-column: 2 / -1;
     padding: 2rem;
+    width: 65%;
 }
 .Dashboard .Notes {
     grid-column: 2 / -1;
@@ -338,7 +336,7 @@ button.help::before {
     transition: 0.2s;
 }
 .NotePreview.current, .NotePreview.temp {
-    transform: translate3d(-0.2rem, -0.2rem, 0);
+    transform: translate3d(0, -0.2rem, 0);
     box-shadow: 0.2rem 0.2rem 1.5rem #ddd;
 }
 .NotePreview.temp {
@@ -436,4 +434,84 @@ button.exit:hover {
 }
 .Loading svg circle {
     fill: var(--med-theme-color);
+}
+form label {
+    font-size: 0.8rem;
+    font-weight: normal;
+    color: #666;
+}
+form input:not([type=submit]):not([type=checkbox]) {
+    display: block;
+    width: 100%;
+    margin-top: 0.4rem;
+    padding: 0.7rem;
+    border: 1px solid #ddd;
+    border-radius: 0.5rem;
+    transition: 0.2s;
+}
+.Signup {
+    display: flex;
+    flex-wrap: wrap;
+}
+.Signup > div {
+    flex: 0 0 100%;
+    margin-top: 1rem;
+}
+.Signup > div.half {
+    flex: 0 1 calc(50% - 0.5rem);
+    margin-top: 0;
+}
+.Signup > div.half + div.half {
+    margin-left: 1rem;
+}
+.Signup .toc {
+    margin-top: 1.5rem;
+}
+form input:not([type=submit]):focus {
+    border-color: var(--med-theme-color);
+}
+form .formCheck {
+    margin-top: 0.5rem;
+}
+form .formCheck label {
+    color: #000;
+    font-weight: 300;
+}
+span.urlpreview {
+    font-size: 0.8rem;
+    display: block;
+    margin-top: 0.3rem;
+}
+.Login {
+    width: 100%;
+    height: 80%;
+    display: grid;
+    place-items: center;
+}
+.Login > form {
+    text-align: center;
+}
+.Login h1 {
+    font-size: 5rem;
+}
+.Login .passwordProtected {
+    display: inline-flex;
+    place-items: center;
+    margin-bottom: 1rem;
+}
+.Login .giantIcon {
+    font-size: 1.5rem;
+    color: #aaa;
+    margin-right: 0.5rem;
+}
+.Login .passwordProtected p {
+    margin: 0;
+}
+.Login div:not(.formCheck) label {
+    display: block;
+}
+.Login form input[type=password] {
+    width: 300px;
+    max-width: 100%;
+    margin: 0.4rem auto 0;
 }
