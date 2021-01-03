@@ -41,6 +41,7 @@ export default function Notes(props) {
         if (prevView !== view) return; // if notes.length changed because user switched view, return
         if (prevNotesCount < notes.length) { // a note has been added
             if (!newestNote) return;
+            if (!currentNote) return; // to fix mid-CREATENOTE-switch-to-no-note-selected-but-save-changes bug
             setCurrentNote(notes[getIndex(newestNote)]);
             setNewestNote(null);
         }
@@ -83,10 +84,11 @@ export default function Notes(props) {
                 setCurrentNote(notes[getIndex(noteId)]);
                 return console.log('went all the way through');
             }
+            console.log('clicked in gray');
             setCurrentNote(false);
             return;
         }
-        const warnSaveChanges = (next) => { // next: () => handleClick(e, true)
+        const warnSaveChanges = () => { // next: () => handleClick(e, true)
             if (!unsavedChanges) return;
             const discardChanges = (next) => {
                 gracefullyCloseModal(modalContent.current);
@@ -95,13 +97,12 @@ export default function Notes(props) {
             const saveChanges = (next) => {
                 gracefullyCloseModal(modalContent.current);
                 console.dir(next);
-                setSubmitEditorState(next); // handleSubmit shall take next() as parameter if (props.submitEditorState === true)
-                debugger;
+                setSubmitEditorState(next); // handleSubmit will take next() as parameter if (props.submitEditorState === true)
                 /* setSubmitEditorState(true); // this is happening second
                 next(); // this is happening first */
             }
+            // call handleClick again, with same (initial) e, but bypass "if unsavedChanges" statement
             const handleClickAgain = () => () => handleClick(e, true); // https://stackoverflow.com/questions/55621212/is-it-possible-to-react-usestate-in-react
-            //setSubmitEditorState(handleClickAgain);
             const content = (
                 <div className="modalContent" ref={modalContent}>
                     <h2>Save changes?</h2>
@@ -114,7 +115,7 @@ export default function Notes(props) {
             )
             setModalObject(content);
         }
-        return warnSaveChanges(); // call handleClick again, with same (initial) e, but bypass "if unsavedChanges" statement
+        return warnSaveChanges();
     }
     const updateOnNoteCreation = (id) => {
         // setUnsavedChanges(false) happens directly in handleSubmit
