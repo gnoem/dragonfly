@@ -9,6 +9,35 @@
     from { opacity: 1; }
     to { opacity: 0; }
 }
+@keyframes invalid-input {
+    16.65% {
+      -webkit-transform: translateX(8px);
+      transform: translateX(8px);
+    }
+    33.3% {
+      -webkit-transform: translateX(-6px);
+      transform: translateX(-6px);
+      border-color: var(--light-caution);
+    }
+    49.95% {
+      -webkit-transform: translateX(4px);
+      transform: translateX(4px);
+      border-color: var(--light-caution);
+    }
+    66.6% {
+      -webkit-transform: translateX(-2px);
+      transform: translateX(-2px);
+      border-color: var(--light-caution);
+    }
+    83.25% {
+      -webkit-transform: translateX(1px);
+      transform: translateX(1px);
+    }
+    100% {
+      -webkit-transform: translateX(0);
+      transform: translateX(0);
+    }
+  }
 #demo {
     position: fixed;
     bottom: 1rem;
@@ -19,6 +48,7 @@
     border: 1px solid #ccc;
     background: #fff;
     cursor: pointer;
+    z-index: 999999999999999999999999999999999999999;
 }
 * {
     box-sizing: border-box;
@@ -34,6 +64,7 @@
     --light-theme-color: #a2e0dd;
     --lighter-theme-color: #c9eceb;
     --caution: #c55a63;
+    --light-caution: #dd858c;
 }
 html, body {
     width: 100%;
@@ -592,4 +623,10 @@ span.urlpreview {
 }
 .hasStar, .Dashboard .Options button.hasStar {
     color: rgb(247, 189, 0);
+}
+.Login form input.nope {
+    animation-name: invalid-input;
+    animation-duration: 0.5s;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: 1;
 }

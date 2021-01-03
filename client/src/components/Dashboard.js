@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import Loading from './Loading';
 import Sidebar from './Sidebar';
 import Notes from './Notes';
-import NoteEditor from './NoteEditor';
 import MyAccount from './MyAccount';
 
 export default function Dashboard(props) {
@@ -46,12 +45,7 @@ export default function Dashboard(props) {
     }, [id, triggerGetData]);
     if (!isLoaded) return <Loading />
     const allNotes = () => {
-        if (!notes.length) return (
-            <div className="Panel">
-                <Welcome user={user} refreshData={() => updateTrigger(Date.now())} />
-            </div>
-        );
-        else return (
+        return (
             <Notes view="all-notes" user={user} notes={notes} refreshData={() => updateTrigger(Date.now())} />
         )
     }
@@ -85,24 +79,9 @@ export default function Dashboard(props) {
     )
 }
 
-function Welcome(props) {
-    const [writingNote, updateWritingNote] = useState(false);
-    if (!writingNote) return (
-        <div className="Welcome">
-            <h1>Hi there!</h1>
-            <p>Welcome to Dragonfly.</p>
-            <p>Your public dashboard URL is <b>{window.location.href}</b>.</p>
-            <p>If you would like to customize your Dragonfly URL, password-protect your notes, and personalize your dashboard, you can do so in <a href="/">Account Settings</a>.</p>
-            <button onClick={() => updateWritingNote(true)}>Create your first note</button>
-        </div>
-    )
-    return (
-        <NoteEditor user={props.user} refreshData={props.refreshData} />
-    )
-}
-
 function Login(props) {
     const [password, updatePassword] = useState('');
+    const [invalidPassword, updateInvalidPassword] = useState(false);
     const handleLogin = async (e) => {
         e.preventDefault();
         const response = await fetch('/login/user', {
@@ -117,8 +96,15 @@ function Login(props) {
         });
         const body = await response.json();
         if (!body) return console.log('no response from server');
-        if (!body.success) return console.log('no success: true response from server');
+        if (!body.success) {
+            console.log('no success: true response from server');
+            if (body.error && body.error === 'invalid-password') return updateInvalidPassword(true);
+        }
         window.location.reload();
+    }
+    const handleInput = (value) => {
+        if (invalidPassword) updateInvalidPassword(false);
+        updatePassword(value);
     }
     return (
         <div className="Login">
@@ -130,7 +116,7 @@ function Login(props) {
                 </div>
                 <div>
                     <label htmlFor="password">Enter password:</label>
-                    <input type="password" name="password" onChange={(e) => updatePassword(e.target.value)} />
+                    <input type="password" className={invalidPassword ? ' nope' : ''} name="password" onChange={(e) => handleInput(e.target.value)} />
                 </div>
                 <div className="formCheck">
                     <input type="checkbox" name="rememberThisDevice" /> <label htmlFor="rememberThisDevice">Remember this device</label>

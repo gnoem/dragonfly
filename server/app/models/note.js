@@ -10,14 +10,8 @@ module.exports = mongoose.model(
         tags: [String],
         collections: [String],
         starred: Boolean,
-        createdAt: {
-            type: Date,
-            default: Date.now()
-        },
-        lastModified: {
-            type: Date,
-            default: Date.now()
-        }
+        createdAt: Date,
+        lastModified: Date
     }),
     'notes'
 );

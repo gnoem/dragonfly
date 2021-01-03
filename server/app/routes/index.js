@@ -95,7 +95,9 @@ module.exports = (app) => {
         const newNote = new Note({
             userId: id,
             title,
-            content: JSON.stringify(content)
+            content: JSON.stringify(content),
+            createdAt: Date.now(),
+            lastModified: Date.now()
         });
         newNote.save(err => {
             if (err) return console.error('error saving note', err);

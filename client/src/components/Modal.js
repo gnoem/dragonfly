@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { elementHasParent } from '../utils';
 
 export default function Modal(props) {
     const { exitModal } = props;
@@ -9,6 +10,7 @@ export default function Modal(props) {
             if (!modalContainer.current) return () => {
                 window.removeEventListener('click', closeModal);
             }
+            if (elementHasParent(e.target, '#demo')) return;
             if (!modalContainer.current.contains(e.target)) exitModal(dim.current);
         }
         window.addEventListener('click', closeModal);

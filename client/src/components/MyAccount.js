@@ -17,6 +17,7 @@ function Account(props) {
     const [formData, updateFormData] = useState({ user });
     const [newPassword, updateNewPassword] = useState({ password: null, confirmPassword: null })
     const [showingModal, updateShowingModal] = useState(false);
+    const changePasswordForm = useRef(null);
     const modalContent = useRef(null);
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -80,6 +81,20 @@ function Account(props) {
         const body = await response.json();
         if (!body) return console.log('no response from server');
         if (!body.success) return console.log('no success: true response from server');
+        const successModal = () => {
+            const content = (
+                <div className="modalContent" ref={modalContent}>
+                    <h2>Success!</h2>
+                    <p>Your password has been changed.</p>
+                    <div className="buttons">
+                        <button onClick={() => gracefullyCloseModal(modalContent.current)}>Continue</button>
+                    </div>
+                </div>
+            )
+            changePasswordForm.current.reset();
+            updateShowingModal(content);
+        }
+        successModal(); 
     }
     const handleChangePassword = async (field, value) => {
         updateNewPassword({ ...newPassword, [field]: value });
@@ -143,7 +158,7 @@ function Account(props) {
             <div className="formSection">
                 <div className="text">
                     <strong>Change password</strong>
-                    <form className="changePassword" onSubmit={handleSubmitPassword} autoComplete="off">
+                    <form className="changePassword" ref={changePasswordForm} onSubmit={handleSubmitPassword} autoComplete="off">
                         <div>
                             <label htmlFor="newPassword">Enter new password:</label>
                             <input type="password" name="newPassword" onInput={(e) => handleChangePassword('password', e.target.value)} />
