@@ -26,6 +26,7 @@ export default function Notes(props) {
     }
     const prevNotesCount = usePrevious(notes.length);
     const prevView = usePrevious(view);
+    const prevNoteId = usePrevious(currentNote._id);
     const currentNoteIndex = currentNote ? getIndex(currentNote._id) : 0;
     useEffect(() => {
         let firstNote = notes[0];
@@ -56,10 +57,16 @@ export default function Notes(props) {
     // eslint-disable-next-line
     }, [notes.length]);
     useEffect(() => {
-        // this is for when note data changes and currentNote needs to update
+        // this is for when you edit a note directly and currentNote needs to update
+        if (prevNoteId !== currentNote._id) return; // to fix mid-edit-switch-to-different-note-but-save-changes bug
         if (prevNotesCount !== notes.length) return; // already specified what should happen if notes.length changes
         if (prevView !== view) return; // already specified what should happen if view changes
         setCurrentNote(notes[currentNoteIndex]);
+        // mid-edit-switch-to-different-note-but-save-changes bug:
+        // when you are in the middle of editing a note, then switch to another note and
+        // opt to save changes, and then the note submit goes through, this gets called and it sets
+        // current note BACK to the note you just switched away from
+
     // come back and figure out what needs to be in the dependency array
     // eslint-disable-next-line
     }, [notes]);

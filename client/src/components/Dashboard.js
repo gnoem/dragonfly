@@ -14,6 +14,7 @@ export default function Dashboard(props) {
     const [triggerGetData, updateTrigger] = useState(null);
     useEffect(() => {
         if (!user) return;
+        if (accessToken) return;
         const authorize = async () => {
             const response = await fetch(`/auth/${user._id}`);
             const body = await response.json();
