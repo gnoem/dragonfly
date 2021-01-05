@@ -13,11 +13,6 @@ export default function NoteEditor(props) {
     const titleInput = useRef(null);
     const editorRef = useRef(null);
     useEffect(() => {
-        console.log(props.currentNote._id); // this is changing immediately!
-        //debugger;
-    }, [props.currentNote._id]);
-    useEffect(() => {
-        console.log('next(): '+props.submitEditorState);
         if (!props.submitEditorState) return;
         handleSubmit();
     // do not need handleSubmit or props as a dependency

@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 
 export default function NotePreview(props) {
-    let { temp, _id, title, content, starred, createdAt, lastModified } = props;
+    let { temp, _id, title, content, collection, starred, createdAt, lastModified } = props;
     const noteExcerpt = (content) => {
         if (temp) return;
         const getTextContent = (content) => {

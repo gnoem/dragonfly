@@ -56,6 +56,12 @@ export default function Dashboard(props) {
             <Notes view="starred-notes" user={user} notes={starred} refreshData={() => updateTrigger(Date.now())} />
         )
     }
+    const collection = (collectionName) => {
+        let collection = notes.filter(note => note.collection === collectionName);
+        return (
+            <Notes view="collection" collectionName={collectionName} user={user} notes={collection} refreshData={() => updateTrigger(Date.now())} />
+        )
+    }
     const appContent = () => {
         switch (view) {
             case 'all-notes': return allNotes();
@@ -63,7 +69,12 @@ export default function Dashboard(props) {
             case 'my-account': return (
                 <MyAccount updateIsLoaded={updateIsLoaded} refreshData={() => updateTrigger(Date.now())} user={user} />
             );
-            default: return allNotes();
+            default: {
+                if (view.type === 'collection') {
+                    return collection(view.name);
+                }
+                return allNotes();
+            }
         }
     }
     const passwordProtected = user.username;
@@ -74,7 +85,7 @@ export default function Dashboard(props) {
     }
     return (
         <div className="Dashboard">
-            <Sidebar user={user} updateView={updateView} />
+            <Sidebar user={user} updateView={updateView} refreshData={() => updateTrigger(Date.now())} />
             {appContent()}
         </div>
     )

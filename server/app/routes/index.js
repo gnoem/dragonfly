@@ -76,9 +76,9 @@ module.exports = (app) => {
                 if (err) return console.error('error finding notes');
                 let preparedNotes = [];
                 for (let i = 0; i < notes.length; i++) {
-                    const { _id, userId, title, content, tags, collections, starred, createdAt, lastModified } = notes[i];
+                    const { _id, userId, title, content, tags, category, starred, createdAt, lastModified } = notes[i];
                     preparedNotes.push({
-                        _id, userId, title, content: JSON.parse(content), tags, collections, starred, createdAt, lastModified
+                        _id, userId, title, content: JSON.parse(content), tags, collection: category, starred, createdAt, lastModified
                     });
                 }
                 res.send({
@@ -146,6 +146,49 @@ module.exports = (app) => {
             note.starred = !note.starred;
             note.save(err => {
                 if (err) return console.error('error saving note', err);
+                res.send({
+                    success: true
+                });
+            });
+        });
+    });
+    app.post('/categorize/note', (req, res) => {
+        const { _id, collectionName } = req.body;
+        Note.findOne({ _id }, (err, note) => {
+            if (err) return console.error('error finding user', err);
+            if (!note) return console.log(`note ${_id} not found`);
+            note.category = collectionName;
+            note.save(err => {
+                if (err) return console.error('error saving note', err);
+                res.send({
+                    success: true
+                });
+            });
+        });
+    });
+    app.post('/add/collection', (req, res) => {
+        const { username, collectionName } = req.body;
+        User.findOne({ username }, (err, user) => {
+            if (err) return console.error('error finding user', err);
+            if (!user) return console.log(`user ${username} not found`);
+            const collectionAlreadyExists = (name) => {
+                if (!user.collections || !user.collections.length) return false;
+                let index = user.collections.indexOf(name);
+                if (index !== -1) return true;
+                return false;
+            }
+            if (collectionAlreadyExists(collectionName)) {
+                console.log(`collection ${collectionName} already exists!`);
+                res.send({
+                    success: false,
+                    error: "A collection with this name already exists."
+                });
+            }
+            if (!user.collections) user.collections = [collectionName];
+            else user.collections.push(collectionName);
+            console.log('about to save...');
+            user.save(err => {
+                if (err) return console.error('error saving user', err);
                 res.send({
                     success: true
                 });

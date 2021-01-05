@@ -8,7 +8,7 @@ module.exports = mongoose.model(
         title: String,
         content: String,
         tags: [String],
-        collections: [String],
+        category: String,
         starred: Boolean,
         createdAt: Date,
         lastModified: Date

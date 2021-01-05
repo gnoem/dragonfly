@@ -9,6 +9,8 @@ module.exports = mongoose.model(
         email: String,
         username: String,
         password: String,
+        collections: [],
+        tags: [],
         settings: {
             darkMode: Boolean,
             theme: String

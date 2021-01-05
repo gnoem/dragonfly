@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import Modal from './Modal';
+import MiniMenu from './MiniMenu';
 import NotePreview from './NotePreview';
 import NoteEditor from './NoteEditor';
 import { elementHasParent } from '../utils';
@@ -7,11 +8,13 @@ import { elementHasParent } from '../utils';
 export default function Notes(props) {
     const { view, user, notes } = props;
     const [currentNote, setCurrentNote] = useState(notes[0]);
+    const [currentNoteUpdated, setCurrentNoteUpdate] = useState(false);
     const [newestNote, setNewestNote] = useState(null);
     const [addingNewNote, setAddingNewNote] = useState(false);
     const [tempNotePreview, setTempNotePreview] = useState('New note');
     const [unsavedChanges, setUnsavedChanges] = useState(false);
     const [submitEditorState, setSubmitEditorState] = useState(false);
+    const [miniMenu, setMiniMenu] = useState(false);
     const [modalObject, setModalObject] = useState(false);
     const modalContent = useRef(null);
     const getIndex = (id) => {
@@ -26,8 +29,7 @@ export default function Notes(props) {
     }
     const prevNotesCount = usePrevious(notes.length);
     const prevView = usePrevious(view);
-    const prevNoteId = usePrevious(currentNote._id);
-    const currentNoteIndex = currentNote ? getIndex(currentNote._id) : 0;
+    //const prevNoteId = usePrevious(currentNote._id);
     useEffect(() => {
         let firstNote = notes[0];
         if (!notes.length) firstNote = false;
@@ -41,7 +43,7 @@ export default function Notes(props) {
         if (prevView !== view) return; // if notes.length changed because user switched view, return
         if (prevNotesCount < notes.length) { // a note has been added
             if (!newestNote) return;
-            if (!currentNote) return; // to fix mid-CREATENOTE-switch-to-no-note-selected-but-save-changes bug
+            if (!currentNote) return; // to fix mid-CREATE-switch-to-no-note-selected-but-save-changes bug
             setCurrentNote(notes[getIndex(newestNote)]);
             setNewestNote(null);
         }
@@ -57,11 +59,15 @@ export default function Notes(props) {
     // come back and figure out what needs to be in the dependency array
     // eslint-disable-next-line
     }, [notes.length]);
-    useEffect(() => {
+
+    /* useEffect(() => {
         // this is for when you edit a note directly and currentNote needs to update
+        // maybe easier to just create a state called updateCurrentNote and set it to true/timestamp whenever currenet note needs to be updated
         if (prevNoteId !== currentNote._id) return; // to fix mid-edit-switch-to-different-note-but-save-changes bug
         if (prevNotesCount !== notes.length) return; // already specified what should happen if notes.length changes
         if (prevView !== view) return; // already specified what should happen if view changes
+        if (!view.name) return; // this + next line is how to tell if within the same collections or tags section
+        if (prevView && (prevView.name !== view.name)) return; // if so, notes array is changing but view ('collections'/'tags') is not
         setCurrentNote(notes[currentNoteIndex]);
         // mid-edit-switch-to-different-note-but-save-changes bug:
         // when you are in the middle of editing a note, then switch to another note and
@@ -70,7 +76,23 @@ export default function Notes(props) {
 
     // come back and figure out what needs to be in the dependency array
     // eslint-disable-next-line
-    }, [notes]);
+    }, [notes]); */
+    useEffect(() => {
+
+        console.log('signal to update currentNote: '+currentNoteUpdated);
+        console.dir(notes[getIndex(currentNoteUpdated)]); // still reading old "collection" value
+    }, [currentNoteUpdated]);
+    useEffect(() => {
+        if (!currentNoteUpdated) return;
+        if (currentNoteUpdated) {
+            console.log('updating current note');
+            //const currentNoteIndex = currentNote ? getIndex(currentNote._id) : 0;
+            setCurrentNote(notes[getIndex(currentNoteUpdated)]);
+            console.dir(notes[getIndex(currentNoteUpdated)]);
+            setCurrentNoteUpdate(false);
+            return;
+        }
+    }, [notes]); // star/unstar, move to collection
     const handleClick = (e, beenWarned = false) => {
         e.preventDefault();
         if (!unsavedChanges || beenWarned) {
@@ -81,10 +103,8 @@ export default function Notes(props) {
                     ? e.target
                     : e.target.closest('.NotePreview'); // if e.target is e.g. <h2>
                 let noteId = notePreview.getAttribute('data-id');
-                setCurrentNote(notes[getIndex(noteId)]);
-                return console.log('went all the way through');
+                return setCurrentNote(notes[getIndex(noteId)]);
             }
-            console.log('clicked in gray');
             setCurrentNote(false);
             return;
         }
@@ -174,8 +194,57 @@ export default function Notes(props) {
         if (!body.success) return console.log('no success: true response from server');
         props.refreshData();
         // and also refresh current note
-        if (view !== 'starred-notes') setCurrentNote(notes[getIndex(id)]); // need this to be up to date though
+        if (view !== 'starred-notes') setCurrentNoteUpdate(notes[getIndex(id)]); // need this to be up to date though
         // if in starred notes, then clicking star will cause the note to disappear and then currentNote should/will be reset to false
+        // (via notes.length useEffect)
+    }
+    const editNoteCollection = async (e, id) => {
+        // add to collection
+        // or move to collection
+        // list with checkmarks on side
+        const { top, right } = {
+            top: e.clientY-16,
+            right: (window.innerWidth-e.clientX)+16
+        }
+        const moveNoteToCollection = async (collectionName) => {
+            const response = await fetch('/categorize/note', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ _id: currentNote._id, collectionName })
+            });
+            const body = await response.json();
+            if (!body) return console.log('no response from server');
+            if (!body.success) return console.log('no success: true response from server');
+            setCurrentNoteUpdate(id);
+            props.refreshData();
+        }
+        const collectionsList = () => {
+            if (!user.collections) return;
+            let userCollections = [];
+            for (let i = 0; i < user.collections.length; i++) {
+                let collectionName = user.collections[i];
+                const belongsToCollection = currentNote.collection === collectionName
+                    ? ' hasCollection'
+                    : '';
+                userCollections.push(
+                    <li key={`minimenu-${collectionName}`}>
+                        <button className={`add${belongsToCollection}`} onClick={() => moveNoteToCollection(collectionName)}>
+                            {collectionName}
+                        </button>
+                    </li>
+                );
+            }
+            return userCollections;
+        }
+        const content = (
+            <ul style={{ top: top+'px', right: right+'px' }}>
+                <li><strong>{currentNote.collection ? `Move` : `Add`} to collection:</strong></li>
+                {collectionsList()}
+            </ul>
+        )
+        setMiniMenu(content);
     }
     const gracefullyCloseModal = (modal) => {
         let container = modal.classList.contains('Modal')
@@ -190,6 +259,14 @@ export default function Notes(props) {
             <Modal exitModal={gracefullyCloseModal}>
                 {content}
             </Modal>
+        )
+    }
+    const showMiniMenu = (content) => {
+        if (!content) return;
+        return (
+            <MiniMenu exitMenu={() => setMiniMenu(false)}>
+                {content}
+            </MiniMenu>
         )
     }
     const noNoteSelected = () => {
@@ -214,8 +291,14 @@ export default function Notes(props) {
         )
     }
     const listHeader = () => {
-        switch(view) {
+        switch (view) {
             case 'all-notes': return 'All notes';
+            case 'collection': return (
+                <span className="collectionHeader">
+                    <span>COLLECTION</span>
+                    <span>{props.collectionName}</span>
+                </span>
+            );
             case 'starred-notes': return 'Starred notes';
             default: return 'All notes';
         }
@@ -246,8 +329,9 @@ export default function Notes(props) {
     }
     return (
         <div className="Notes">
-            <div id="demo" onClick={() => console.dir(submitEditorState)}></div>
+            {showMiniMenu(miniMenu)}
             {showModal(modalObject)}
+            <div id="demo" onClick={() => console.dir(currentNote.collection)}></div>
             <div className="List">
                 <div className="Header">
                     <div className="h1"><h1>{listHeader()}</h1></div>
@@ -281,6 +365,8 @@ export default function Notes(props) {
             </div>
             {currentNote && <div className="Options">
                 <button className={currentNote.starred ? 'hasStar' : null} onClick={() => starNote(currentNote._id)}><i className="fas fa-star"></i></button>
+                <button onClick={(e) => editNoteCollection(e, currentNote._id)}><i className="fas fa-book"></i></button>
+                <button><i className="fas fa-tags"></i></button>
                 <button><i className="fas fa-share-square"></i></button>
                 <button><i className="fas fa-file-download"></i></button>
                 <button onClick={() => confirmDeletion(currentNote._id)}><i className="fas fa-trash"></i></button>

@@ -1,6 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Work+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Abril+Fatface&display=swap');
-
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
@@ -8,6 +5,26 @@
 @keyframes fadeOut {
     from { opacity: 1; }
     to { opacity: 0; }
+}
+@keyframes showSubMenu {
+    from {
+        opacity: 0;
+        transform: scale(0);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+@keyframes hideSubMenu {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: scale(0);
+    }
 }
 @keyframes invalid-input {
     16.65% {
@@ -55,7 +72,7 @@
 }
 :root {
     --default-font: 'Work Sans', sans-serif;
-    --display-font: 'Abril Fatface', serif;
+    --display-font: 'Abril Fatface', cursive;
     --deep-gradient: linear-gradient(135deg, #43a8a3, #75c964);
     --med-gradient: linear-gradient(135deg, #5ebbb6, #99da8c);
     --light-gradient: linear-gradient(135deg, #bbf5f2, #cdf3c7);
@@ -129,8 +146,9 @@ button, input[type=submit] {
     border-radius: 0.5rem;
     display: block;
     margin-top: 1.5rem;
+    font-size: 0.83rem;
 }
-button.stealth, .Sidebar button {
+button.stealth, .Sidebar nav button, .MiniMenu button {
     margin: 0;
     padding: 0;
     border: 0;
@@ -192,7 +210,6 @@ button.caution {
     grid-area: sidebar;
     background: var(--med-theme-color);
     padding: 2rem;
-    color: #fff;
     height: 100%;
     overflow: auto;
 }
@@ -242,6 +259,7 @@ button.newNote {
 .Sidebar h1 {
     font-family: var(--display-font);
     font-size: 2.5rem;
+    color: #fff;
     font-weight: normal;
     margin-left: 0.5rem;
     margin-bottom: 1rem;
@@ -252,19 +270,22 @@ button.newNote {
     border-top: 1px solid rgba(255, 255, 255, 0.3);
     padding-top: 0.5rem;
 }
-.Sidebar ul {
+.Sidebar nav ul {
     margin: 0;
     padding: 0;
     list-style: none;
 }
-.Sidebar button {
+.Sidebar nav ul li {
+    margin: 1.5rem 0;
+}
+.Sidebar nav button {
     font-weight: normal;
-    margin: 1.5rem 0.5rem;
+    margin: 0 0.5rem;
     display: grid;
     grid-template-columns: 2rem 1fr;
     align-items: center;
 }
-.Sidebar button::before {
+.Sidebar nav button::before {
     font-family: 'Font Awesome 5 Free';
     font-weight: 900;
     font-size: 1.2rem;
@@ -272,9 +293,35 @@ button.newNote {
     margin-right: 0.5rem;
     transition: 0.2s;
 }
-.Sidebar button:hover::before {
+.Sidebar nav button:hover::before {
     transform: scale(1.2);
     text-shadow: 0 0 0.5rem #fff;
+}
+.Sidebar nav ul.subList {
+    max-height: 0;
+    transition: max-height 0.2s;
+    transform-origin: top left;
+    overflow: hidden;
+    margin-left: 2.5rem;
+}
+.Sidebar nav ul.subList li {
+    margin: 0;
+}
+.Sidebar nav ul.subList li:first-of-type {
+    padding-top: 1rem;
+}
+.Sidebar nav ul.subList button {
+    font-size: 0.7rem;
+    color: var(--lighter-theme-color);
+    font-weight: 500;
+    text-transform: uppercase;
+    margin: 0.5rem 0;
+    padding: 0.2rem 0;
+    transition: color 0.2s;
+    display: block;
+}
+.Sidebar nav ul.subList button:hover {
+    color: #fff;
 }
 button.notes::before {
     content: '\f01c';
@@ -373,6 +420,16 @@ button.logout::before {
 .List .Header div.button {
     grid-column: 2 / -1;
 }
+.List .Header h1 span.collectionHeader > span {
+    display: block;
+}
+.List .Header h1 span.collectionHeader > span:first-of-type {
+    font-size: 0.7rem;
+    margin-bottom: 0.1rem;
+}
+.List .Header h1 span.collectionHeader > span + span {
+    font-size: 1.5rem;
+}
 .List .NotePreviews {
     height: calc(100vh - 5rem);
     overflow: auto;
@@ -433,6 +490,50 @@ button.logout::before {
 }
 .Editable blockquote + blockquote {
     margin-top: 0;
+}
+.MiniMenu {
+    z-index: 999999;
+    position: fixed;
+}
+.MiniMenu ul {
+    position: fixed;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 0.5rem;
+    list-style: none;
+    margin: 0;
+    padding: 0 0.3rem;
+}
+.MiniMenu li + li {
+    border-top: 1px solid #ddd;
+}
+.MiniMenu strong {
+    padding: 0.7rem;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    display: block;
+}
+.MiniMenu button {
+    color: #333;
+    padding: 0.7rem;
+    width: 100%;
+    text-align: left;
+    transition: color 0.2s;
+}
+.MiniMenu button:hover {
+    color: #999;
+}
+.MiniMenu button::before {
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    float: right;
+}
+.MiniMenu button.hasCollection::before {
+    content: '\f00c';
+}
+.MiniMenu button.add:hover::before {
+    content: '\f067';
+    color: #999;
 }
 .Modal {
     position: fixed;
