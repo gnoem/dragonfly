@@ -17,6 +17,7 @@ export default function Notes(props) {
     const [miniMenu, setMiniMenu] = useState(false);
     const [modalObject, setModalObject] = useState(false);
     const modalContent = useRef(null);
+    const miniMenuRef = useRef(null);
     const getIndex = (id) => {
         return notes.findIndex(note => id === note._id);
     }
@@ -59,7 +60,6 @@ export default function Notes(props) {
     // come back and figure out what needs to be in the dependency array
     // eslint-disable-next-line
     }, [notes.length]);
-
     /* useEffect(() => {
         // this is for when you edit a note directly and currentNote needs to update
         // maybe easier to just create a state called updateCurrentNote and set it to true/timestamp whenever currenet note needs to be updated
@@ -80,7 +80,8 @@ export default function Notes(props) {
     useEffect(() => {
 
         console.log('signal to update currentNote: '+currentNoteUpdated);
-        console.dir(notes[getIndex(currentNoteUpdated)]); // still reading old "collection" value
+        if (!currentNoteUpdated) return;
+        console.dir(notes[getIndex(currentNoteUpdated)].collection); // still reading old "collection" value
     }, [currentNoteUpdated]);
     useEffect(() => {
         if (!currentNoteUpdated) return;
@@ -88,7 +89,7 @@ export default function Notes(props) {
             console.log('updating current note');
             //const currentNoteIndex = currentNote ? getIndex(currentNote._id) : 0;
             setCurrentNote(notes[getIndex(currentNoteUpdated)]);
-            console.dir(notes[getIndex(currentNoteUpdated)]);
+            console.dir(notes[getIndex(currentNoteUpdated)].collection);
             setCurrentNoteUpdate(false);
             return;
         }
@@ -206,7 +207,7 @@ export default function Notes(props) {
             top: e.clientY-16,
             right: (window.innerWidth-e.clientX)+16
         }
-        const moveNoteToCollection = async (collectionName) => {
+        const moveNoteToCollection = async (e, collectionName) => {
             const response = await fetch('/categorize/note', {
                 method: 'POST',
                 headers: {
@@ -219,6 +220,14 @@ export default function Notes(props) {
             if (!body.success) return console.log('no success: true response from server');
             setCurrentNoteUpdate(id);
             props.refreshData();
+            // immediately update button with check mark and remove check mark on old collection
+            console.dir(e.target);
+            const prevCollection = miniMenuRef.current.querySelector('.hasCollection');
+            if (prevCollection) prevCollection.classList.remove('hasCollection');
+            const button = e.target;
+            button.classList.add('hasCollection');
+            //e.currentTarget.classList.add('belongsToCollection');
+            setTimeout(() => console.log(currentNote.collection), 2000); // returning currentNote.collection as of when editNoteCollection was first called
         }
         const collectionsList = () => {
             if (!user.collections) return;
@@ -230,7 +239,7 @@ export default function Notes(props) {
                     : '';
                 userCollections.push(
                     <li key={`minimenu-${collectionName}`}>
-                        <button className={`add${belongsToCollection}`} onClick={() => moveNoteToCollection(collectionName)}>
+                        <button className={`add${belongsToCollection}`} onClick={(e) => moveNoteToCollection(e, collectionName)}>
                             {collectionName}
                         </button>
                     </li>
@@ -239,8 +248,8 @@ export default function Notes(props) {
             return userCollections;
         }
         const content = (
-            <ul style={{ top: top+'px', right: right+'px' }}>
-                <li><strong>{currentNote.collection ? `Move` : `Add`} to collection:</strong></li>
+            <ul style={{ top: top+'px', right: right+'px' }} ref={miniMenuRef}>
+                <li><strong>Move to collection:</strong></li>
                 {collectionsList()}
             </ul>
         )

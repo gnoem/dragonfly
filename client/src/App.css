@@ -528,12 +528,12 @@ button.logout::before {
     font-weight: 900;
     float: right;
 }
-.MiniMenu button.hasCollection::before {
-    content: '\f00c';
-}
 .MiniMenu button.add:hover::before {
     content: '\f067';
     color: #999;
+}
+.MiniMenu button.hasCollection::before, .MiniMenu button.add.hasCollection::before {
+    content: '\f00c';
 }
 .Modal {
     position: fixed;

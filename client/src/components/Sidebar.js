@@ -23,18 +23,21 @@ export default function Sidebar(props) {
             const createCollection = () => {
                 const handleSubmit = async (e) => {
                     e.preventDefault();
+                    const collectionName = e.target[0].value;
                     const response = await fetch('/add/collection', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify({ username: props.user.username, collectionName: e.target[0].value })
+                        body: JSON.stringify({ username: props.user.username, collectionName })
                     });
                     const body = await response.json();
                     if (!body) return;
                     if (!body.success) return;
                     gracefullyCloseModal(modalContent.current);
                     props.refreshData();
+                    props.updateView({ type: 'collection', name: collectionName });
+                    // adjust max height of sublist as it has INCREASED!!!!!!!!!!
                 }
                 const content = (
                     <div className="modalContent" ref={modalContent}>
@@ -56,7 +59,7 @@ export default function Sidebar(props) {
             );
             const collectionsList = [];
             for (let i = 0; i < props.user.collections.length; i++) {
-                const collectionName = props.user.collections[i];
+                let collectionName = props.user.collections[i];
                 collectionsList.push(
                     <li key={collectionName}>
                         <button onClick={() => switchView({ type: 'collection', name: collectionName })}>{collectionName}</button>
@@ -81,7 +84,7 @@ export default function Sidebar(props) {
             }
         }
         return (
-            <SubList show={state}>
+            <SubList show={state} user={props.user}>
                 {subListContent()}
             </SubList>
         )
@@ -121,7 +124,6 @@ export default function Sidebar(props) {
                         <button className="tags" onClick={() => setShowingTags(show => !show)}>Tags</button>
                         {subList(showingTags, 'tags')}
                     </li>
-                    {/*viewingTags && subList(viewingTags)*/}
                     <li><button className="starred" onClick={() => switchView('starred-notes')}>Starred</button></li>
                     <li><button className="trash">Trash</button></li>
                 </ul>
@@ -138,7 +140,7 @@ export default function Sidebar(props) {
     )
 }
 
-function SubList({ show, children }) {
+function SubList({ show, user, children }) {
     const subList = useRef(null);
     let element = subList.current
         ? subList.current
@@ -148,7 +150,7 @@ function SubList({ show, children }) {
         if (!element) return;
         if (!show) return element.style.maxHeight = '0px';
         element.style.maxHeight = element.scrollHeight+'px';
-    }, [show, element]);
+    }, [show, element, user]);
     return (
         <ul className="subList" ref={subList}>
             {children}
