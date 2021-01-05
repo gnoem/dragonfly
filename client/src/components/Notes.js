@@ -34,7 +34,7 @@ export default function Notes(props) {
     useEffect(() => {
         let firstNote = notes[0];
         if (!notes.length) firstNote = false;
-        setCurrentNote(firstNote);
+        setCurrentNote(firstNote); // not necessarily
         setAddingNewNote(false);
         setTempNotePreview('New note');
     // do not want this firing everytime note changes
@@ -81,7 +81,7 @@ export default function Notes(props) {
 
         console.log('signal to update currentNote: '+currentNoteUpdated);
         if (!currentNoteUpdated) return;
-        console.dir(notes[getIndex(currentNoteUpdated)].collection); // still reading old "collection" value
+        //console.dir(notes[getIndex(currentNoteUpdated)].collection); // still reading old "collection" value
     }, [currentNoteUpdated]);
     useEffect(() => {
         if (!currentNoteUpdated) return;
@@ -89,7 +89,7 @@ export default function Notes(props) {
             console.log('updating current note');
             //const currentNoteIndex = currentNote ? getIndex(currentNote._id) : 0;
             setCurrentNote(notes[getIndex(currentNoteUpdated)]);
-            console.dir(notes[getIndex(currentNoteUpdated)].collection);
+            //console.dir(notes[getIndex(currentNoteUpdated)].collection);
             setCurrentNoteUpdate(false);
             return;
         }
@@ -110,19 +110,22 @@ export default function Notes(props) {
             return;
         }
         const warnSaveChanges = () => { // next: () => handleClick(e, true)
+            // maybe only warn save changes if trying to switch to a new note;
+            // if (!elementHasParent(e.target, '.NotePreview')) return; // if NOT switching to a new note
             if (!unsavedChanges) return;
             const discardChanges = (next) => {
                 gracefullyCloseModal(modalContent.current);
-                next();
+                next()(); // because 'next' returns a function (handleClickAgain) that returns a function
+                // if you opt to save changes the function gets passed down one more layer (via setSubmitEditorState())
+                // and is called when it gets to its final destination in NoteEditor.js
             }
             const saveChanges = (next) => {
                 gracefullyCloseModal(modalContent.current);
-                console.dir(next);
                 setSubmitEditorState(next); // handleSubmit will take next() as parameter if (props.submitEditorState === true)
                 /* setSubmitEditorState(true); // this is happening second
                 next(); // this is happening first */
             }
-            // call handleClick again, with same (initial) e, but bypass "if unsavedChanges" statement
+            // call handleClick again, with same (initial) e, but skipping "save changes" warning and carrying out the default click event
             const handleClickAgain = () => () => handleClick(e, true); // https://stackoverflow.com/questions/55621212/is-it-possible-to-react-usestate-in-react
             const content = (
                 <div className="modalContent" ref={modalContent}>
@@ -299,18 +302,150 @@ export default function Notes(props) {
             </div>
         )
     }
-    const listHeader = () => {
-        switch (view) {
-            case 'all-notes': return 'All notes';
-            case 'collection': return (
-                <span className="collectionHeader">
-                    <span>COLLECTION</span>
-                    <span>{props.collectionName}</span>
-                </span>
-            );
-            case 'starred-notes': return 'Starred notes';
-            default: return 'All notes';
+    const editOrDeleteCollection = (e, collectionName) => {
+        if (view.type !== 'collection') return;
+        // mini menu -> edit or delete
+        const { top, right } = {
+            top: e.clientY-16,
+            right: (window.innerWidth-e.clientX)+16
         }
+        const editCollection = () => {
+            setMiniMenu(false);
+            const handleEdit = async (e) => {
+                e.preventDefault();
+                const inputCollectionName = e.target[0].value;
+                const response = await fetch('/edit/collection', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: user.username,
+                        collectionName,
+                        updatedName: inputCollectionName
+                    })
+                });
+                const body = await response.json();
+                if (!body) return console.log('no response from server');
+                if (!body.success) return console.log('no success: true response from server');
+                // refresh current user
+                setCurrentNoteUpdate(notes[getIndex(currentNote._id)]);
+                props.refreshData();
+                gracefullyCloseModal(modalContent.current);
+                // change view
+                props.updateView({ type: 'collection', name: inputCollectionName });
+            }
+            let modalcontent = (
+                <div className="modalContent" ref={modalContent}>
+                    <h2>Edit collection</h2>
+                    <form onSubmit={handleEdit} autoComplete="off">
+                        <label htmlFor="collectionName">Edit collection name:</label>
+                        <input type="text" name="collectionName" />
+                        <div className="buttons">
+                            <button type="submit">Save changes</button>
+                            <button type="button" className="greyed">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            );
+            setModalObject(modalcontent);
+        }
+        const deleteCollection = () => {
+            setMiniMenu(false);
+            const handleDelete = async () => {
+                const response = await fetch('/delete/collection', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username: user.username, collectionName })
+                });
+                const body = await response.json();
+                if (!body) return console.log('no response from server');
+                if (!body.success) return console.log('no success: true response from server');
+                // switch to all notes
+                // switch to the one above it; if none, switch to the one below it; else all-notes
+                let nextInLine = () => {
+                    let thisCollectionIndex = user.collections.indexOf(collectionName);
+                    let nextCollection;
+                    if (user.collections[thisCollectionIndex-1]) {
+                        nextCollection = user.collections[thisCollectionIndex-1];
+                        return { type: 'collection', name: nextCollection }
+                    } else if (user.collections[thisCollectionIndex+1]) {
+                        nextCollection = user.collections[thisCollectionIndex+1];
+                        return { type: 'collection', name: nextCollection }
+                    } else return 'all-notes';
+                }
+                props.updateView(nextInLine);
+                props.refreshData();
+                gracefullyCloseModal(modalContent.current);
+            }
+            let modalcontent = (
+                <div className="modalContent" ref={modalContent}>
+                    <h2>Are you sure?</h2>
+                    Deleting this collection will not delete the notes inside it.
+                    <div className="buttons">
+                        <button onClick={handleDelete}>Yes, I'm sure</button>
+                        <button className="greyed">Take me back</button>
+                    </div>
+                </div>
+            );
+            setModalObject(modalcontent);
+        }
+        const content = (
+            <ul style={{ top: top+'px', right: right+'px' }} ref={miniMenuRef}>
+                <li><button onClick={editCollection}>Edit collection</button></li>
+                <li><button onClick={deleteCollection}>Delete collection</button></li>
+            </ul>
+        );
+        setMiniMenu(content);
+    }
+    const listHeader = () => {
+        let title, button = '';
+        switch (view) {
+            case 'all-notes': {
+                title = 'All notes';
+                button = (
+                    <button className="newNote" onClick={createNewNote}>
+                        <i className="fas fa-plus"></i>
+                    </button>
+                );
+                break;
+            }
+            case 'starred-notes': {
+                title = 'Starred notes';
+                break;
+            }
+            default: {
+                if (view.type === 'collection') {
+                    title = (
+                        <span className="collectionHeader">
+                            <span>COLLECTION</span>
+                            <span>{view.name}</span>
+                        </span>
+                    );
+                    button = (
+                        <button className="viewOptions" onClick={(e) => editOrDeleteCollection(e, view.name)}>
+                            <i className="fas fa-ellipsis-v"></i>
+                        </button>
+                    );
+                } else {
+                    title = 'All notes';
+                    button = (
+                        <button className="newNote" onClick={createNewNote}>
+                            <i className="fas fa-plus"></i>
+                        </button>
+                    );
+                }
+                break;
+            }
+        }
+        return (
+            <div className="Header">
+                <div className="h1"><h1>{title}</h1></div>
+                <div className="button">{button}</div>
+            </div>
+        )
     }
     const listFooter = () => {
         if (notes.length) return (
@@ -342,14 +477,7 @@ export default function Notes(props) {
             {showModal(modalObject)}
             <div id="demo" onClick={() => console.dir(currentNote.collection)}></div>
             <div className="List">
-                <div className="Header">
-                    <div className="h1"><h1>{listHeader()}</h1></div>
-                    <div className="button">
-                        {view === 'all-notes' ? <button className="newNote" onClick={createNewNote}>
-                            <i className="fas fa-plus"></i>
-                        </button> : null}
-                    </div>
-                </div>
+                {listHeader()}
                 <div className="NotePreviews" onClick={handleClick}>
                     {addingNewNote && <NotePreview temp={true} title={tempNotePreview} />}
                     {generateNotesList()}
@@ -380,6 +508,15 @@ export default function Notes(props) {
                 <button><i className="fas fa-file-download"></i></button>
                 <button onClick={() => confirmDeletion(currentNote._id)}><i className="fas fa-trash"></i></button>
             </div>}
+        </div>
+    )
+}
+
+function Header({ title, button }) {
+    return (
+        <div className="Header">
+            <div className="h1"><h1>{title}</h1></div>
+            <div className="button">{button}</div>
         </div>
     )
 }

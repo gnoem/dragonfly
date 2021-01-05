@@ -195,6 +195,65 @@ module.exports = (app) => {
             });
         });
     });
+    app.post('/edit/collection', (req, res) => {
+        const { username, collectionName, updatedName } = req.body;
+        User.findOne({ username }, (err, user) => {
+            if (err) return console.error('error finding user', err);
+            if (!user) return console.log(`user ${username} not found`);
+            if (!user.collections) return console.log('something went way wrong');
+            let index = user.collections.indexOf(collectionName);
+            if (index === -1) return console.log('something went wayyy wrong');
+            user.collections.splice(index, 1, updatedName);
+            Note.find({ userId: user._id }, (err, notes) => {
+                console.log('finding notes');
+                if (err) return console.error('error finding notes', err);
+                //const notesInThisCollection = notes.filter(note => note.category === collectionName);
+                const updateNotes = (array) => {
+                    for (let i = 0; i < array.length; i++) {
+                        // find all that belong to this collection and change the collection name
+                        if (array[i].category === collectionName) array[i].category = updatedName;
+                        array[i].save();
+                    }
+                }
+                console.log(`updating ${notes.length} notes`);
+                updateNotes(notes);
+                user.save(err => {
+                    if (err) return console.error('error saving user', err);
+                    console.dir(notes);
+                    res.send({
+                        success: true
+                    });
+                });
+            });
+        });
+    });
+    app.post('/delete/collection', (req, res) => {
+        const { username, collectionName } = req.body;
+        User.findOne({ username }, (err, user) => {
+            if (err) return console.error('error finding user', err);
+            if (!user) return console.log(`user ${username} not found`);
+            if (!user.collections) return console.log('something went way wrong');
+            let index = user.collections.indexOf(collectionName);
+            if (index === -1) return console.log('something went wayyy wrong');
+            user.collections.splice(index, 1);
+            Note.find({ userId: user._id }, (err, notes) => {
+                if (err) return console.error('error finding notes', err);
+                const updateNotes = (notes) => {
+                    for (let i = 0; i < notes.length; i++) {
+                        // find all that belong to this collection and change the collection name
+                        if (notes[i].category === collectionName) notes[i].category = false;
+                    }
+                }
+                updateNotes(notes);
+                user.save(err => {
+                    if (err) return console.error('error saving user', err);
+                    res.send({
+                        success: true
+                    });
+                });
+            });
+        });
+    });
     app.post('/create/account', [
         check('email').isEmail().withMessage('Please enter a valid email address')
             .custom(value => {

@@ -47,19 +47,19 @@ export default function Dashboard(props) {
     if (!isLoaded) return <Loading />
     const allNotes = () => {
         return (
-            <Notes view="all-notes" user={user} notes={notes} refreshData={() => updateTrigger(Date.now())} />
+            <Notes view={view} user={user} notes={notes} refreshData={() => updateTrigger(Date.now())} />
         )
     }
     const starredNotes = () => {
         let starred = notes.filter(note => note.starred);
         return (
-            <Notes view="starred-notes" user={user} notes={starred} refreshData={() => updateTrigger(Date.now())} />
+            <Notes view={view} user={user} notes={starred} refreshData={() => updateTrigger(Date.now())} />
         )
     }
     const collection = (collectionName) => {
         let collection = notes.filter(note => note.collection === collectionName);
         return (
-            <Notes view="collection" collectionName={collectionName} user={user} notes={collection} refreshData={() => updateTrigger(Date.now())} />
+            <Notes view={view} updateView={updateView} user={user} notes={collection} refreshData={() => updateTrigger(Date.now())} />
         )
     }
     const appContent = () => {

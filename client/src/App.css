@@ -236,7 +236,7 @@ button.caution {
     border-left: 1px solid #ccc;
     text-align: center;
 }
-button.newNote {
+.List .Header button {
     margin: 0;
     padding: 0;
     width: 2.5rem;
@@ -245,6 +245,15 @@ button.newNote {
     display: grid;
     place-items: center;
     border-radius: 50%;
+}
+.List .Header button:not(.newNote) {
+    background: none;
+    color: #aaa;
+    transition: 0.2s;
+}
+.List .Header button:not(.newNote):hover {
+    background: #f7f7f7;
+    color: #666;
 }
 .Dashboard .Options button {
     background: none;

@@ -105,8 +105,8 @@ export default function Sidebar(props) {
         )
     }
     const switchView = (view) => {
-        setShowingTags(false);
-        setShowingCollections(false);
+        //setShowingTags(false);
+        //setShowingCollections(false);
         props.updateView(view);
     }
     return (
