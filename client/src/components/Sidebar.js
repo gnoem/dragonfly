@@ -69,17 +69,59 @@ export default function Sidebar(props) {
             collectionsList.push(<li key="createCollection"><button onClick={createCollection}><i className="fas fa-plus" style={{ marginRight: '0.3rem' }}></i> Add new</button></li>);
             return collectionsList;
         }
+        const generateTagsList = () => {
+            const createTag = () => {
+                const handleSubmit = async (e) => {
+                    e.preventDefault();
+                    const tagName = e.target[0].value;
+                    const response = await fetch('/create/tag', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ _id: props.user._id, tagName })
+                    });
+                    const body = await response.json();
+                    if (!body) return;
+                    if (!body.success) return;
+                    gracefullyCloseModal(modalContent.current);
+                    props.refreshData();
+                    props.updateView({ type: 'tags', tags: [tagName] });
+                }
+                const content = (
+                    <div className="modalContent" ref={modalContent}>
+                        <h2>Create a new tag</h2>
+                        <form onSubmit={handleSubmit} autoComplete="off">
+                            <label htmlFor="collectionName">Enter a name for your tag:</label>
+                            <input type="text" name="tagName" />
+                            <div className="buttons">
+                                <button type="submit">Submit</button>
+                                <button type="button" className="greyed" onClick={() => gracefullyCloseModal(modalContent.current)}>Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                );
+                setModalObject(content);
+            }
+            if (!props.user.tags || !props.user.tags.length) return (
+                <li key="createTag"><button onClick={createTag}><i className="fas fa-plus" style={{ marginRight: '0.3rem' }}></i> Add new</button></li>
+            );
+            const tagsList = [];
+            for (let i = 0; i < props.user.tags.length; i++) {
+                let tagName = props.user.tags[i];
+                tagsList.push(
+                    <li key={tagName}>
+                        <button onClick={() => console.log('switchView({ type: tags, array: [currentTagArray.pushOrRemove(tagName)] })')}>{tagName}</button>
+                    </li>
+                );
+            }
+            tagsList.push(<li key="createTag"><button onClick={createTag}><i className="fas fa-plus" style={{ marginRight: '0.3rem' }}></i> Add new</button></li>)
+            return tagsList;
+        }
         const subListContent = () => {
             switch (listName) {
                 case 'collections': return generateCollectionsList();
-                case 'tags': return (
-                    <>
-                        <li><button>general</button></li>
-                        <li><button>school</button></li>
-                        <li><button>witchcraft</button></li>
-                        <li><button>thoughts</button></li>
-                    </>
-                );
+                case 'tags': return generateTagsList();
                 default: return null;
             }
         }

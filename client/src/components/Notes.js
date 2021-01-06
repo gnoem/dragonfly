@@ -202,7 +202,7 @@ export default function Notes(props) {
         // if in starred notes, then clicking star will cause the note to disappear and then currentNote should/will be reset to false
         // (via notes.length useEffect)
     }
-    const editNoteCollection = async (e, id) => {
+    const moveNoteToCollection = async (e, id) => {
         // add to collection
         // or move to collection
         // list with checkmarks on side
@@ -210,7 +210,7 @@ export default function Notes(props) {
             top: e.clientY-16,
             right: (window.innerWidth-e.clientX)+16
         }
-        const moveNoteToCollection = async (e, collectionName) => {
+        const handleAddToCollection = async (e, collectionName) => {
             const response = await fetch('/categorize/note', {
                 method: 'POST',
                 headers: {
@@ -224,13 +224,12 @@ export default function Notes(props) {
             setCurrentNoteUpdate(id);
             props.refreshData();
             // immediately update button with check mark and remove check mark on old collection
-            console.dir(e.target);
             const prevCollection = miniMenuRef.current.querySelector('.hasCollection');
             if (prevCollection) prevCollection.classList.remove('hasCollection');
             const button = e.target;
             button.classList.add('hasCollection');
             //e.currentTarget.classList.add('belongsToCollection');
-            setTimeout(() => console.log(currentNote.collection), 2000); // returning currentNote.collection as of when editNoteCollection was first called
+            setTimeout(() => console.log(currentNote.collection), 2000); // returning currentNote.collection as of when moveNoteToCollection was first called
         }
         const collectionsList = () => {
             if (!user.collections) return;
@@ -241,8 +240,8 @@ export default function Notes(props) {
                     ? ' hasCollection'
                     : '';
                 userCollections.push(
-                    <li key={`minimenu-${collectionName}`}>
-                        <button className={`add${belongsToCollection}`} onClick={(e) => moveNoteToCollection(e, collectionName)}>
+                    <li key={`minimenu-user.collections-${collectionName}`}>
+                        <button className={`add${belongsToCollection}`} onClick={(e) => handleAddToCollection(e, collectionName)}>
                             {collectionName}
                         </button>
                     </li>
@@ -254,6 +253,54 @@ export default function Notes(props) {
             <ul style={{ top: top+'px', right: right+'px' }} ref={miniMenuRef}>
                 <li><strong>Move to collection:</strong></li>
                 {collectionsList()}
+            </ul>
+        )
+        setMiniMenu(content);
+    }
+    const tagNote = async (e, id) => {
+        const { top, right } = {
+            top: e.clientY-16,
+            right: (window.innerWidth-e.clientX)+16
+        }
+        const handleAddTag = async (e, tagName) => {
+            const response = await fetch('/tag/note', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ _id: currentNote._id, tagName })
+            });
+            const body = await response.json();
+            if (!body) return console.log('no response from server');
+            if (!body.success) return console.log('no success: true response from server');
+            const button = e.target;
+            if (!button.classList.contains('hasTag')) button.classList.add('hasTag');
+            else button.classList.remove('hasTag');
+            props.refreshData();
+            setCurrentNoteUpdate(id);
+        }
+        const tagsList = () => {
+            if (!user.tags) return;
+            let userTags = [];
+            for (let i = 0; i < user.tags.length; i++) {
+                let tagName = user.tags[i];
+                const hasTag = (currentNote.tags.indexOf(tagName) !== -1)
+                    ? 'hasTag'
+                    : '';
+                userTags.push(
+                    <li key={`minimenu-user.tags-${tagName}`}>
+                        <button className={hasTag} onClick={(e) => handleAddTag(e, tagName)}>
+                            {tagName}
+                        </button>
+                    </li>
+                )
+            }
+            return userTags;
+        }
+        const content = (
+            <ul style={{ top: top+'px', right: right+'px' }} ref={miniMenuRef}>
+                <li><strong>Tag note:</strong></li>
+                {tagsList()}
             </ul>
         )
         setMiniMenu(content);
@@ -339,8 +386,8 @@ export default function Notes(props) {
                 <div className="modalContent" ref={modalContent}>
                     <h2>Edit collection</h2>
                     <form onSubmit={handleEdit} autoComplete="off">
-                        <label htmlFor="collectionName">Edit collection name:</label>
-                        <input type="text" name="collectionName" />
+                        <label htmlFor="updatedName">Edit collection name:</label>
+                        <input type="text" name="updatedName" />
                         <div className="buttons">
                             <button type="submit">Save changes</button>
                             <button type="button" className="greyed">Cancel</button>
@@ -502,8 +549,8 @@ export default function Notes(props) {
             </div>
             {currentNote && <div className="Options">
                 <button className={currentNote.starred ? 'hasStar' : null} onClick={() => starNote(currentNote._id)}><i className="fas fa-star"></i></button>
-                <button onClick={(e) => editNoteCollection(e, currentNote._id)}><i className="fas fa-book"></i></button>
-                <button><i className="fas fa-tags"></i></button>
+                <button onClick={(e) => moveNoteToCollection(e, currentNote._id)}><i className="fas fa-book"></i></button>
+                <button onClick={(e) => tagNote(e, currentNote._id)}><i className="fas fa-tags"></i></button>
                 <button><i className="fas fa-share-square"></i></button>
                 <button><i className="fas fa-file-download"></i></button>
                 <button onClick={() => confirmDeletion(currentNote._id)}><i className="fas fa-trash"></i></button>

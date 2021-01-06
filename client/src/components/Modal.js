@@ -14,6 +14,7 @@ export default function Modal(props) {
             if (!modalContainer.current.contains(e.target)) exitModal(dim.current);
         }
         window.addEventListener('click', closeModal);
+        // todo add escape keydown event listener
         return () => {
             window.removeEventListener('click', closeModal);
         }

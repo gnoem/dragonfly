@@ -166,7 +166,47 @@ module.exports = (app) => {
             });
         });
     });
-    app.post('/add/collection', (req, res) => {
+    app.post('/tag/note', (req, res) => {
+        const { _id, tagName } = req.body;
+        Note.findOne({ _id }, (err, note) => {
+            if (err) return console.error('error finding note', err);
+            if (!note) return console.log(`note ${_id} not found`);
+            const noteAlreadyHasTag = () => note.tags && (note.tags.indexOf(tagName) !== -1);
+            if (noteAlreadyHasTag()) {
+                let index = note.tags.indexOf(tagName)
+                note.tags.splice(index, 1);
+            } else {
+                if (!note.tags) note.tags = [tagName];
+                else note.tags.push(tagName);
+            }
+            note.save(err => {
+                if (err) return console.error('error saving note', err);
+                return res.send({
+                    success: true
+                });
+            });
+        });
+    });
+    app.post('/add/collection', [
+        check('collectionName')
+            .isAlphanumeric().withMessage('Collection name must not contain any special characters')
+            .isLength({ min: 1, max: 25 }).withMessage('Collection name must be between 1 and 25 characters')
+    ], (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            const generateError = (type) => {
+                let error = errors.errors.find(error => error.param === type);
+                if (error) return error.msg; else return false;
+            }
+            const errorReport = {
+                collectionNameError: generateError('collectionName')
+            }
+            res.send({
+                success: false,
+                errorReport
+            });
+            return;
+        }
         const { username, collectionName } = req.body;
         User.findOne({ username }, (err, user) => {
             if (err) return console.error('error finding user', err);
@@ -181,12 +221,14 @@ module.exports = (app) => {
                 console.log(`collection ${collectionName} already exists!`);
                 res.send({
                     success: false,
-                    error: "A collection with this name already exists."
+                    errorReport: {
+                        collectionNameError: "A collection with this name already exists."
+                    }
                 });
+                return;
             }
             if (!user.collections) user.collections = [collectionName];
             else user.collections.push(collectionName);
-            console.log('about to save...');
             user.save(err => {
                 if (err) return console.error('error saving user', err);
                 res.send({
@@ -195,19 +237,51 @@ module.exports = (app) => {
             });
         });
     });
-    app.post('/edit/collection', (req, res) => {
+    app.post('/edit/collection', [
+        check('updatedName')
+            .isAlphanumeric().withMessage('Collection name must not contain any special characters')
+            .isLength({ min: 1, max: 25 }).withMessage('Collection name must be between 1 and 25 characters')
+    ], (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            const generateError = (type) => {
+                let error = errors.errors.find(error => error.param === type);
+                if (error) return error.msg; else return false;
+            }
+            const errorReport = {
+                updatedNameError: generateError('updatedName')
+            }
+            res.send({
+                success: false,
+                errorReport
+            });
+            return;
+        }
         const { username, collectionName, updatedName } = req.body;
         User.findOne({ username }, (err, user) => {
             if (err) return console.error('error finding user', err);
             if (!user) return console.log(`user ${username} not found`);
-            if (!user.collections) return console.log('something went way wrong');
+            const collectionAlreadyExists = (name) => {
+                if (!user.collections || !user.collections.length) return false;
+                let index = user.collections.indexOf(name);
+                if (index !== -1) return true;
+                return false;
+            }
+            if (collectionAlreadyExists(updatedName)) {
+                console.log(`collection ${updatedName} already exists!`);
+                res.send({
+                    success: false,
+                    errorReport: {
+                        updatedNameError: "A collection with this name already exists."
+                    }
+                });
+                return;
+            }
             let index = user.collections.indexOf(collectionName);
-            if (index === -1) return console.log('something went wayyy wrong');
+            if (index === -1) return console.log('collection not found!');
             user.collections.splice(index, 1, updatedName);
             Note.find({ userId: user._id }, (err, notes) => {
-                console.log('finding notes');
                 if (err) return console.error('error finding notes', err);
-                //const notesInThisCollection = notes.filter(note => note.category === collectionName);
                 const updateNotes = (array) => {
                     for (let i = 0; i < array.length; i++) {
                         // find all that belong to this collection and change the collection name
@@ -215,11 +289,9 @@ module.exports = (app) => {
                         array[i].save();
                     }
                 }
-                console.log(`updating ${notes.length} notes`);
                 updateNotes(notes);
                 user.save(err => {
                     if (err) return console.error('error saving user', err);
-                    console.dir(notes);
                     res.send({
                         success: true
                     });
@@ -238,10 +310,12 @@ module.exports = (app) => {
             user.collections.splice(index, 1);
             Note.find({ userId: user._id }, (err, notes) => {
                 if (err) return console.error('error finding notes', err);
-                const updateNotes = (notes) => {
-                    for (let i = 0; i < notes.length; i++) {
-                        // find all that belong to this collection and change the collection name
-                        if (notes[i].category === collectionName) notes[i].category = false;
+                const updateNotes = (array) => {
+                    for (let i = 0; i < array.length; i++) {
+                        // find all that belong to this collection and change to false
+                        // todo: option to migrate these notes to a different collection?
+                        if (array[i].category === collectionName) array[i].category = '';
+                        array[i].save();
                     }
                 }
                 updateNotes(notes);
@@ -250,6 +324,37 @@ module.exports = (app) => {
                     res.send({
                         success: true
                     });
+                });
+            });
+        });
+    });
+    app.post('/create/tag', (req, res) => {
+        const { _id, tagName } = req.body;
+        User.findOne({ _id }, (err, user) => {
+            if (err) return console.error('error finding user', err);
+            if (!user) return console.log(`user ${username} not found`);
+            const tagAlreadyExists = (name) => {
+                if (!user.tags || !user.tags.length) return false;
+                let index = user.tags.indexOf(name);
+                if (index !== -1) return true;
+                return false;
+            }
+            if (tagAlreadyExists(tagName)) {
+                console.log(`tag ${tagName} already exists!`);
+                res.send({
+                    success: false,
+                    errorReport: {
+                        tagNameError: "A tag with this name already exists."
+                    }
+                });
+                return;
+            }
+            if (!user.tags) user.tags = [tagName];
+            else user.tags.push(tagName);
+            user.save(err => {
+                if (err) return console.error('error saving user', err);
+                res.send({
+                    success: true
                 });
             });
         });
