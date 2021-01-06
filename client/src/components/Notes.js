@@ -288,7 +288,7 @@ export default function Notes(props) {
                     ? 'hasTag'
                     : '';
                 userTags.push(
-                    <li key={`minimenu-user.tags-${tagName}`}>
+                    <li key={`minimenu-user.tags-${tagName}`} className="tagsList">
                         <button className={hasTag} onClick={(e) => handleAddTag(e, tagName)}>
                             {tagName}
                         </button>

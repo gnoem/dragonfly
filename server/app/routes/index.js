@@ -189,7 +189,6 @@ module.exports = (app) => {
     });
     app.post('/add/collection', [
         check('collectionName')
-            .isAlphanumeric().withMessage('Collection name must not contain any special characters')
             .isLength({ min: 1, max: 25 }).withMessage('Collection name must be between 1 and 25 characters')
     ], (req, res) => {
         const errors = validationResult(req);
@@ -239,7 +238,6 @@ module.exports = (app) => {
     });
     app.post('/edit/collection', [
         check('updatedName')
-            .isAlphanumeric().withMessage('Collection name must not contain any special characters')
             .isLength({ min: 1, max: 25 }).withMessage('Collection name must be between 1 and 25 characters')
     ], (req, res) => {
         const errors = validationResult(req);
