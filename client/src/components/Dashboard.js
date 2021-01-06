@@ -44,6 +44,9 @@ export default function Dashboard(props) {
         }
         getData();
     }, [id, triggerGetData]);
+    useEffect(() => {
+        console.log('view changed to', view);
+    }, [view]);
     if (!isLoaded) return <Loading />
     const allNotes = () => {
         return (
@@ -62,6 +65,35 @@ export default function Dashboard(props) {
             <Notes view={view} updateView={updateView} user={user} notes={collection} refreshData={() => updateTrigger(Date.now())} />
         )
     }
+    const tags = (tags) => {
+        if (!tags.length) return updateView('all-notes');
+        const notesWithTheseTags = (tags) => { // returns an array of notes
+            // todo add filter options: show notes with either/all of these tags
+            // if tags (param) is a sub array of note.tags, put that note into the array
+            // tags = ['recipe', 'witchy'] // all the notes whose 'tags' array contains these, should go into taggedNotes
+            let taggedNotes = [];
+            for (let i = 0; i < notes.length; i++) {
+                let testObject = {};
+                // look in notes[i].tags
+                notes[i].tags.forEach((note, index) => {
+                    testObject[note] = index;
+                    /* testObject = {
+                        'reference',        testObject[0]
+                        'witchy',           testObject[1]
+                        'recipe'            testObject[2]
+                    } */
+                });
+                // see if tags 'recipe' and 'witchy' are in it
+                let thisNoteHasTheseTags = tags.every(tag => testObject[tag] !== undefined); // e.g. if testObject['recipe'] is defined (which it is, at index 2)
+                if (thisNoteHasTheseTags) taggedNotes.push(notes[i]);
+            }
+            return taggedNotes;
+        }
+        let taggedNotes = notesWithTheseTags(tags);
+        return (
+            <Notes view={view} updateView={updateView} user={user} notes={taggedNotes} refreshData={() => updateTrigger(Date.now())} />
+        )
+    }
     const appContent = () => {
         switch (view) {
             case 'all-notes': return allNotes();
@@ -72,6 +104,9 @@ export default function Dashboard(props) {
             default: {
                 if (view.type === 'collection') {
                     return collection(view.name);
+                }
+                if (view.type === 'tags') {
+                    return tags(view.tags);
                 }
                 return allNotes();
             }
@@ -85,7 +120,8 @@ export default function Dashboard(props) {
     }
     return (
         <div className="Dashboard">
-            <Sidebar user={user} updateView={updateView} refreshData={() => updateTrigger(Date.now())} />
+            <div id="demo" onClick={() => console.dir(view.tags)}></div>
+            <Sidebar user={user} view={view} updateView={updateView} refreshData={() => updateTrigger(Date.now())} />
             {appContent()}
         </div>
     )

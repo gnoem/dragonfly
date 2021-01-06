@@ -476,6 +476,9 @@ export default function Notes(props) {
                             <i className="fas fa-ellipsis-v"></i>
                         </button>
                     );
+                } else if (view.type === 'tags') {
+                    title = '';
+                    button = '';
                 } else {
                     title = 'All notes';
                     button = (
@@ -488,7 +491,7 @@ export default function Notes(props) {
             }
         }
         return (
-            <div className="Header">
+            <div className="Header" hidden={view.type === 'tags'}>
                 <div className="h1"><h1>{title}</h1></div>
                 <div className="button">{button}</div>
             </div>
@@ -518,14 +521,22 @@ export default function Notes(props) {
         }
         return notesList;
     }
+    const showTags = () => {
+        if (view.type !== 'tags') return;
+        let viewingTags = [];
+        for (let i = 0; i < view.tags.length; i++) {
+            viewingTags.push(<span key={`viewingTag-${view.tags[i]}`} className="tag hasTag">{view.tags[i]}</span>)
+        }
+        return viewingTags;
+    }
     return (
         <div className="Notes">
             {showMiniMenu(miniMenu)}
             {showModal(modalObject)}
-            <div id="demo" onClick={() => console.dir(currentNote.collection)}></div>
             <div className="List">
                 {listHeader()}
                 <div className="NotePreviews" onClick={handleClick}>
+                    {showTags()}
                     {addingNewNote && <NotePreview temp={true} title={tempNotePreview} />}
                     {generateNotesList()}
                     {listFooter()}

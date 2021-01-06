@@ -441,6 +441,13 @@ button.logout::before {
     font-size: 1.5rem;
 }
 .List .NotePreviews {
+    height: 100vh;
+    overflow: auto;
+}
+.List .Header[hidden] {
+    display: none;
+}
+.List .Header[hidden=false] + .NotePreviews {
     height: calc(100vh - 5rem);
     overflow: auto;
 }

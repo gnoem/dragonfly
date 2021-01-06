@@ -106,12 +106,63 @@ export default function Sidebar(props) {
             if (!props.user.tags || !props.user.tags.length) return (
                 <li key="createTag"><button onClick={createTag}><i className="fas fa-plus" style={{ marginRight: '0.3rem' }}></i> Add new</button></li>
             );
-            const tagsList = [];
+            const tagsList = []; // type: tags, array: [currentTagArray.pushOrRemove(tagName)]
             for (let i = 0; i < props.user.tags.length; i++) {
                 let tagName = props.user.tags[i];
+                const handleClick = (tagName) => {
+                    /* if (props.view.tags) {
+                        if ((props.view.tags.indexOf(tagName) !== -1) && (props.view.tags.length === 1)) {
+                            props.updateView('all-notes');
+                            return;
+                        }
+                    }
+                    const generateTagsArray = (view, tagName) => { // return an array
+                        if (view.type !== 'tags') return [tagName];
+                        if (view.tags.indexOf(tagName) !== -1) {
+                            if (view.tags.length === 1) return [];
+                            console.log(`removing tag ${tagName}`);
+                            let index = view.tags.indexOf(tagName);
+                            return view.tags.splice(index, 1);
+                        }
+                        console.log(`adding tag ${tagName}`)
+                        return [...view.tags, tagName];
+                    }
+                    props.updateView(view => ({
+                        type: 'tags',
+                        tags: generateTagsArray(view, tagName)
+                    })); // */
+                    if (props.view.type !== 'tags') {
+                        props.updateView({ type: 'tags', tags: [tagName] });
+                        return;
+                    }
+                    if (props.view.tags === [tagName]) {
+                        props.updateView('all-notes');
+                        return;
+                    }
+                    if (props.view.tags.indexOf(tagName) !== -1) {
+                        const updatedArray = (prevView) => {
+                            let currentViewTags = [...prevView.tags];
+                            //console.log(currentViewTags);
+                            let index = currentViewTags.indexOf(tagName);
+                            //console.log(`removed ${tagName} (index ${index}: ${currentViewTags[index]}) from [${currentViewTags}]`);
+                            currentViewTags.splice(index, 1);
+                            return currentViewTags;
+                        }
+                        props.updateView(prevView => ({
+                            type: 'tags',
+                            tags: updatedArray(prevView)
+                        }));
+                        return;
+                    }
+                    console.log(`added ${tagName} to array`);
+                    return props.updateView({
+                        type: 'tags',
+                        tags: [...props.view.tags, tagName]
+                    });
+                }
                 tagsList.push(
                     <li key={tagName}>
-                        <button onClick={() => console.log('switchView({ type: tags, array: [currentTagArray.pushOrRemove(tagName)] })')}>{tagName}</button>
+                        <button onClick={() => handleClick(tagName)}>{tagName}</button>
                     </li>
                 );
             }
@@ -150,6 +201,9 @@ export default function Sidebar(props) {
         //setShowingTags(false);
         //setShowingCollections(false);
         props.updateView(view);
+        /* if (!view.type) return props.updateView(view);
+        if (view.type === 'collection') return props.updateView(view);
+        if (view.type === 'tags') return props.updateView(view); // */
     }
     return (
         <div className="Sidebar">
