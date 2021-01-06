@@ -285,11 +285,11 @@ export default function Notes(props) {
             for (let i = 0; i < user.tags.length; i++) {
                 let tagName = user.tags[i];
                 const hasTag = (currentNote.tags.indexOf(tagName) !== -1)
-                    ? 'hasTag'
+                    ? ' hasTag'
                     : '';
                 userTags.push(
                     <li key={`minimenu-user.tags-${tagName}`} className="tagsList">
-                        <button className={hasTag} onClick={(e) => handleAddTag(e, tagName)}>
+                        <button className={`tag${hasTag}`} onClick={(e) => handleAddTag(e, tagName)}>
                             {tagName}
                         </button>
                     </li>
@@ -298,7 +298,7 @@ export default function Notes(props) {
             return userTags;
         }
         const content = (
-            <ul style={{ top: top+'px', right: right+'px' }} ref={miniMenuRef}>
+            <ul className="nolines" style={{ top: top+'px', right: right+'px' }} ref={miniMenuRef}>
                 <li><strong>Tag note:</strong></li>
                 {tagsList()}
             </ul>

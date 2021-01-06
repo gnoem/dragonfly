@@ -80,6 +80,7 @@
     --med-theme-color: #58bbb6;
     --light-theme-color: #a2e0dd;
     --lighter-theme-color: #c9eceb;
+    --lightest-theme-color: #d8f7f5;
     --caution: #c55a63;
     --light-caution: #dd858c;
 }
@@ -739,4 +740,42 @@ span.urlpreview {
     animation-duration: 0.5s;
     animation-timing-function: ease-in-out;
     animation-iteration-count: 1;
+}
+.tag, .MiniMenu .tag {
+    background: #f7f7f7;
+    border: 1px solid #ddd;
+    display: inline-block;
+    padding: 0 0.7rem;
+    font-size: 0.7rem;
+    line-height: 1.2rem;
+    text-align: center;
+    text-transform: uppercase;
+    width: auto;
+    border-radius: 999px;
+}
+.tag::after {
+    content: '';
+    width: 0.8rem;
+    height: 0.8rem;
+    background: inherit;
+    transform: rotate(45deg);
+    display: block;
+    position: absolute;
+    top: 0.1rem;
+    left: -0.5rem;
+    z-index: -1;
+    border: inherit;
+    border-left: 1px solid #ddd;
+    display: none;
+}
+.tag.hasTag {
+    background: var(--lightest-theme-color);
+    border-color: #ccc;
+}
+ul.nolines {
+    padding: 0 0.3rem 0.6rem;
+}
+ul.nolines li.tagsList {
+    text-align: center;
+    border: 0;
 }
