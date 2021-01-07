@@ -2,10 +2,11 @@ import { useEffect, useRef } from 'react';
 import { elementHasParent } from '../utils';
 
 export default function Modal(props) {
-    const { exitModal } = props;
+    const { exitModal, content } = props;
     const dim = useRef(null);
     const modalContainer = useRef(null);
     useEffect(() => {
+        if (!content) return;
         const closeModal = (e) => {
             if (!modalContainer.current) return () => {
                 window.removeEventListener('click', closeModal);
@@ -19,12 +20,13 @@ export default function Modal(props) {
             window.removeEventListener('click', closeModal);
         }
     }, [exitModal]);
+    if (!content) return null;
     return (
         <div className="Modal" ref={dim}>
             <div className="modalSpacer">
                 <div className="modalContainer" ref={modalContainer}>
                     <button className="stealth exit" onClick={() => exitModal(dim.current)}><i className="fas fa-times"></i></button>
-                    {props.children}
+                    {content}
                 </div>
             </div>
         </div>

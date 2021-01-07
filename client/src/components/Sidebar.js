@@ -189,14 +189,6 @@ export default function Sidebar(props) {
         container.classList.add('goodbye');
         setTimeout(() => setModalObject(false), 200);
     }
-    const showModal = (content) => {
-        if (!content) return;
-        return (
-            <Modal exitModal={gracefullyCloseModal}>
-                {content}
-            </Modal>
-        )
-    }
     const switchView = (view) => {
         //setShowingTags(false);
         //setShowingCollections(false);
@@ -207,7 +199,7 @@ export default function Sidebar(props) {
     }
     return (
         <div className="Sidebar">
-            {showModal(modalObject)}
+            <Modal exitModal={gracefullyCloseModal} content={modalObject} />
             <h1>Dragonfly</h1>
             <nav>
                 <ul>

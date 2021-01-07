@@ -120,7 +120,6 @@ export default function Dashboard(props) {
     }
     return (
         <div className="Dashboard">
-            <div id="demo" onClick={() => console.dir(view.tags)}></div>
             <Sidebar user={user} view={view} updateView={updateView} refreshData={() => updateTrigger(Date.now())} />
             {appContent()}
         </div>

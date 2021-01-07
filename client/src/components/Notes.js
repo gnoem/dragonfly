@@ -318,14 +318,6 @@ export default function Notes(props) {
         container.classList.add('goodbye');
         setTimeout(() => setModalObject(false), 200);
     }
-    const showModal = (content) => {
-        if (!content) return;
-        return (
-            <Modal exitModal={gracefullyCloseModal}>
-                {content}
-            </Modal>
-        )
-    }
     const showMiniMenu = (content) => {
         if (!content) return;
         return (
@@ -561,7 +553,7 @@ export default function Notes(props) {
     return (
         <div className="Notes">
             {showMiniMenu(miniMenu)}
-            {showModal(modalObject)}
+            <Modal exitModal={gracefullyCloseModal} content={modalObject} />
             <div className="List">
                 {listHeader()}
                 <div className="NotePreviews" onClick={handleClick}>
