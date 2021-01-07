@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import Modal from './Modal';
+import Loading from './Loading';
 
 export default function Sidebar(props) {
     const [modalObject, setModalObject] = useState(false);
@@ -42,11 +43,11 @@ export default function Sidebar(props) {
                     if (!body) return;
                     if (!body.success) {
                         setModalObject(content({
-                            collectionNameError: body.collectionNameError,
+                            collectionNameError: <span className="formError">{body.collectionNameError}</span>,
                             loadingIcon: false
                         }));
+                        return;
                     }
-                    return;
                     gracefullyCloseModal(modalContent.current);
                     props.refreshData();
                     props.updateView({ type: 'collection', name: collectionName });
@@ -64,10 +65,10 @@ export default function Sidebar(props) {
                                     type="text"
                                     name="collectionName"
                                     className={breakpoints.collectionNameError ? 'nope' : ''}
-                                    onChange={(e) => e.target.className = ''} />
+                                    onInput={(e) => e.target.className = ''} />
                                 {breakpoints.collectionNameError}
                                 {breakpoints.loadingIcon
-                                    ?   <div>Loading...</div>
+                                    ?   <div className="buttons"><Loading /></div>
                                     :   <div className="buttons">
                                             <button type="submit">Submit</button>
                                             <button type="button" className="greyed" onClick={() => gracefullyCloseModal(modalContent.current)}>Cancel</button>

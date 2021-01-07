@@ -749,6 +749,24 @@ form input.nope {
     animation-timing-function: ease-in-out;
     animation-iteration-count: 1;
 }
+input + .formError {
+    display: none;
+}
+input.nope + .formError {
+    display: block;
+    font-weight: 500;
+    color: var(--caution);
+    margin-top: 0.4rem;
+    font-size: 0.75rem;
+}
+.formError::before {
+    content: '\f071';
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    font-size: inherit;
+    color: inherit;
+    margin-right: 0.3rem;
+}
 .tag, .MiniMenu .tag {
     background: #f7f7f7;
     border: 1px solid #ddd;
