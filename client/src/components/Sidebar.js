@@ -49,10 +49,11 @@ export default function Sidebar(props) {
                     props.refreshData();
                     props.updateView({ type: 'collection', name: collectionName });
                 }
-                const content = (breakpoints = {
+                const initialBreakpoints = {
                     collectionNameError: null,
                     loadingIcon: false
-                }) => { // todo better name / possible places for error message or similar to appear in this modal
+                }
+                const content = (breakpoints = initialBreakpoints) => { // todo better name / possible places for error message or similar to appear in this modal
                     return (
                         <div className="modalContent" ref={modalContent}>
                             <h2>Create a new collection</h2>
@@ -62,7 +63,7 @@ export default function Sidebar(props) {
                                     type="text"
                                     name="collectionName"
                                     className={breakpoints.collectionNameError ? 'nope' : ''}
-                                    onInput={(e) => e.target.className = ''} />
+                                    onInput={() => setModalObject(content())} />
                                 {breakpoints.collectionNameError}
                                 {breakpoints.loadingIcon
                                     ?   <div className="buttons"><Loading /></div>
@@ -120,10 +121,11 @@ export default function Sidebar(props) {
                     props.refreshData();
                     props.updateView({ type: 'tags', tags: [tagName] });
                 }
-                const content = (breakpoints = {
+                const initialBreakpoints = {
                     tagNameError: null,
                     loadingIcon: false
-                }) => {
+                }
+                const content = (breakpoints = initialBreakpoints) => {
                     return (
                         <div className="modalContent" ref={modalContent}>
                             <h2>Create a new tag</h2>
@@ -133,7 +135,7 @@ export default function Sidebar(props) {
                                     type="text"
                                     name="tagName"
                                     className={breakpoints.tagNameError ? 'nope' : ''}
-                                    onInput={(e) => e.target.className = ''} />
+                                    onInput={() => setModalObject(content())} />
                                 {breakpoints.tagNameError}
                                 {breakpoints.loadingIcon
                                     ?   <div className="buttons"><Loading /></div>
