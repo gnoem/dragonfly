@@ -141,8 +141,8 @@ export default function Sidebar(props) {
                     }
                     if (props.view.tags.indexOf(tagName) !== -1) {
                         const updatedArray = (prevView) => {
-                            let currentViewTags = [...prevView.tags];
-                            //console.log(currentViewTags);
+                            let currentViewTags = [...prevView.tags]; // breaks otherwise
+                            // console.log(currentViewTags);
                             let index = currentViewTags.indexOf(tagName);
                             //console.log(`removed ${tagName} (index ${index}: ${currentViewTags[index]}) from [${currentViewTags}]`);
                             currentViewTags.splice(index, 1);

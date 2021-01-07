@@ -521,13 +521,36 @@ export default function Notes(props) {
         }
         return notesList;
     }
-    const showTags = () => {
+    const showingTags = () => {
         if (view.type !== 'tags') return;
-        let viewingTags = [];
-        for (let i = 0; i < view.tags.length; i++) {
-            viewingTags.push(<span key={`viewingTag-${view.tags[i]}`} className="tag hasTag">{view.tags[i]}</span>)
+        const tagList = () => {
+            const removeTag = (tagName) => {
+                const updatedArray = (prevView) => {
+                    let currentViewTags = [...prevView.tags];
+                    let index = currentViewTags.indexOf(tagName);
+                    currentViewTags.splice(index, 1);
+                    return currentViewTags;
+                }
+                props.updateView(prevView => ({
+                    type: 'tags',
+                    tags: updatedArray(prevView)
+                }));
+                return;
+            }
+            let viewingTags = [];
+            for (let i = 0; i < view.tags.length; i++) {
+                viewingTags.push(<button onClick={() => removeTag(view.tags[i])} key={`viewingTag-${view.tags[i]}`} className="tag hasTag">
+                    {view.tags[i]}
+                </button>)
+            }
+            return viewingTags;
         }
-        return viewingTags;
+        return (
+            <div className="showingTags">
+                <h2>Viewing notes tagged:</h2>
+                {tagList()}
+            </div>
+        )
     }
     return (
         <div className="Notes">
@@ -536,7 +559,7 @@ export default function Notes(props) {
             <div className="List">
                 {listHeader()}
                 <div className="NotePreviews" onClick={handleClick}>
-                    {showTags()}
+                    {showingTags()}
                     {addingNewNote && <NotePreview temp={true} title={tempNotePreview} />}
                     {generateNotesList()}
                     {listFooter()}

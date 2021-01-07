@@ -441,14 +441,14 @@ button.logout::before {
     font-size: 1.5rem;
 }
 .List .NotePreviews {
-    height: 100vh;
+    height: calc(100vh - 5rem);
     overflow: auto;
 }
 .List .Header[hidden] {
     display: none;
 }
-.List .Header[hidden=false] + .NotePreviews {
-    height: calc(100vh - 5rem);
+.List .Header[hidden] + .NotePreviews {
+    height: 100vh;
     overflow: auto;
 }
 .NotePreview {
@@ -488,7 +488,7 @@ button.logout::before {
     color: #666;
 }
 .endofnotes {
-    padding: 1rem 3rem;
+    padding: 1rem 3rem 3rem;
     text-align: center;
     font-weight: normal;
     color: #aaa;
@@ -529,6 +529,7 @@ button.logout::before {
     font-size: 0.7rem;
     text-transform: uppercase;
     display: block;
+    text-align: center;
 }
 .MiniMenu button {
     color: #333;
@@ -754,30 +755,37 @@ span.urlpreview {
     display: inline-block;
     padding: 0 0.7rem;
     font-size: 0.7rem;
+    color: #333;
     line-height: 1.2rem;
     text-align: center;
     text-transform: uppercase;
     width: auto;
+    margin: 0.2rem 0.5rem;
     border-radius: 999px;
+    border-top-left-radius: 0;
+    transition: 0.2s;
 }
-.tag::after {
-    content: '';
-    width: 0.8rem;
-    height: 0.8rem;
-    background: inherit;
-    transform: rotate(45deg);
-    display: block;
-    position: absolute;
-    top: 0.1rem;
-    left: -0.5rem;
-    z-index: -1;
-    border: inherit;
-    border-left: 1px solid #ddd;
-    display: none;
+.tag:hover, .MiniMenu .tag:hover {
+    color: inherit;
 }
 .tag.hasTag {
     background: var(--lightest-theme-color);
     border-color: #ccc;
+}
+.tag::before, .MiniMenu .tag::before {
+    content: '\f067';
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    line-height: inherit;
+    margin-right: 0.3rem;
+    font-size: 0.6em;
+    color: inherit;
+    display: inline-block;
+    float: none;
+    transition: transform 0.2s;
+}
+.tag.hasTag::before {
+    transform: rotate(45deg);
 }
 ul.nolines {
     padding: 0 0.3rem 0.6rem;
@@ -785,4 +793,16 @@ ul.nolines {
 ul.nolines li.tagsList {
     text-align: center;
     border: 0;
+}
+.showingTags {
+    padding: 1.5rem;
+    padding-bottom: 0.5rem;
+}
+.showingTags h2 {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+}
+.showingTags .tag {
+    margin: 0.2rem;
 }
