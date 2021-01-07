@@ -197,12 +197,9 @@ module.exports = (app) => {
                 let error = errors.errors.find(error => error.param === type);
                 if (error) return error.msg; else return false;
             }
-            const errorReport = {
-                collectionNameError: generateError('collectionName')
-            }
             res.send({
                 success: false,
-                errorReport
+                collectionNameError: generateError('collectionName')
             });
             return;
         }
@@ -220,9 +217,7 @@ module.exports = (app) => {
                 console.log(`collection ${collectionName} already exists!`);
                 res.send({
                     success: false,
-                    errorReport: {
-                        collectionNameError: "A collection with this name already exists."
-                    }
+                    collectionNameError: "A collection with this name already exists!"
                 });
                 return;
             }

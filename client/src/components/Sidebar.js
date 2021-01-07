@@ -23,16 +23,14 @@ export default function Sidebar(props) {
             const createCollection = () => {
                 const handleSubmit = async (e) => {
                     e.preventDefault();
-                    let modalObjectMod = {
-                        collectionNameError: 'an error!!!!!!!!!',
+                    setModalObject(content({
+                        collectionNameError: '',
                         loadingIcon: true   
-                    }
-                    setModalObject(content(modalObjectMod));
+                    }));
                     // turn content into a function with parameter modalObjectMod, which returns the block of JSX
                     // and then here, pass modalObjectMod as parameter to that same function and return a new block
                     // and then set modalObject equal to new block
-                    //setModalObjectMod('CHODE NATION');
-                    /* const collectionName = e.target[0].value;
+                    const collectionName = e.target[0].value;
                     const response = await fetch('/add/collection', {
                         method: 'POST',
                         headers: {
@@ -42,11 +40,16 @@ export default function Sidebar(props) {
                     });
                     const body = await response.json();
                     if (!body) return;
-                    if (!body.success) return; // */
-                    // temporarily disabled
-                    /* gracefullyCloseModal(modalContent.current);
+                    if (!body.success) {
+                        setModalObject(content({
+                            collectionNameError: body.collectionNameError,
+                            loadingIcon: false
+                        }));
+                    }
+                    return;
+                    gracefullyCloseModal(modalContent.current);
                     props.refreshData();
-                    props.updateView({ type: 'collection', name: collectionName }); // */
+                    props.updateView({ type: 'collection', name: collectionName });
                 }
                 const content = (breakpoints = {
                     collectionNameError: null,
@@ -57,10 +60,14 @@ export default function Sidebar(props) {
                             <h2>Create a new collection</h2>
                             <form onSubmit={handleSubmit} autoComplete="off">
                                 <label htmlFor="collectionName">Enter a name for your collection:</label>
-                                <input type="text" name="collectionName" />
+                                <input
+                                    type="text"
+                                    name="collectionName"
+                                    className={breakpoints.collectionNameError ? 'nope' : ''}
+                                    onChange={(e) => e.target.className = ''} />
                                 {breakpoints.collectionNameError}
                                 {breakpoints.loadingIcon
-                                    ? 'One moment please...'
+                                    ?   <div>Loading...</div>
                                     :   <div className="buttons">
                                             <button type="submit">Submit</button>
                                             <button type="button" className="greyed" onClick={() => gracefullyCloseModal(modalContent.current)}>Cancel</button>

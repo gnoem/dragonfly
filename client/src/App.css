@@ -743,7 +743,7 @@ span.urlpreview {
 .hasStar, .Dashboard .Options button.hasStar {
     color: rgb(247, 189, 0);
 }
-.Login form input.nope {
+form input.nope {
     animation-name: invalid-input;
     animation-duration: 0.5s;
     animation-timing-function: ease-in-out;
