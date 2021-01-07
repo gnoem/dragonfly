@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Modal from './Modal';
 import MiniMenu from './MiniMenu';
+import Loading from './Loading';
 import NotePreview from './NotePreview';
 import NoteEditor from './NoteEditor';
 import { elementHasParent } from '../utils';
@@ -361,6 +362,10 @@ export default function Notes(props) {
             setMiniMenu(false);
             const handleEdit = async (e) => {
                 e.preventDefault();
+                setModalObject(content({
+                    updatedNameError: null,
+                    loadingIcon: true
+                }));
                 const inputCollectionName = e.target[0].value;
                 const response = await fetch('/edit/collection', {
                     method: 'POST',
@@ -375,7 +380,13 @@ export default function Notes(props) {
                 });
                 const body = await response.json();
                 if (!body) return console.log('no response from server');
-                if (!body.success) return console.log('no success: true response from server');
+                if (!body.success) {
+                    setModalObject(content({
+                        updatedNameError: <span className="formError">{body.updatedNameError}</span>,
+                        loadingIcon: false
+                    }));
+                    return;
+                }
                 // refresh current user
                 setCurrentNoteUpdate(notes[getIndex(currentNote._id)]);
                 props.refreshData();
@@ -383,20 +394,33 @@ export default function Notes(props) {
                 // change view
                 props.updateView({ type: 'collection', name: inputCollectionName });
             }
-            let modalcontent = (
-                <div className="modalContent" ref={modalContent}>
-                    <h2>Edit collection</h2>
-                    <form onSubmit={handleEdit} autoComplete="off">
-                        <label htmlFor="updatedName">Edit collection name:</label>
-                        <input type="text" name="updatedName" />
-                        <div className="buttons">
-                            <button type="submit">Save changes</button>
-                            <button type="button" className="greyed">Cancel</button>
-                        </div>
-                    </form>
-                </div>
-            );
-            setModalObject(modalcontent);
+            const initialBreakpoints = {
+                updatedNameError: null,
+                loadingIcon: false
+            }
+            let content = (breakpoints = initialBreakpoints) => {
+                return (
+                    <div className="modalContent" ref={modalContent}>
+                        <h2>Edit collection</h2>
+                        <form onSubmit={handleEdit} autoComplete="off">
+                            <label htmlFor="updatedName">Edit collection name:</label>
+                            <input
+                                type="text"
+                                name="updatedName"
+                                className={breakpoints.updatedNameError ? 'nope' : ''}
+                                onInput={() => setModalObject(content())} />
+                            {breakpoints.updatedNameError}
+                            {breakpoints.loadingIcon
+                                ?   <div className="buttons"><Loading /></div>
+                                :   <div className="buttons">
+                                        <button type="submit">Submit</button>
+                                        <button type="button" className="greyed" onClick={() => gracefullyCloseModal(modalContent.current)}>Cancel</button>
+                                    </div>}
+                        </form>
+                    </div>
+                );
+            }
+            setModalObject(content);
         }
         const deleteCollection = () => {
             setMiniMenu(false);
@@ -590,15 +614,6 @@ export default function Notes(props) {
                 <button><i className="fas fa-file-download"></i></button>
                 <button onClick={() => confirmDeletion(currentNote._id)}><i className="fas fa-trash"></i></button>
             </div>}
-        </div>
-    )
-}
-
-function Header({ title, button }) {
-    return (
-        <div className="Header">
-            <div className="h1"><h1>{title}</h1></div>
-            <div className="button">{button}</div>
         </div>
     )
 }

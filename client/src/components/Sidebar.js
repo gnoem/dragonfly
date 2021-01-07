@@ -53,7 +53,7 @@ export default function Sidebar(props) {
                     collectionNameError: null,
                     loadingIcon: false
                 }
-                const content = (breakpoints = initialBreakpoints) => { // todo better name / possible places for error message or similar to appear in this modal
+                let content = (breakpoints = initialBreakpoints) => { // todo better name / possible places for error message or similar to appear in this modal
                     return (
                         <div className="modalContent" ref={modalContent}>
                             <h2>Create a new collection</h2>
@@ -125,7 +125,7 @@ export default function Sidebar(props) {
                     tagNameError: null,
                     loadingIcon: false
                 }
-                const content = (breakpoints = initialBreakpoints) => {
+                let content = (breakpoints = initialBreakpoints) => {
                     return (
                         <div className="modalContent" ref={modalContent}>
                             <h2>Create a new tag</h2>

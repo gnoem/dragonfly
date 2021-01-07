@@ -248,6 +248,12 @@ module.exports = (app) => {
             return;
         }
         const { username, collectionName, updatedName } = req.body;
+        if (collectionName === updatedName) {
+            res.send({
+                success: true
+            });
+            return;
+        }
         User.findOne({ username }, (err, user) => {
             if (err) return console.error('error finding user', err);
             if (!user) return console.log(`user ${username} not found`);
