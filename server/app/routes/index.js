@@ -321,7 +321,22 @@ module.exports = (app) => {
             });
         });
     });
-    app.post('/create/tag', (req, res) => {
+    app.post('/create/tag', [
+        check('tagName')
+            .isLength({ min: 1, max: 25 }).withMessage('Tag name must be between 1 and 25 characters')
+    ], (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            const generateError = (type) => {
+                let error = errors.errors.find(error => error.param === type);
+                if (error) return error.msg; else return false;
+            }
+            res.send({
+                success: false,
+                tagNameError: generateError('tagName')
+            });
+            return;
+        }
         const { _id, tagName } = req.body;
         User.findOne({ _id }, (err, user) => {
             if (err) return console.error('error finding user', err);
@@ -336,9 +351,7 @@ module.exports = (app) => {
                 console.log(`tag ${tagName} already exists!`);
                 res.send({
                     success: false,
-                    errorReport: {
-                        tagNameError: "A tag with this name already exists."
-                    }
+                    tagNameError: "A tag with this name already exists."
                 });
                 return;
             }

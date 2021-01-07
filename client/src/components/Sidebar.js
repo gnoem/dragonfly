@@ -25,12 +25,9 @@ export default function Sidebar(props) {
                 const handleSubmit = async (e) => {
                     e.preventDefault();
                     setModalObject(content({
-                        collectionNameError: '',
+                        collectionNameError: '', // null or empty string?
                         loadingIcon: true   
                     }));
-                    // turn content into a function with parameter modalObjectMod, which returns the block of JSX
-                    // and then here, pass modalObjectMod as parameter to that same function and return a new block
-                    // and then set modalObject equal to new block
                     const collectionName = e.target[0].value;
                     const response = await fetch('/add/collection', {
                         method: 'POST',
@@ -98,6 +95,10 @@ export default function Sidebar(props) {
             const createTag = () => {
                 const handleSubmit = async (e) => {
                     e.preventDefault();
+                    setModalObject(content({
+                        tagNameError: '', // null or empty string?
+                        loadingIcon: true   
+                    }));
                     const tagName = e.target[0].value;
                     const response = await fetch('/create/tag', {
                         method: 'POST',
@@ -108,25 +109,43 @@ export default function Sidebar(props) {
                     });
                     const body = await response.json();
                     if (!body) return;
-                    if (!body.success) return;
+                    if (!body.success) {
+                        setModalObject(content({
+                            tagNameError: <span className="formError">{body.tagNameError}</span>,
+                            loadingIcon: false
+                        }));
+                        return;
+                    }
                     gracefullyCloseModal(modalContent.current);
                     props.refreshData();
                     props.updateView({ type: 'tags', tags: [tagName] });
                 }
-                const content = (
-                    <div className="modalContent" ref={modalContent}>
-                        <h2>Create a new tag</h2>
-                        <form onSubmit={handleSubmit} autoComplete="off">
-                            <label htmlFor="collectionName">Enter a name for your tag:</label>
-                            <input type="text" name="tagName" />
-                            <div className="buttons">
-                                <button type="submit">Submit</button>
-                                <button type="button" className="greyed" onClick={() => gracefullyCloseModal(modalContent.current)}>Cancel</button>
-                            </div>
-                        </form>
-                    </div>
-                );
-                setModalObject(content);
+                const content = (breakpoints = {
+                    tagNameError: null,
+                    loadingIcon: false
+                }) => {
+                    return (
+                        <div className="modalContent" ref={modalContent}>
+                            <h2>Create a new tag</h2>
+                            <form onSubmit={handleSubmit} autoComplete="off">
+                                <label htmlFor="collectionName">Enter a name for your tag:</label>
+                                <input
+                                    type="text"
+                                    name="tagName"
+                                    className={breakpoints.tagNameError ? 'nope' : ''}
+                                    onInput={(e) => e.target.className = ''} />
+                                {breakpoints.tagNameError}
+                                {breakpoints.loadingIcon
+                                    ?   <div className="buttons"><Loading /></div>
+                                    :   <div className="buttons">
+                                            <button type="submit">Submit</button>
+                                            <button type="button" className="greyed" onClick={() => gracefullyCloseModal(modalContent.current)}>Cancel</button>
+                                        </div>}
+                            </form>
+                        </div>
+                    )
+                }
+                setModalObject(content());
             }
             if (!props.user.tags || !props.user.tags.length) return (
                 <li key="createTag"><button onClick={createTag}><i className="fas fa-plus" style={{ marginRight: '0.3rem' }}></i> Add new</button></li>
