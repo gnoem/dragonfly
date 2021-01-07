@@ -23,7 +23,13 @@ export default function Sidebar(props) {
             const createCollection = () => {
                 const handleSubmit = async (e) => {
                     e.preventDefault();
-                    const collectionName = e.target[0].value;
+                    let modalObjectMod = 'Error may appear here';
+                    setModalObject(content(modalObjectMod));
+                    // turn content into a function with parameter modalObjectMod, which returns the block of JSX
+                    // and then here, pass modalObjectMod as parameter to that same function and return a new block
+                    // and then set modalObject equal to new block
+                    //setModalObjectMod('CHODE NATION');
+                    /* const collectionName = e.target[0].value;
                     const response = await fetch('/add/collection', {
                         method: 'POST',
                         headers: {
@@ -33,26 +39,30 @@ export default function Sidebar(props) {
                     });
                     const body = await response.json();
                     if (!body) return;
-                    if (!body.success) return;
-                    gracefullyCloseModal(modalContent.current);
+                    if (!body.success) return; // */
+                    // temporarily disabled
+                    /* gracefullyCloseModal(modalContent.current);
                     props.refreshData();
-                    props.updateView({ type: 'collection', name: collectionName });
-                    // adjust max height of sublist as it has INCREASED!!!!!!!!!!
+                    props.updateView({ type: 'collection', name: collectionName }); // */
                 }
-                const content = (
-                    <div className="modalContent" ref={modalContent}>
-                        <h2>Create a new collection</h2>
-                        <form onSubmit={handleSubmit} autoComplete="off">
-                            <label htmlFor="collectionName">Enter a name for your collection:</label>
-                            <input type="text" name="collectionName" />
-                            <div className="buttons">
-                                <button type="submit">Submit</button>
-                                <button type="button" className="greyed" onClick={() => gracefullyCloseModal(modalContent.current)}>Cancel</button>
-                            </div>
-                        </form>
-                    </div>
-                );
-                setModalObject(content);
+                let modalObjectMod = null;
+                const content = (breakpoint = null) => { // todo better name / possible places for error message or similar to appear in this modal
+                    return (
+                        <div className="modalContent" ref={modalContent}>
+                            <h2>Create a new collection</h2>
+                            <form onSubmit={handleSubmit} autoComplete="off">
+                                <label htmlFor="collectionName">Enter a name for your collection:</label>
+                                <input type="text" name="collectionName" />
+                                {breakpoint}
+                                <div className="buttons">
+                                    <button type="submit">Submit</button>
+                                    <button type="button" className="greyed" onClick={() => gracefullyCloseModal(modalContent.current)}>Cancel</button>
+                                </div>
+                            </form>
+                        </div>
+                    );
+                }
+                setModalObject(content(modalObjectMod));
             }
             if (!props.user.collections || !props.user.collections.length) return (
                 <li key="createCollection"><button onClick={createCollection}><i className="fas fa-plus" style={{ marginRight: '0.3rem' }}></i> Add new</button></li>

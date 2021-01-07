@@ -348,6 +348,9 @@ export default function Notes(props) {
         )
     }
     const editOrDeleteCollection = (e, collectionName) => {
+        // todo  dont have to wait for server to respond to refresh, e.g. collection list in the sidebar
+        // just edit that data directly
+        // shouldnt have to wait like an extra 2 seconds for the success response 
         if (view.type !== 'collection') return;
         // mini menu -> edit or delete
         const { top, right } = {
