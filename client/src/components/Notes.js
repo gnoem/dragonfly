@@ -41,6 +41,9 @@ export default function Notes(props) {
     // eslint-disable-next-line
     }, [view]);
     useEffect(() => {
+        setMiniMenu(false);
+    }, [currentNote._id]);
+    useEffect(() => {
         if (prevView !== view) return; // if notes.length changed because user switched view, return
         if (prevNotesCount < notes.length) { // a note has been added
             if (!newestNote) return;
