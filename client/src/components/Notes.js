@@ -185,6 +185,7 @@ export default function Notes(props) {
         setModalObject(content);
     }
     const starNote = async (id) => {
+        if (!currentNote) return;
         // todo: if unsavedChanges, star note gets rid of save changes button. fix this
         const response = await fetch('/star/note', {
             method: 'POST',
@@ -203,6 +204,7 @@ export default function Notes(props) {
         // (via notes.length useEffect)
     }
     const moveNoteToCollection = async (e, id) => {
+        if (!currentNote) return;
         // add to collection
         // or move to collection
         // list with checkmarks on side
@@ -258,6 +260,7 @@ export default function Notes(props) {
         setMiniMenu(content);
     }
     const tagNote = async (e, id) => {
+        if (!currentNote) return;
         const { top, right } = {
             top: e.clientY-16,
             right: (window.innerWidth-e.clientX)+16
