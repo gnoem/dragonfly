@@ -43,7 +43,7 @@ export default function Notes(props) {
     }, [view]);
     useEffect(() => {
         setMiniMenu(false);
-    }, [currentNote._id]);
+    }, [currentNote?._id]);
     useEffect(() => {
         if (prevView !== view) return; // if notes.length changed because user switched view, return
         if (prevNotesCount < notes.length) { // a note has been added
@@ -548,11 +548,16 @@ export default function Notes(props) {
     }
     const showingTags = () => {
         if (view.type !== 'tags') return;
+        let noTagsSelected = view.tags.length === 0;
         const tagList = () => {
-            const removeTag = (tagName) => {
+            const toggleTag = (tagName) => {
                 const updatedArray = (prevView) => {
                     let currentViewTags = [...prevView.tags];
                     let index = currentViewTags.indexOf(tagName);
+                    if (index === -1) {
+                        currentViewTags.push(tagName);
+                        return currentViewTags;
+                    }
                     currentViewTags.splice(index, 1);
                     return currentViewTags;
                 }
@@ -562,17 +567,23 @@ export default function Notes(props) {
                 }));
                 return;
             }
-            let viewingTags = [];
-            for (let i = 0; i < view.tags.length; i++) {
-                viewingTags.push(<button onClick={() => removeTag(view.tags[i])} key={`viewingTag-${view.tags[i]}`} className="tag hasTag">
-                    {view.tags[i]}
-                </button>)
+            let tagArray = [];
+            for (let i = 0; i < user.tags.length; i++) {
+                let thisTag = user.tags[i];
+                let isSelected;
+                if (view.tags.indexOf(thisTag) !== -1) isSelected = true;
+                else isSelected = false;
+                tagArray.push(
+                    <button onClick={() => toggleTag(thisTag)} key={`showingTag-${thisTag}`} className={`tag${isSelected ? ' hasTag' : ''}`}>
+                        {thisTag}
+                    </button>
+                );
             }
-            return viewingTags;
+            return tagArray;
         }
         return (
             <div className="showingTags">
-                <h2>Viewing notes tagged:</h2>
+                <h2>{noTagsSelected ? 'View' : 'Viewing'} notes tagged:</h2>
                 {tagList()}
             </div>
         )

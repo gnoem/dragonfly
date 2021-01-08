@@ -783,6 +783,9 @@ input.nope + .formError {
     border-top-left-radius: 0;
     transition: 0.2s;
 }
+.List .tag {
+    background: #fff;
+}
 .tag:hover, .MiniMenu .tag:hover {
     color: inherit;
 }
@@ -796,7 +799,7 @@ input.nope + .formError {
     font-weight: 900;
     line-height: inherit;
     margin-right: 0.3rem;
-    font-size: 0.6em;
+    font-size: 0.8em;
     color: inherit;
     display: inline-block;
     float: none;

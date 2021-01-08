@@ -66,7 +66,10 @@ export default function Dashboard(props) {
         )
     }
     const tags = (tags) => {
-        if (!tags.length) return updateView('all-notes');
+        if (view.type !== 'tags') return;
+        if (!tags.length) return (
+            <Notes view={view} updateView={updateView} user={user} notes={[]} refreshData={() => updateTrigger(Date.now())} />
+        );
         const notesWithTheseTags = (tags) => { // returns an array of notes
             // todo add filter options: show notes with either/all of these tags
             // if tags (param) is a sub array of note.tags, put that note into the array
