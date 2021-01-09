@@ -42,9 +42,9 @@ export default function Notes(props) {
     // eslint-disable-next-line
     }, [view]);
     useEffect(() => {
+        setMiniMenu(false);
         if (!currentNote || !currentNote._id) return;
         setCurrentNoteUpdate(currentNote._id);
-        setMiniMenu(false);
     }, [currentNote?._id]);
     useEffect(() => {
         if (prevView !== view) return; // if notes.length changed because user switched view, return
@@ -286,7 +286,6 @@ export default function Notes(props) {
             if (!button.classList.contains('hasTag')) button.classList.add('hasTag');
             else button.classList.remove('hasTag');
             props.refreshData();
-            setCurrentNoteUpdate(id);
         }
         const tagsList = () => {
             if (!user.tags) return;
@@ -389,8 +388,6 @@ export default function Notes(props) {
                     }));
                     return;
                 }
-                // refresh current user
-                setCurrentNoteUpdate(currentNote._id);
                 props.refreshData();
                 gracefullyCloseModal(modalContent.current);
                 // change view
@@ -588,10 +585,7 @@ export default function Notes(props) {
                         }
                         props.refreshData();
                         gracefullyCloseModal(modalContent.current);
-                        //setTimeout(() => {
-                            setCurrentNoteUpdate(currentNote._id);
-                            props.updateView({ type: 'tags', tags: [updatedName] });
-                        //}, 2000);
+                        props.updateView({ type: 'tags', tags: [updatedName] });
                     }
                     const initialBreakpoints = {
                         updatedNameError: null,
