@@ -83,6 +83,7 @@
     --lightest-theme-color: #d8f7f5;
     --caution: #c55a63;
     --light-caution: #dd858c;
+    --light-green: #cdf3c7;
 }
 html, body {
     width: 100%;
@@ -840,4 +841,8 @@ ul.nolines li.tagsList {
     font-family: 'Font Awesome 5 Free';
     font-weight: 900;
     margin-right: 0.3rem;
+}
+.tag.createTag {
+    background: var(--light-green);
+    border: 1px solid #ccc;
 }

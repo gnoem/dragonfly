@@ -24,7 +24,7 @@ export default function Sidebar(props) {
                 const handleSubmit = async (e) => {
                     e.preventDefault();
                     setModalObject(content({
-                        collectionNameError: '', // null or empty string?
+                        collectionNameError: null, // null or empty string?
                         loadingIcon: true   
                     }));
                     const collectionName = e.target[0].value;

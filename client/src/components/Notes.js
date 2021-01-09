@@ -329,13 +329,23 @@ export default function Notes(props) {
         )
     }
     const noNoteSelected = () => {
-        if (view === 'all-notes' && !notes.length) return (
-            <div>
-                <h1>Hi there!</h1>
-                <p>You haven't added any notes.</p>
-                <button onClick={createNewNote}>Create a note</button>
-            </div>
-        )
+        if (view === 'all-notes') {
+            if (!notes.length) return (
+                <div>
+                    <h1>Hi there!</h1>
+                    <p>You haven't added any notes.</p>
+                    <button onClick={createNewNote}>Create a note</button>
+                </div>
+            );
+        }
+        if (view.type === 'tags') {
+            if (!view.tags.length) return (
+                <div>
+                    <h1>Sort notes by tag</h1>
+                    You can select as many tags as you want from the panel on the left.
+                </div>
+            );
+        }
         if (notes.length) return (
             <div>
                 <h1>No note selected!</h1>
@@ -344,7 +354,7 @@ export default function Notes(props) {
         )
         return (
             <div>
-                <h1>No note selected!</h1>
+                <h1>None found</h1>
                 No notes found in this category.
             </div>
         )
@@ -529,6 +539,7 @@ export default function Notes(props) {
             </div>
         )
         if ((view === 'all-notes') && addingNewNote) return null;
+        if ((view.type === 'tags') && (!view.tags.length)) return null;
         return (
             <div className="endofnotes" style={{ marginTop: '1rem' }}>None found</div>
         )
@@ -545,10 +556,71 @@ export default function Notes(props) {
         }
         return notesList;
     }
+    const createTag = () => {
+        const handleSubmit = async (e) => {
+            e.preventDefault();
+            setModalObject(content({
+                tagNameError: null,
+                loadingIcon: true   
+            }));
+            const tagName = e.target[0].value;
+            const response = await fetch('/create/tag', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ _id: user._id, tagName })
+            });
+            const body = await response.json();
+            if (!body) return;
+            if (!body.success) {
+                setModalObject(content({
+                    tagNameError: <span className="formError">{body.tagNameError}</span>,
+                    loadingIcon: false
+                }));
+                return;
+            }
+            gracefullyCloseModal(modalContent.current);
+            props.refreshData();
+            props.updateView({ type: 'tags', tags: [tagName] });
+        }
+        const content = (breakpoints = {
+            tagNameError: null,
+            loadingIcon: false
+        }) => {
+            return (
+                <div className="modalContent" ref={modalContent}>
+                    <h2>Create a new tag</h2>
+                    <form onSubmit={handleSubmit} autoComplete="off">
+                        <label htmlFor="collectionName">Enter a name for your tag:</label>
+                        <input
+                            type="text"
+                            name="tagName"
+                            className={breakpoints.tagNameError ? 'nope' : ''}
+                            onInput={(e) => e.target.className = ''} />
+                        {breakpoints.tagNameError}
+                        {breakpoints.loadingIcon
+                            ?   <div className="buttons"><Loading /></div>
+                            :   <div className="buttons">
+                                    <button type="submit">Submit</button>
+                                    <button type="button" className="greyed" onClick={() => gracefullyCloseModal(modalContent.current)}>Cancel</button>
+                                </div>}
+                    </form>
+                </div>
+            )
+        }
+        setModalObject(content());
+    }
     const showingTags = () => {
         if (view.type !== 'tags') return;
         let noTagsSelected = view.tags.length === 0;
         const tagList = () => {
+            const newTagButton = (
+                <button onClick={createTag} onContextMenu={(e) => e.preventDefault()} key="createTag" className="tag createTag">
+                    Create new tag
+                </button>
+            )
+            if (!user.tags.length) return newTagButton;
             const tagMenu = (e, tagName) => {
                 e.preventDefault();
                 const { top, right } = {
@@ -684,6 +756,7 @@ export default function Notes(props) {
                     </button>
                 );
             }
+            tagArray.push(newTagButton);
             return tagArray;
         }
         return (
