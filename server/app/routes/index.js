@@ -125,31 +125,6 @@ module.exports = (app) => {
             });
         });
     });
-    app.post('/trash/note', (req, res) => { // or untrash; note.trash = !note.trash
-        const { _id } = req.body;
-        Note.findOne({ _id }, (err, note) => {
-            if (err) return console.error('error finding note', err);
-            if (!note) return console.log(`note ${_id} not found`);
-            note.trash = !note.trash;
-            note.save(err => {
-                if (err) return console.error('error saving note', err);
-                res.send({
-                    success: true
-                });
-            });
-        });
-    });
-    app.post('/delete/note', (req, res) => {
-        const { id } = req.body;
-        Note.findOneAndDelete({ _id: id }, (err, note) => {
-            if (err) return console.error('error finding note', err);
-            if (!note) return console.log(`note ${id} not found`);
-            console.log('deleting note');
-            res.send({
-                success: true
-            });
-        })
-    });
     app.post('/star/note', (req, res) => {
         const { _id } = req.body;
         console.log('starring note');
@@ -198,6 +173,40 @@ module.exports = (app) => {
                 return res.send({
                     success: true
                 });
+            });
+        });
+    });
+    app.post('/trash/note', (req, res) => { // or untrash; note.trash = !note.trash
+        const { _id } = req.body;
+        Note.findOne({ _id }, (err, note) => {
+            if (err) return console.error('error finding note', err);
+            if (!note) return console.log(`note ${_id} not found`);
+            note.trash = !note.trash;
+            note.save(err => {
+                if (err) return console.error('error saving note', err);
+                res.send({
+                    success: true
+                });
+            });
+        });
+    });
+    app.post('/delete/note', (req, res) => {
+        const { id } = req.body;
+        Note.findOneAndDelete({ _id: id }, (err, note) => {
+            if (err) return console.error('error finding note', err);
+            if (!note) return console.log(`note ${id} not found`);
+            console.log('deleting note');
+            res.send({
+                success: true
+            });
+        })
+    });
+    app.post('/empty/trash', (req, res) => {
+        const { _id } = req.body;
+        Note.deleteMany({ userId: _id, trash: true }, (err) => {
+            if (err) return console.error('error deleting notes', err);
+            res.send({
+                success: true
             });
         });
     });

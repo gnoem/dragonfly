@@ -137,7 +137,7 @@ export default function Notes(props) {
             }
             // call handleClick again, with same (initial) e, but skipping "save changes" warning and carrying out the default click event
             const handleClickAgain = () => () => handleClick(e, true); // https://stackoverflow.com/questions/55621212/is-it-possible-to-react-usestate-in-react
-            const content = (
+            let content = (
                 <div className="modalContent" ref={modalContent}>
                     <h2>Save changes?</h2>
                     It looks like you have unsaved changes. Would you like to save changes or discard?
@@ -299,7 +299,7 @@ export default function Notes(props) {
             }
             return userCollections;
         }
-        const content = (
+        let content = (
             <ul style={{ top: top+'px', right: right+'px' }} ref={miniMenuRef}>
                 <li><strong>Move to collection:</strong></li>
                 {collectionsList()}
@@ -347,7 +347,7 @@ export default function Notes(props) {
             }
             return userTags;
         }
-        const content = (
+        let content = (
             <ul className="nolines" style={{ top: top+'px', right: right+'px' }} ref={miniMenuRef}>
                 <li><strong>Tag note:</strong></li>
                 {tagsList()}
@@ -509,16 +509,64 @@ export default function Notes(props) {
                     Deleting this collection will not delete the notes inside it.
                     <div className="buttons">
                         <button onClick={handleDelete}>Yes, I'm sure</button>
-                        <button className="greyed">Take me back</button>
+                        <button className="greyed" onClick={() => gracefullyCloseModal(modalContent.current)}>Take me back</button>
                     </div>
                 </div>
             );
             setModalObject(modalcontent);
         }
-        const content = (
-            <ul style={{ top: top+'px', right: right+'px' }} ref={miniMenuRef}>
+        let content = (
+            <ul onClick={() => setMiniMenu(false)} style={{ top: top+'px', right: right+'px' }} ref={miniMenuRef}>
                 <li><button onClick={editCollection}>Edit collection</button></li>
                 <li><button onClick={deleteCollection}>Delete collection</button></li>
+            </ul>
+        );
+        setMiniMenu(content);
+    }
+    const trashOptions = (e) => {
+        if (view !== 'trash') return;
+        const { top, right } = {
+            top: e.clientY-16,
+            right: (window.innerWidth-e.clientX)+16
+        }
+        const confirmEmptyTrash = () => {
+            const emptyTrash = async () => {
+                setModalObject(content({ loadingIcon: true }));
+                const response = await fetch('/empty/trash', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ _id: user._id })
+                });
+                const body = await response.json();
+                if (!body) return console.log('no response from server');
+                if (!body.success) return console.log('no success: true response from server');
+                props.refreshData();
+                gracefullyCloseModal(modalContent.current);
+            }
+            let content = (breakpoints = {
+                loadingIcon: false
+            }) => {
+                return (
+                    <div className="modalContent" ref={modalContent}>
+                        <h2>Are you sure?</h2>
+                        If you proceed, all the notes in your Trash will be permanently erased. This action cannot be undone.
+                        {breakpoints.loadingIcon
+                            ?   <Loading />
+                            :   <div className="buttons">
+                                    <button onClick={emptyTrash}>Yes, I'm sure</button>
+                                    <button className="greyed" onClick={() => gracefullyCloseModal(modalContent.current)}>Cancel</button>
+                                </div>
+                        }
+                    </div>
+                );
+            }
+            setModalObject(content());
+        }
+        let content = (
+            <ul onClick={() => setMiniMenu(false)} style={{ top: top+'px', right: right+'px' }} ref={miniMenuRef}>
+                <li><button onClick={confirmEmptyTrash}>Empty Trash</button></li>
             </ul>
         );
         setMiniMenu(content);
@@ -541,6 +589,11 @@ export default function Notes(props) {
             }
             case 'trash': {
                 title = 'Trash';
+                button = (
+                    <button className="viewOptions" onClick={(e) => trashOptions(e)}>
+                        <i className="fas fa-ellipsis-v"></i>
+                    </button>
+                );
                 break;
             }
             default: {
@@ -630,7 +683,7 @@ export default function Notes(props) {
             props.refreshData();
             props.updateView({ type: 'tags', tags: [tagName] });
         }
-        const content = (breakpoints = {
+        let content = (breakpoints = {
             tagNameError: null,
             loadingIcon: false
         }) => {
@@ -761,7 +814,7 @@ export default function Notes(props) {
                     );
                     setModalObject(content);
                 }
-                const content = (
+                let content = (
                     <ul onClick={() => setMiniMenu(false)} className="smol" style={{ top: top+'px', right: right+'px' }} ref={miniMenuRef}>
                         <li><button className="edit" onClick={editTag}>Edit tag</button></li>
                         <li><button className="delete" onClick={confirmDeleteTag}>Delete tag</button></li>

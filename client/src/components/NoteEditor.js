@@ -134,7 +134,7 @@ export default function NoteEditor(props) {
                     ref={editorRef}
                 />
             </div>
-            {props.unsavedChanges && <button onClick={handleSubmit}>Save Changes</button>}
+            {props.unsavedChanges && <Button onClick={handleSubmit} loadingIconSize="2.5rem">Save Changes</Button>}
         </div>
     )
 }
