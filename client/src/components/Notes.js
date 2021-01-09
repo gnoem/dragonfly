@@ -43,7 +43,7 @@ export default function Notes(props) {
     }, [view]);
     useEffect(() => {
         setMiniMenu(false);
-        if (!currentNote || !currentNote._id) return;
+        if (!currentNote || !currentNote._id) return setCurrentNoteUpdate(false);
         setCurrentNoteUpdate(currentNote._id);
     }, [currentNote?._id]);
     useEffect(() => {
@@ -162,7 +162,49 @@ export default function Notes(props) {
         setAddingNewNote(true);
         setCurrentNote({});
     }
-    const confirmDeletion = (id) => {
+    const confirmMoveToTrash = (id) => {
+        const moveToTrash = async (id) => {
+            const response = await fetch('/trash/note', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ _id: id })
+            });
+            const body = await response.json();
+            if (!body) return console.log('no response from server');
+            if (!body.success) return console.log('no success: true response from server');
+            // todo: find NotePreview with id and shrink it down, with 200ms delay on refreshData()
+            props.refreshData();
+            setUnsavedChanges(false);
+            gracefullyCloseModal(modalContent.current);
+        }
+        let content = (
+            <div className="modalContent" ref={modalContent}>
+                <h2>Move to Trash</h2>
+                Notes moved to the Trash folder will remain there for 30 days before being automatically deleted. You can customize this option in Settings.
+                <div className="buttons">
+                    <button onClick={() => moveToTrash(id)}>Got it</button>
+                    <button className="greyed" onClick={() => gracefullyCloseModal(modalContent.current)}>Cancel</button>
+                </div>
+            </div>
+        );
+        setModalObject(content);
+    }
+    const untrashNote = async (id) => {
+        const response = await fetch('/trash/note', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ _id: id })
+        });
+        const body = await response.json();
+        if (!body) return console.log('no response from server');
+        if (!body.success) return console.log('no success: true response from server');
+        props.refreshData();
+    }
+    const confirmPermanentDeletion = (id) => {
         const deleteNote = async (id) => {
             const response = await fetch('/delete/note', {
                 method: 'POST',
@@ -182,16 +224,16 @@ export default function Notes(props) {
             setUnsavedChanges(false);
             gracefullyCloseModal(modalContent.current);
         }
-        const content = (
+        let content = (
             <div className="modalContent" ref={modalContent}>
                 <h2>Are you sure?</h2>
-                This action can't be undone.
+                You are about to permanently delete this note.
                 <div className="buttons">
                     <button onClick={() => deleteNote(id)}>Yes, I'm sure</button>
                     <button className="greyed" onClick={() => gracefullyCloseModal(modalContent.current)}>Cancel</button>
                 </div>
             </div>
-        )
+        );
         setModalObject(content);
     }
     const starNote = async (id) => {
@@ -497,6 +539,10 @@ export default function Notes(props) {
                 title = 'Starred notes';
                 break;
             }
+            case 'trash': {
+                title = 'Trash';
+                break;
+            }
             default: {
                 if (view.type === 'collection') {
                     title = (
@@ -701,7 +747,7 @@ export default function Notes(props) {
                         if (!body) return console.log('no response from server');
                         if (!body.success) return console.log('no success: true response from server');
                         props.refreshData();
-                        gracefullyCloseModal();
+                        gracefullyCloseModal(modalContent.current);
                     }
                     let content = (
                         <div className="modalContent" ref={modalContent}>
@@ -716,7 +762,7 @@ export default function Notes(props) {
                     setModalObject(content);
                 }
                 const content = (
-                    <ul className="smol" style={{ top: top+'px', right: right+'px' }} ref={miniMenuRef}>
+                    <ul onClick={() => setMiniMenu(false)} className="smol" style={{ top: top+'px', right: right+'px' }} ref={miniMenuRef}>
                         <li><button className="edit" onClick={editTag}>Edit tag</button></li>
                         <li><button className="delete" onClick={confirmDeleteTag}>Delete tag</button></li>
                     </ul>
@@ -763,7 +809,7 @@ export default function Notes(props) {
             <div className="showingTags">
                 <span className="hint">Right-click on a tag for more options.</span>
                 <h2>{noTagsSelected ? 'View' : 'Viewing'} notes tagged:</h2>
-                {tagList()}
+                <div className="tagsGrid">{tagList()}</div>
             </div>
         )
     }
@@ -793,18 +839,23 @@ export default function Notes(props) {
                             submitEditorState={submitEditorState} // lets Editor know to save changes
                             updateSubmitEditorState={setSubmitEditorState} // update back to false
                             refreshData={props.refreshData}
+                            untrashNote={untrashNote}
+                            deleteNotePermanently={confirmPermanentDeletion}
                         />
                     :   noNoteSelected()
                 }
             </div>
-            {currentNote && <div className="Options">
-                <button className={currentNote.starred ? 'hasStar' : null} onClick={() => starNote(currentNote._id)}><i className="fas fa-star"></i></button>
-                <button onClick={(e) => moveNoteToCollection(e, currentNote._id)}><i className="fas fa-book"></i></button>
-                <button onClick={(e) => tagNote(e, currentNote._id)}><i className="fas fa-tags"></i></button>
-                <button><i className="fas fa-share-square"></i></button>
-                <button><i className="fas fa-file-download"></i></button>
-                <button onClick={() => confirmDeletion(currentNote._id)}><i className="fas fa-trash"></i></button>
-            </div>}
+            {currentNote && !currentNote.trash
+                ?   <div className="Options">
+                        <button className={currentNote.starred ? 'hasStar' : null} onClick={() => starNote(currentNote._id)}><i className="fas fa-star"></i></button>
+                        <button onClick={(e) => moveNoteToCollection(e, currentNote._id)}><i className="fas fa-book"></i></button>
+                        <button onClick={(e) => tagNote(e, currentNote._id)}><i className="fas fa-tags"></i></button>
+                        <button><i className="fas fa-share-square"></i></button>
+                        <button><i className="fas fa-file-download"></i></button>
+                        <button onClick={view === 'trash' ? () => confirmPermanentDeletion(currentNote._id) : () => confirmMoveToTrash(currentNote._id)}><i className="fas fa-trash"></i></button>
+                    </div>
+                :   ''
+            }
         </div>
     )
 }

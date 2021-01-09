@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import Button from './Button';
 import { Editor, EditorState, RichUtils, convertToRaw, convertFromRaw } from 'draft-js';
 import 'draft-js/dist/Draft.css';
 
@@ -65,7 +66,7 @@ export default function NoteEditor(props) {
             if (newNote) props.updatePreview(e.target.value);
         }
         return (
-            <input type="text" ref={titleInput} key={title} defaultValue={title} placeholder="Add a title" onInput={handleInput} />
+            <input type="text" readOnly={props.currentNote.trash} ref={titleInput} key={title} defaultValue={title} placeholder="Add a title" onInput={handleInput} />
         )
     }
     const handleChange = (state) => {
@@ -106,12 +107,26 @@ export default function NoteEditor(props) {
         if (props.submitEditorState) props.submitEditorState();
         props.updateSubmitEditorState(false);
     }
+    const noteOptions = () => {
+        return (
+            <div className="noteOptions">
+                <p style={{ textAlign: 'center' }}><i className="fas fa-exclamation-triangle"></i> This note can't be edited while still in the Trash.</p>
+                <div className="smaller buttons">
+                    <Button onClick={() => props.untrashNote(props.currentNote._id)} loadingIconSize="2rem">Restore note</Button>
+                    <button className="caution" onClick={() => props.deleteNotePermanently(props.currentNote._id)}>Delete permanently</button>
+                </div>
+            </div>
+        )
+    }
     return (
         <div className="NoteEditor">
-            <EditorControls controlStyle={controlStyle} inlineStyles={inlineStyles} blockType={blockType} />
+            {props.currentNote.trash
+                ? noteOptions()
+                : <EditorControls controlStyle={controlStyle} inlineStyles={inlineStyles} blockType={blockType} />}
             {noteTitle()}
             <div className="Editable" onClick={focus}>
                 <Editor
+                    readOnly={props.currentNote.trash}
                     editorState={editorState}
                     handleKeyCommand={handleKeyCommand}
                     placeholder="Enter some text..."

@@ -40,36 +40,31 @@ export default function Dashboard(props) {
             if (!body.success) return console.log('no success: true response from server');
             updateUser(body.user);
             updateNotes(body.notes);
+            console.log('updated notes in getData()');
+            console.dir(body.notes);
             updateIsLoaded(true);
         }
         getData();
     }, [id, triggerGetData]);
-    useEffect(() => {
-        // update 
-    }, [notes]);
-    useEffect(() => {
-        console.log('view changed to', view);
-    }, [view]);
     if (!isLoaded) return <Loading />
     const allNotes = () => {
-        console.log('allNotes in Dashboard is updated');
-        console.dir(notes);
+        let filteredNotes = notes.filter(note => !note.trash);
         return (
-            <Notes view={view} user={user} notes={notes} refreshData={() => updateTrigger(Date.now())} />
+            <Notes view={view} user={user} notes={filteredNotes} refreshData={() => updateTrigger(Date.now())} />
         )
     }
     const starredNotes = () => {
-        let starred = notes.filter(note => note.starred);
+        let starredNotes = notes.filter(note => note.starred);
         return (
-            <Notes view={view} user={user} notes={starred} refreshData={() => updateTrigger(Date.now())} />
+            <Notes view={view} user={user} notes={starredNotes} refreshData={() => updateTrigger(Date.now())} />
         )
     }
     const collection = (collectionName) => {
         console.log('collection in Dashboard is updated');
-        let collection = notes.filter(note => note.collection === collectionName);
+        let notesInCollection = notes.filter(note => note.collection === collectionName);
         console.dir(collection);
         return (
-            <Notes view={view} updateView={updateView} user={user} notes={collection} refreshData={() => updateTrigger(Date.now())} />
+            <Notes view={view} updateView={updateView} user={user} notes={notesInCollection} refreshData={() => updateTrigger(Date.now())} />
         )
     }
     const tags = (tags) => {
@@ -106,10 +101,19 @@ export default function Dashboard(props) {
             <Notes view={view} updateView={updateView} user={user} notes={taggedNotes} refreshData={() => updateTrigger(Date.now())} />
         )
     }
+    const trashedNotes = () => {
+        console.log('loading trash');
+        let trashedNotes = notes.filter(note => note.trash);
+        console.dir(trashedNotes);
+        return (
+            <Notes view={view} user={user} notes={trashedNotes} refreshData={() => updateTrigger(Date.now())} />
+        )
+    }
     const appContent = () => {
         switch (view) {
             case 'all-notes': return allNotes();
             case 'starred-notes': return starredNotes();
+            case 'trash': return trashedNotes();
             case 'my-account': return (
                 <MyAccount updateIsLoaded={updateIsLoaded} refreshData={() => updateTrigger(Date.now())} user={user} />
             );

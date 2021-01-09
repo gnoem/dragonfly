@@ -10,6 +10,7 @@ module.exports = mongoose.model(
         tags: [String],
         category: String,
         starred: Boolean,
+        trash: Boolean,
         createdAt: Date,
         lastModified: Date
     }),

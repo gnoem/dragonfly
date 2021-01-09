@@ -76,9 +76,9 @@ module.exports = (app) => {
                 if (err) return console.error('error finding notes');
                 let preparedNotes = [];
                 for (let i = 0; i < notes.length; i++) {
-                    const { _id, userId, title, content, tags, category, starred, createdAt, lastModified } = notes[i];
+                    const { _id, userId, title, content, tags, category, starred, trash, createdAt, lastModified } = notes[i];
                     preparedNotes.push({
-                        _id, userId, title, content: JSON.parse(content), tags, collection: category, starred, createdAt, lastModified
+                        _id, userId, title, content: JSON.parse(content), tags, collection: category, starred, trash, createdAt, lastModified
                     });
                 }
                 res.send({
@@ -119,6 +119,20 @@ module.exports = (app) => {
             note.save(err => {
                 if (err) return console.error('error saving note', err);
                 console.log('successfully edited note');
+                res.send({
+                    success: true
+                });
+            });
+        });
+    });
+    app.post('/trash/note', (req, res) => { // or untrash; note.trash = !note.trash
+        const { _id } = req.body;
+        Note.findOne({ _id }, (err, note) => {
+            if (err) return console.error('error finding note', err);
+            if (!note) return console.log(`note ${_id} not found`);
+            note.trash = !note.trash;
+            note.save(err => {
+                if (err) return console.error('error saving note', err);
                 res.send({
                     success: true
                 });

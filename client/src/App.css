@@ -121,6 +121,9 @@ a:hover::after {
     transform: scaleX(1);
     transform-origin: bottom left;
 }
+p {
+    margin-top: 0;
+}
 h1, h2, h3, h4, h5, h6 {
     margin-top: 0;
 }
@@ -176,6 +179,9 @@ button.caution {
 }
 .buttons button + button {
     margin-left: 1rem;
+}
+.buttons.smaller button {
+    padding: 0.7rem 1rem;
 }
 .nowrap {
     display: inline-block;
@@ -611,8 +617,23 @@ button.exit:hover {
     display: grid;
     place-items: center;
 }
+.Loading.mini {
+    width: auto;
+    height: auto;
+    display: inline-grid;
+    vertical-align: middle;
+}
+.Loading svg {
+    margin: auto;
+    background: transparent;
+    display: block;
+    shape-rendering: auto;
+}
 .Loading svg circle {
     fill: var(--med-theme-color);
+}
+.buttons .Loading {
+    margin: 0 1rem;
 }
 form label {
     font-size: 0.8rem;
@@ -827,7 +848,10 @@ ul.nolines li.tagsList {
     margin-bottom: 0.5rem;
 }
 .showingTags .tag {
-    margin: 0.2rem;
+    margin: 0.25rem;
+}
+.showingTags .tag.hasTag {
+    box-shadow: 0.1rem 0.1rem 0.5rem rgba(0, 0, 0, 0.2);
 }
 .MiniMenu ul.smol button {
     font-size: 0.75rem;
@@ -844,5 +868,10 @@ ul.nolines li.tagsList {
 }
 .tag.createTag {
     background: var(--light-green);
-    border: 1px solid #ccc;
+}
+.noteOptions {
+    background: #f7f7f7;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    margin-bottom: 2rem;
 }
