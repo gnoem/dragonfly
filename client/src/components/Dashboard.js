@@ -45,10 +45,15 @@ export default function Dashboard(props) {
         getData();
     }, [id, triggerGetData]);
     useEffect(() => {
+        // update 
+    }, [notes]);
+    useEffect(() => {
         console.log('view changed to', view);
     }, [view]);
     if (!isLoaded) return <Loading />
     const allNotes = () => {
+        console.log('allNotes in Dashboard is updated');
+        console.dir(notes);
         return (
             <Notes view={view} user={user} notes={notes} refreshData={() => updateTrigger(Date.now())} />
         )
@@ -60,12 +65,15 @@ export default function Dashboard(props) {
         )
     }
     const collection = (collectionName) => {
+        console.log('collection in Dashboard is updated');
         let collection = notes.filter(note => note.collection === collectionName);
+        console.dir(collection);
         return (
             <Notes view={view} updateView={updateView} user={user} notes={collection} refreshData={() => updateTrigger(Date.now())} />
         )
     }
     const tags = (tags) => {
+        console.log('taggedNotes in Dashboard is updated');
         if (view.type !== 'tags') return;
         if (!tags.length) return (
             <Notes view={view} updateView={updateView} user={user} notes={[]} refreshData={() => updateTrigger(Date.now())} />
@@ -93,6 +101,7 @@ export default function Dashboard(props) {
             return taggedNotes;
         }
         let taggedNotes = notesWithTheseTags(tags);
+        console.dir(taggedNotes);
         return (
             <Notes view={view} updateView={updateView} user={user} notes={taggedNotes} refreshData={() => updateTrigger(Date.now())} />
         )

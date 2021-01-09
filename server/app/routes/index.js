@@ -304,6 +304,7 @@ module.exports = (app) => {
             user.collections.splice(index, 1);
             Note.find({ userId: user._id }, (err, notes) => {
                 if (err) return console.error('error finding notes', err);
+                if (!notes) return console.error(`notes with userId ${user._id} not found`);
                 const updateNotes = (array) => {
                     for (let i = 0; i < array.length; i++) {
                         // find all that belong to this collection and change to false
@@ -362,6 +363,106 @@ module.exports = (app) => {
                 if (err) return console.error('error saving user', err);
                 res.send({
                     success: true
+                });
+            });
+        });
+    });
+    app.post('/edit/tag', [
+        check('updatedName')
+            .isLength({ min: 1, max: 25 }).withMessage('Tag name must be between 1 and 25 characters')
+    ], (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            const generateError = (type) => {
+                let error = errors.errors.find(error => error.param === type);
+                if (error) return error.msg; else return false;
+            }
+            res.send({
+                success: false,
+                updatedNameError: generateError('updatedName')
+            });
+            return;
+        }
+        const { _id, tagName, updatedName } = req.body;
+        if (tagName === updatedName) { // remove if adding more options later, like tag color
+            res.send({
+                success: true
+            });
+            return;
+        }
+        User.findOne({ _id }, (err, user) => {
+            if (err) return console.error('error finding user', err);
+            if (!user) return console.log(`user ${_id} not found`);
+            const tagAlreadyExists = (name) => {
+                if (!user.tags || !user.tags.length) return false;
+                let index = user.tags.indexOf(name);
+                if (index !== -1) return true;
+                return false;
+            }
+            if (tagAlreadyExists(updatedName)) {
+                console.log(`tag ${updatedName} already exists!`);
+                res.send({
+                    success: false,
+                    updatedNameError: "A tag with this name already exists."
+                });
+                return;
+            }
+            let index = user.tags.indexOf(tagName);
+            if (index === -1) return console.log('tag not found!');
+            user.tags.splice(index, 1, updatedName);
+            Note.find({ userId: _id }, (err, notes) => {
+                if (err) return console.error('error finding notes', err);
+                const updateNotes = (array) => {
+                    for (let i = 0; i < array.length; i++) {
+                        // find all that have this tag and change the tag name in the tag array
+                        let thisNote = array[i];
+                        let thisNotesTags = thisNote.tags;
+                        let tagIndex = thisNotesTags.indexOf(tagName);
+                        let noteHasTag = tagIndex !== -1;
+                        if (noteHasTag) {
+                            thisNotesTags.splice(tagIndex, 1, updatedName);
+                            thisNote.save();
+                        }
+                    }
+                }
+                updateNotes(notes);
+                user.save(err => {
+                    if (err) return console.error('error saving user', err);
+                    res.send({
+                        success: true
+                    });
+                });
+            });
+        });
+    });
+    app.post('/delete/tag', (req, res) => {
+        const { _id, tagName } = req.body;
+        User.findOne({ _id }, (err, user) => {
+            if (err) return console.error('error finding user', err);
+            if (!user) return console.log(`user ${_id} not found`);
+            let index = user.tags.indexOf(tagName);
+            if (index === -1) return console.log('something went wayyy wrong');
+            user.tags.splice(index, 1);
+            Note.find({ userId: _id }, (err, notes) => {
+                if (err) return console.error('error finding notes', err);
+                if (!notes) return console.error(`notes with userId ${_id} not found`);
+                const updateNotes = (array) => {
+                    for (let i = 0; i < array.length; i++) {
+                        let thisNote = array[i];
+                        let thisNotesTags = thisNote.tags;
+                        let tagIndex = thisNotesTags.indexOf(tagName);
+                        let noteHasTag = tagIndex !== -1;
+                        if (!noteHasTag) return;
+                        thisNotesTags.splice(tagIndex, 1);
+                        thisNote.save();
+                    }
+                }
+                updateNotes(notes);
+                user.save(err => {
+                    if (err) return console.error('error saving user', err);
+                    res.send({
+                        success: true
+                    });
                 });
             });
         });

@@ -9,7 +9,7 @@ import { elementHasParent } from '../utils';
 export default function Notes(props) {
     const { view, user, notes } = props;
     const [currentNote, setCurrentNote] = useState(notes[0]);
-    const [currentNoteUpdated, setCurrentNoteUpdate] = useState(false);
+    const [currentNoteUpdated, setCurrentNoteUpdate] = useState(false); // set equal to _id
     const [newestNote, setNewestNote] = useState(null);
     const [addingNewNote, setAddingNewNote] = useState(false);
     const [tempNotePreview, setTempNotePreview] = useState('New note');
@@ -42,6 +42,8 @@ export default function Notes(props) {
     // eslint-disable-next-line
     }, [view]);
     useEffect(() => {
+        if (!currentNote || !currentNote._id) return;
+        setCurrentNoteUpdate(currentNote._id);
         setMiniMenu(false);
     }, [currentNote?._id]);
     useEffect(() => {
@@ -56,6 +58,8 @@ export default function Notes(props) {
             // if deleted altogether, behavior should have already been specified in deleteNote()
             // if removed e.g. via unstar, setCurrentNote(nextInLine)
             if (view !== 'all-notes') { // outside of 'all-notes', whether deletion or removal is irrelevant
+                console.log('notes.length decreased!!!!!');
+                if (!currentNote) return;
                 let index = getIndex(currentNote._id)+1;
                 let nextInLine = notes[index] ? notes[index] : false;
                 setCurrentNote(nextInLine);
@@ -82,19 +86,21 @@ export default function Notes(props) {
     // eslint-disable-next-line
     }, [notes]); */
     useEffect(() => {
-
-        console.log('signal to update currentNote: '+currentNoteUpdated);
         if (!currentNoteUpdated) return;
-        //console.dir(notes[getIndex(currentNoteUpdated)].collection); // still reading old "collection" value
-    }, [currentNoteUpdated]);
-    useEffect(() => {
-        if (!currentNoteUpdated) return;
-        if (currentNoteUpdated) {
+        else {
             console.log('updating current note');
-            //const currentNoteIndex = currentNote ? getIndex(currentNote._id) : 0;
+            console.dir(notes); // when not in 'all-notes', notes hasnt updated after star/unstar!!!!!???????????
+            // taggedNotes and noteCollection (in Dashboard) updates with the correct data RIGHT after this - several rerenders -
+            // but at that point currentNoteUpdate has already been set to false
+            // so currentNote doesn't get updated with the most up-to-date info
+            // possibly because in 'all-notes' there is no filtering going on?
+
+            // SO in all-notes takes 5 rerenders to have the updated star data
+            // but the "updating current note" log doesn't appear until directly after that one
             setCurrentNote(notes[getIndex(currentNoteUpdated)]);
-            //console.dir(notes[getIndex(currentNoteUpdated)].collection);
-            setCurrentNoteUpdate(false);
+            //debugger;
+            //setCurrentNoteUpdate(false); // now currentNoteUpdated gets changed if/when currentNote._id changes
+            // no need to setCurrentNoteUpdate(_id) along with props.refreshData() anymore!
             return;
         }
     }, [notes]); // star/unstar, move to collection
@@ -191,6 +197,7 @@ export default function Notes(props) {
     const starNote = async (id) => {
         if (!currentNote) return;
         // todo: if unsavedChanges, star note gets rid of save changes button. fix this
+        // maybe just hide right sidebar for new notes
         const response = await fetch('/star/note', {
             method: 'POST',
             headers: {
@@ -202,10 +209,6 @@ export default function Notes(props) {
         if (!body) return console.log('no response from server');
         if (!body.success) return console.log('no success: true response from server');
         props.refreshData();
-        // and also refresh current note
-        if (view !== 'starred-notes') setCurrentNoteUpdate(notes[getIndex(id)]); // need this to be up to date though
-        // if in starred notes, then clicking star will cause the note to disappear and then currentNote should/will be reset to false
-        // (via notes.length useEffect)
     }
     const moveNoteToCollection = async (e, id) => {
         if (!currentNote) return;
@@ -227,7 +230,6 @@ export default function Notes(props) {
             const body = await response.json();
             if (!body) return console.log('no response from server');
             if (!body.success) return console.log('no success: true response from server');
-            setCurrentNoteUpdate(id);
             props.refreshData();
             // immediately update button with check mark and remove check mark on old collection
             const prevCollection = miniMenuRef.current.querySelector('.hasCollection');
@@ -388,7 +390,7 @@ export default function Notes(props) {
                     return;
                 }
                 // refresh current user
-                setCurrentNoteUpdate(notes[getIndex(currentNote._id)]);
+                setCurrentNoteUpdate(currentNote._id);
                 props.refreshData();
                 gracefullyCloseModal(modalContent.current);
                 // change view
@@ -420,7 +422,7 @@ export default function Notes(props) {
                     </div>
                 );
             }
-            setModalObject(content);
+            setModalObject(content());
         }
         const deleteCollection = () => {
             setMiniMenu(false);
@@ -539,7 +541,7 @@ export default function Notes(props) {
         for (let i = 0; i < notes.length; i++) {
             notesList.push(<NotePreview
                 key={notes[i]._id}
-                current={currentNote._id}
+                current={currentNote?._id}
                 temp={false}
                 {...notes[i]}
             />)
@@ -550,6 +552,111 @@ export default function Notes(props) {
         if (view.type !== 'tags') return;
         let noTagsSelected = view.tags.length === 0;
         const tagList = () => {
+            const tagMenu = (e, tagName) => {
+                e.preventDefault();
+                const { top, right } = {
+                    top: e.clientY,
+                    right: (window.innerWidth-e.clientX)
+                }
+                const editTag = () => {
+                    const handleEdit = async (e) => {
+                        e.preventDefault();
+                        setModalObject(content({
+                            updatedNameError: null,
+                            loadingIcon: true
+                        }));
+                        const updatedName = e.target[0].value;
+                        const response = await fetch('/edit/tag', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                _id: user._id,
+                                tagName,
+                                updatedName
+                            })
+                        });
+                        const body = await response.json();
+                        if (!body) return console.log('no response from server');
+                        if (!body.success) {
+                            setModalObject(content({
+                                updatedNameError: <span className="formError">{body.updatedNameError}</span>,
+                                loadingIcon: false
+                            }));
+                            return;
+                        }
+                        props.refreshData();
+                        gracefullyCloseModal(modalContent.current);
+                        //setTimeout(() => {
+                            setCurrentNoteUpdate(currentNote._id);
+                            props.updateView({ type: 'tags', tags: [updatedName] });
+                        //}, 2000);
+                    }
+                    const initialBreakpoints = {
+                        updatedNameError: null,
+                        loadingIcon: false
+                    }
+                    let content = (breakpoints = initialBreakpoints) => {
+                        return (
+                            <div className="modalContent" ref={modalContent}>
+                                <h2>Edit tag</h2>
+                                <form onSubmit={handleEdit} autoComplete="off">
+                                    <label htmlFor="updatedName">Edit tag name:</label>
+                                    <input
+                                        type="text"
+                                        name="updatedName"
+                                        defaultValue={tagName}
+                                        className={breakpoints.updatedNameError ? 'nope' : ''}
+                                        onInput={() => setModalObject(content())} />
+                                    {breakpoints.updatedNameError}
+                                    {breakpoints.loadingIcon
+                                        ?   <div className="buttons"><Loading /></div>
+                                        :   <div className="buttons">
+                                                <button type="submit">Submit</button>
+                                                <button type="button" className="greyed" onClick={() => gracefullyCloseModal(modalContent.current)}>Cancel</button>
+                                            </div>}
+                                </form>
+                            </div>
+                        );
+                    }
+                    setModalObject(content());
+                }
+                const confirmDeleteTag = () => {
+                    const deleteTag = async () => {
+                        const response = await fetch('/delete/tag', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ _id: user._id, tagName })
+                        });
+                        const body = await response.json();
+                        if (!body) return console.log('no response from server');
+                        if (!body.success) return console.log('no success: true response from server');
+                        props.refreshData();
+                        gracefullyCloseModal();
+                    }
+                    let content = (
+                        <div className="modalContent" ref={modalContent}>
+                            <h2>Are you sure?</h2>
+                            Deleting the tag "{tagName}" won't delete any notes, only the tag itself. This action cannot be undone.
+                            <div className="buttons">
+                                <button onClick={deleteTag}>Yes, I'm sure</button>
+                                <button className="greyed" onClick={() => gracefullyCloseModal(modalContent.current)}>Cancel</button>
+                            </div>
+                        </div>
+                    );
+                    setModalObject(content);
+                }
+                const content = (
+                    <ul className="smol" style={{ top: top+'px', right: right+'px' }} ref={miniMenuRef}>
+                        <li><button className="edit" onClick={editTag}>Edit tag</button></li>
+                        <li><button className="delete" onClick={confirmDeleteTag}>Delete tag</button></li>
+                    </ul>
+                )
+                setMiniMenu(content);
+            }
             const toggleTag = (tagName) => {
                 const updatedArray = (prevView) => {
                     let currentViewTags = [...prevView.tags];
@@ -574,7 +681,11 @@ export default function Notes(props) {
                 if (view.tags.indexOf(thisTag) !== -1) isSelected = true;
                 else isSelected = false;
                 tagArray.push(
-                    <button onClick={() => toggleTag(thisTag)} key={`showingTag-${thisTag}`} className={`tag${isSelected ? ' hasTag' : ''}`}>
+                    <button
+                      onClick={() => toggleTag(thisTag)}
+                      onContextMenu={(e) => tagMenu(e, thisTag)}
+                      key={`showingTag-${thisTag}`}
+                      className={`tag${isSelected ? ' hasTag' : ''}`}>
                         {thisTag}
                     </button>
                 );
@@ -583,6 +694,7 @@ export default function Notes(props) {
         }
         return (
             <div className="showingTags">
+                <span className="hint">Right-click on a tag for more options.</span>
                 <h2>{noTagsSelected ? 'View' : 'Viewing'} notes tagged:</h2>
                 {tagList()}
             </div>
@@ -590,6 +702,7 @@ export default function Notes(props) {
     }
     return (
         <div className="Notes">
+            <div id="demo" onClick={() => console.dir(notes)}></div>
             {showMiniMenu(miniMenu)}
             <Modal exitModal={gracefullyCloseModal} content={modalObject} />
             <div className="List">

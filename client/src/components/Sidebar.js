@@ -127,7 +127,7 @@ export default function Sidebar(props) {
                     </li>
                     <li><button className="tags" onClick={() => switchView({ type: 'tags', tags: [] })}>Tags</button></li>
                     <li><button className="starred" onClick={() => switchView('starred-notes')}>Starred</button></li>
-                    <li><button className="trash">Trash</button></li>
+                    <li><button className="trash" onClick={() => switchView('trash')}>Trash</button></li>
                 </ul>
             </nav>
             <nav>

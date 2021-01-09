@@ -822,8 +822,22 @@ ul.nolines li.tagsList {
 .showingTags h2 {
     font-size: 0.9rem;
     text-transform: uppercase;
+    margin-top: 1rem;
     margin-bottom: 0.5rem;
 }
 .showingTags .tag {
     margin: 0.2rem;
+}
+.MiniMenu ul.smol button {
+    font-size: 0.75rem;
+    padding: 0.5rem;
+}
+.hint {
+    font-size: 0.8rem;
+}
+.hint::before {
+    content: '\f05a';
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    margin-right: 0.3rem;
 }
