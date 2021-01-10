@@ -8,7 +8,7 @@ export default function Dropdown({ display, children }) {
         if (!dropdownList.current) return;
         if (isOpen) dropdownList.current.style.maxHeight = dropdownList.current.scrollHeight+'px';
         else dropdownList.current.style.maxHeight = '0px';
-    }, [isOpen])
+    }, [isOpen, children]);
     const closeDropdown = (e) => {
         const selectedOption = e.target.closest('button.add')?.innerHTML;
         if (!selectedOption) return;

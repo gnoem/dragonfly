@@ -311,9 +311,8 @@ export default function Notes(props) {
             }
             setModalObject(content());
         }
-        const collectionsList = () => {
+        const collectionsList = (collections) => {
             const createCollection = () => {
-
                 const handleSubmit = async (e) => {
                     e.preventDefault();
                     setModalObject(content({
@@ -339,6 +338,11 @@ export default function Notes(props) {
                     }
                     gracefullyCloseModal(modalContent.current);
                     props.refreshData();
+                    let updatedCollectionsList;
+                    if (user.collections.indexOf(collectionName) !== -1) updatedCollectionsList = user.collections;
+                    else updatedCollectionsList = [...user.collections, collectionName];
+                    setMiniMenu(miniMenuContent({ collections: updatedCollectionsList }));
+                    // and adjust dropdown height
                 }
                 const initialBreakpoints = {
                     collectionNameError: null,
@@ -376,10 +380,10 @@ export default function Notes(props) {
                 </li>
             );
             let userCollections = [];
-            if (!user.collections || !user.collections.length) return <Dropdown>{createCollection}</Dropdown>;
+            if (!collections || !collections.length) return <Dropdown>{createCollection}</Dropdown>;
             let selectedCollection;
-            for (let i = 0; i < user.collections.length; i++) {
-                let collectionName = user.collections[i];
+            for (let i = 0; i < collections.length; i++) {
+                let collectionName = collections[i];
                 let belongsToCollection = '';
                 if (currentNote.collection === collectionName) {
                     belongsToCollection = ' hasCollection';
@@ -400,13 +404,15 @@ export default function Notes(props) {
                 </Dropdown>
             )
         }
-        let content = (
+        let miniMenuContent = (breakpoints = {
+            collections: user.collections
+        }) => (
             <ul style={{ top: top+'px', right: right+'px' }} ref={miniMenuRef}>
                 <li><strong>Move to collection:</strong></li>
-                {collectionsList()}
+                {collectionsList(breakpoints.collections)}
             </ul>
-        )
-        setMiniMenu(content);
+        );
+        setMiniMenu(miniMenuContent());
     }
     const tagNote = async (e, id) => {
         if (!currentNote) return;
