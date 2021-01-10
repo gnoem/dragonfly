@@ -62,7 +62,6 @@ export default function Dashboard(props) {
     const collection = (collectionName) => {
         console.log('collection in Dashboard is updated');
         let notesInCollection = notes.filter(note => note.collection === collectionName);
-        console.dir(collection);
         return (
             <Notes view={view} updateView={updateView} user={user} notes={notesInCollection} refreshData={() => updateTrigger(Date.now())} />
         )

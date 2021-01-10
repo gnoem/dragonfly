@@ -10,9 +10,9 @@ export default function Dropdown({ display, children }) {
         else dropdownList.current.style.maxHeight = '0px';
     }, [isOpen])
     const closeDropdown = (e) => {
-        const selectedCollection = e.target.closest('button').innerHTML;
-        if (!selectedCollection) return;
-        setDisplayedOption(selectedCollection);
+        const selectedOption = e.target.closest('button.add')?.innerHTML;
+        if (!selectedOption) return;
+        setDisplayedOption(selectedOption);
         setIsOpen(false);
     }
     return (
