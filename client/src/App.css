@@ -269,9 +269,40 @@ button.caution {
     color: #aaa;
     padding: 0;
     margin: 0 auto;
+    position: relative;
 }
 .Dashboard .Options button + button {
     margin-top: 1rem;
+}
+.Dashboard .Options button .tooltip {
+    position: absolute;
+    top: 50%;
+    right: 100%;
+    margin-right: 0.75rem;
+    white-space: nowrap;
+    transform: translate3d(0, -50%, 0);
+    background: #333;
+    font-size: 0.7rem;
+    line-height: 2rem;
+    color: #fff;
+    padding: 0 0.75rem;
+    border-radius: 0.5rem;
+    display: none;
+}
+.Dashboard .Options button .tooltip::before {
+    position: absolute;
+    top: 50%;
+    left: 100%;
+    margin-left: -0.25rem;
+    transform: translate3d(0, -50%, 0) rotate(45deg);
+    content: '';
+    display: block;
+    width: 0.5rem;
+    height: 0.5rem;
+    background: #333;
+}
+.Dashboard .Options button:hover .tooltip {
+    display: block;
 }
 .Sidebar h1 {
     font-family: var(--display-font);
@@ -559,6 +590,9 @@ button.logout::before {
 }
 .MiniMenu button.hasCollection::before, .MiniMenu button.add.hasCollection::before {
     content: '\f00c';
+}
+.MiniMenu button.hasCollection:hover::before, .MiniMenu button.add.hasCollection:hover::before {
+    content: '\f00d';
 }
 .Modal {
     position: fixed;
@@ -874,4 +908,38 @@ ul.nolines li.tagsList {
     padding: 1.5rem;
     border-radius: 0.5rem;
     margin-bottom: 2rem;
+}
+.Dropdown, .Dropdown * {
+    user-select: none;
+}
+.Dropdown .dropdownDisplay {
+    font-size: 0.9rem;
+    border: 1px solid #ddd;
+    padding: 0.5rem 1rem;
+    border-radius: 999px;
+    cursor: pointer;
+    margin-bottom: 0.5rem;
+    transition: margin-bottom 0.2s;
+}
+.Dropdown .dropdownDisplay::after {
+    content: '\f0d9';
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    display: block;
+    transition: transform 0.2s;
+    float: right;
+}
+.Dropdown.expanded .dropdownDisplay::after {
+    transform: rotate(-90deg);
+}
+.Dropdown.expanded .dropdownDisplay {
+    margin-bottom: 0;
+}
+.Dropdown .dropdownList {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.2s;
+}
+.Dropdown .dropdownList li:last-child {
+    padding-bottom: 0.2rem;
 }

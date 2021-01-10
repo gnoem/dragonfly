@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Modal from './Modal';
 import MiniMenu from './MiniMenu';
+import Dropdown from './Dropdown';
 import Loading from './Loading';
 import NotePreview from './NotePreview';
 import NoteEditor from './NoteEditor';
@@ -261,43 +262,79 @@ export default function Notes(props) {
             top: e.clientY-16,
             right: (window.innerWidth-e.clientX)+16
         }
-        const handleAddToCollection = async (e, collectionName) => {
-            const response = await fetch('/categorize/note', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ _id: currentNote._id, collectionName })
-            });
-            const body = await response.json();
-            if (!body) return console.log('no response from server');
-            if (!body.success) return console.log('no success: true response from server');
-            props.refreshData();
-            // immediately update button with check mark and remove check mark on old collection
-            const prevCollection = miniMenuRef.current.querySelector('.hasCollection');
-            if (prevCollection) prevCollection.classList.remove('hasCollection');
-            const button = e.target;
-            button.classList.add('hasCollection');
-            //e.currentTarget.classList.add('belongsToCollection');
-            setTimeout(() => console.log(currentNote.collection), 2000); // returning currentNote.collection as of when moveNoteToCollection was first called
+        const moveToCollection = async (e, collectionName) => {
+            console.log('clicked on', e.target);
+            let clickedButton = e.target;
+            const handleMove = async (collectionName) => {
+                let removingFromCollection = modalContent.current;
+                if (removingFromCollection) setModalObject(content({ loadingIcon: true }));
+                const response = await fetch('/categorize/note', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ _id: currentNote._id, collectionName })
+                });
+                const body = await response.json();
+                if (!body) return console.log('no response from server');
+                if (!body.success) return console.log('no success: true response from server');
+                props.refreshData();
+                if (removingFromCollection) {
+                    clickedButton.classList.remove('hasCollection');
+                    gracefullyCloseModal(modalContent.current);
+                } else {
+                    // immediately update button with check mark and remove check mark on old collection
+                    if (miniMenuRef.current) {
+                        const prevCollection = miniMenuRef.current.querySelector('.hasCollection');
+                        if (prevCollection) prevCollection.classList.remove('hasCollection');   
+                    }
+                    clickedButton.classList.add('hasCollection');
+                }
+            }
+            if (!clickedButton.classList.contains('hasCollection')) return handleMove(collectionName);
+            let content = (breakpoints = {
+                loadingIcon: false
+            }) => {
+                return (
+                    <div className="modalContent" ref={modalContent}>
+                        <h2>Remove from collection</h2>
+                        Are you sure you want to remove this note from the collection "{collectionName}"?
+                        {breakpoints.loadingIcon
+                            ?   <Loading />
+                            :   <div className="buttons">
+                                    <button onClick={() => handleMove(false)}>Yes, I'm sure</button>
+                                    <button className="greyed" onClick={() => gracefullyCloseModal(modalContent.current)}>Take me back</button>
+                                </div>
+                            }
+                    </div>
+                );
+            }
+            setModalObject(content());
         }
         const collectionsList = () => {
-            if (!user.collections) return;
+            if (!user.collections || !user.collections.length) return;
             let userCollections = [];
+            let selectedCollection;
             for (let i = 0; i < user.collections.length; i++) {
                 let collectionName = user.collections[i];
-                const belongsToCollection = currentNote.collection === collectionName
-                    ? ' hasCollection'
-                    : '';
+                let belongsToCollection = '';
+                if (currentNote.collection === collectionName) {
+                    belongsToCollection = ' hasCollection';
+                    selectedCollection = collectionName;
+                }
                 userCollections.push(
                     <li key={`minimenu-user.collections-${collectionName}`}>
-                        <button className={`add${belongsToCollection}`} onClick={(e) => handleAddToCollection(e, collectionName)}>
+                        <button className={`add${belongsToCollection}`} onClick={(e) => moveToCollection(e, collectionName)}>
                             {collectionName}
                         </button>
                     </li>
                 );
             }
-            return userCollections;
+            return (
+                <Dropdown display={selectedCollection}>
+                    {userCollections}
+                </Dropdown>
+            )
         }
         let content = (
             <ul style={{ top: top+'px', right: right+'px' }} ref={miniMenuRef}>
@@ -900,12 +937,24 @@ export default function Notes(props) {
             </div>
             {currentNote && !currentNote.trash
                 ?   <div className="Options">
-                        <button className={currentNote.starred ? 'hasStar' : null} onClick={() => starNote(currentNote._id)}><i className="fas fa-star"></i></button>
-                        <button onClick={(e) => moveNoteToCollection(e, currentNote._id)}><i className="fas fa-book"></i></button>
-                        <button onClick={(e) => tagNote(e, currentNote._id)}><i className="fas fa-tags"></i></button>
+                        <button className={currentNote.starred ? 'hasStar' : null} onClick={() => starNote(currentNote._id)}>
+                            <i className="fas fa-star"></i>
+                            <span className="tooltip">{currentNote.starred ? 'Unstar' : 'Add star'}</span>
+                        </button>
+                        <button onClick={(e) => moveNoteToCollection(e, currentNote._id)}>
+                            <i className="fas fa-book"></i>
+                            <span className="tooltip">Move to collection</span>
+                        </button>
+                        <button onClick={(e) => tagNote(e, currentNote._id)}>
+                            <i className="fas fa-tags"></i>
+                            <span className="tooltip">Add tags</span>
+                        </button>
                         <button><i className="fas fa-share-square"></i></button>
                         <button><i className="fas fa-file-download"></i></button>
-                        <button onClick={view === 'trash' ? () => confirmPermanentDeletion(currentNote._id) : () => confirmMoveToTrash(currentNote._id)}><i className="fas fa-trash"></i></button>
+                        <button onClick={view === 'trash' ? () => confirmPermanentDeletion(currentNote._id) : () => confirmMoveToTrash(currentNote._id)}>
+                            <i className="fas fa-trash"></i>
+                            <span className="tooltip">Move to Trash</span>
+                        </button>
                     </div>
                 :   ''
             }
