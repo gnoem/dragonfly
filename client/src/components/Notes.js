@@ -420,7 +420,7 @@ export default function Notes(props) {
             top: e.clientY-16,
             right: (window.innerWidth-e.clientX)+16
         }
-        const handleAddTag = async (e, tagName) => {
+        const handleTagNote = async (e, tagName) => {
             const response = await fetch('/tag/note', {
                 method: 'POST',
                 headers: {
@@ -436,31 +436,41 @@ export default function Notes(props) {
             else button.classList.remove('hasTag');
             props.refreshData();
         }
-        const tagsList = () => {
-            if (!user.tags) return;
+        const tagsList = (tags) => {
+            const createNewTag = (
+                <li key={`minimenu-user.collections-createNewTag`} className="tagsList">
+                    <button className="tag createTag" onClick={() => createTag(e, miniMenuContent)}>
+                        Create new
+                    </button>
+                </li>
+            );
+            if (!tags) return createNewTag;
             let userTags = [];
-            for (let i = 0; i < user.tags.length; i++) {
-                let tagName = user.tags[i];
+            for (let i = 0; i < tags.length; i++) {
+                let tagName = tags[i];
                 const hasTag = (currentNote.tags.indexOf(tagName) !== -1)
                     ? ' hasTag'
                     : '';
                 userTags.push(
                     <li key={`minimenu-user.tags-${tagName}`} className="tagsList">
-                        <button className={`tag${hasTag}`} onClick={(e) => handleAddTag(e, tagName)}>
+                        <button className={`tag${hasTag}`} onClick={(e) => handleTagNote(e, tagName)}>
                             {tagName}
                         </button>
                     </li>
-                )
+                );
             }
+            userTags.push(createNewTag);
             return userTags;
         }
-        let content = (
+        let miniMenuContent = (breakpoints = {
+            tags: user.tags
+        }) => (
             <ul className="nolines" style={{ top: top+'px', right: right+'px' }} ref={miniMenuRef}>
                 <li><strong>Tag note:</strong></li>
-                {tagsList()}
+                {tagsList(breakpoints.tags)}
             </ul>
-        )
-        setMiniMenu(content);
+        );
+        setMiniMenu(miniMenuContent());
     }
     const gracefullyCloseModal = (modal) => {
         let container = modal.classList.contains('Modal')
@@ -766,7 +776,22 @@ export default function Notes(props) {
         }
         return notesList;
     }
-    const createTag = () => {
+    const createTag = (e, fromMiniMenu = false) => {
+        e.preventDefault();
+        console.dir(user.tags);
+        // annoying issue with creating new tag or collection from editor sidebar mini menu:
+        // once u create it, instead of waiting for server response to update UI, just assume the server
+        // will respond in a second, the tags list
+        // passed to the generateMiniMenu function as a parameter and that becomes the source of truth
+        // for the list items for as long as the mini menu remains open (if u close it then open it again
+        // then  it generates the list items from actual user.tags or user.collections data)
+        ////// BUG:
+        // if u add a new tag, it shows up in the list instantly
+        // and then if u try to add a 2nd one immediately afterwards, it replaces the 1st tag u created
+        // doesnt happen if u close and then reopen (provided the api call is successful)
+        //  minimenu  does not have uptodate user.tags array while rest of app does
+        // possibly bc minimenu is launched from click event and thats when it generates the data that gets used
+        // then doesnt automatically get rerendered with updated data
         const handleSubmit = async (e) => {
             e.preventDefault();
             setModalObject(content({
@@ -792,7 +817,13 @@ export default function Notes(props) {
             }
             gracefullyCloseModal(modalContent.current);
             props.refreshData();
-            props.updateView({ type: 'tags', tags: [tagName] });
+            if (!fromMiniMenu) props.updateView({ type: 'tags', tags: [tagName] });
+            else {
+                let updatedTagsList;
+                if (user.tags.indexOf(tagName) !== -1) updatedTagsList = user.tags;
+                else updatedTagsList = [...user.tags, tagName];
+                setMiniMenu(fromMiniMenu({ tags: updatedTagsList }));
+            }
         }
         let content = (breakpoints = {
             tagNameError: null,
@@ -979,7 +1010,7 @@ export default function Notes(props) {
     }
     return (
         <div className="Notes">
-            <div id="demo" onClick={() => console.dir(modalObject)}></div>
+            <div id="demo" onClick={() => console.dir(user.tags)}></div>
             {showMiniMenu(miniMenu)}
             <Modal exitModal={gracefullyCloseModal} content={modalObject} />
             <div className="List">
