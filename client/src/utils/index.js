@@ -1,8 +1,7 @@
-/* export function elementHasParent(element, classname) {
-    if (element.className && element.className.split(' ').indexOf(classname) >= 0) return true;
-    return element.parentNode && elementHasParent(element.parentNode, classname);
-} // */
-
 export function elementHasParent(element, selector) {
     return element.closest(selector);
+}
+
+export function elementIsInArray(element, array) {
+    return (array.indexOf(element) !== -1) ? true : false;
 }

@@ -5,7 +5,7 @@ import Dropdown from './Dropdown';
 import Loading from './Loading';
 import NotePreview from './NotePreview';
 import NoteEditor from './NoteEditor';
-import { elementHasParent } from '../utils';
+import { elementHasParent, elementIsInArray } from '../utils';
 
 export default function Notes(props) {
     const { view, user, notes } = props;
@@ -58,13 +58,11 @@ export default function Notes(props) {
         if (prevNotesCount > notes.length) { // a note has been deleted (or removed via unstar, etc.)
             // if deleted altogether, behavior should have already been specified in deleteNote()
             // if removed e.g. via unstar, setCurrentNote(nextInLine)
-            if (view !== 'all-notes') { // outside of 'all-notes', whether deletion or removal is irrelevant
-                console.log('notes.length decreased!!!!!');
-                if (!currentNote) return;
-                let index = getIndex(currentNote._id)+1;
-                let nextInLine = notes[index] ? notes[index] : false;
-                setCurrentNote(nextInLine);
-            }
+            if (view === 'all-notes') return; // outside of 'all-notes', whether deletion or removal is irrelevant
+            if (!currentNote) return;
+            let index = getIndex(currentNote._id)+1;
+            let nextInLine = notes[index] ? notes[index] : false;
+            setCurrentNote(nextInLine);
         }
     // come back and figure out what needs to be in the dependency array
     // eslint-disable-next-line
@@ -259,8 +257,8 @@ export default function Notes(props) {
         // or move to collection
         // list with checkmarks on side
         const { top, right } = {
-            top: e.clientY-16,
-            right: (window.innerWidth-e.clientX)+16
+            top: e.clientY - 16,
+            right: (window.innerWidth - e.clientX) + 16
         }
         const moveToCollection = async (e, collectionName) => {
             console.log('clicked on', e.target);
@@ -339,10 +337,9 @@ export default function Notes(props) {
                     gracefullyCloseModal(modalContent.current);
                     props.refreshData();
                     let updatedCollectionsList;
-                    if (user.collections.indexOf(collectionName) !== -1) updatedCollectionsList = user.collections;
+                    if (elementIsInArray(collectionName, user.collections)) updatedCollectionsList = user.collections;
                     else updatedCollectionsList = [...user.collections, collectionName];
                     setMiniMenu(miniMenuContent({ collections: updatedCollectionsList }));
-                    // and adjust dropdown height
                 }
                 const initialBreakpoints = {
                     collectionNameError: null,
@@ -417,8 +414,8 @@ export default function Notes(props) {
     const tagNote = async (e, id) => {
         if (!currentNote) return;
         const { top, right } = {
-            top: e.clientY-16,
-            right: (window.innerWidth-e.clientX)+16
+            top: e.clientY - 16,
+            right: (window.innerWidth - e.clientX) + 16
         }
         const handleTagNote = async (e, tagName) => {
             const response = await fetch('/tag/note', {
@@ -426,7 +423,7 @@ export default function Notes(props) {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ _id: currentNote._id, tagName })
+                body: JSON.stringify({ _id: id, tagName })
             });
             const body = await response.json();
             if (!body) return console.log('no response from server');
@@ -448,9 +445,7 @@ export default function Notes(props) {
             let userTags = [];
             for (let i = 0; i < tags.length; i++) {
                 let tagName = tags[i];
-                const hasTag = (currentNote.tags.indexOf(tagName) !== -1)
-                    ? ' hasTag'
-                    : '';
+                const hasTag = (elementIsInArray(tagName, currentNote.tags)) ? ' hasTag' : '';
                 userTags.push(
                     <li key={`minimenu-user.tags-${tagName}`} className="tagsList">
                         <button className={`tag${hasTag}`} onClick={(e) => handleTagNote(e, tagName)}>
@@ -525,8 +520,8 @@ export default function Notes(props) {
         if (view.type !== 'collection') return;
         // mini menu -> edit or delete
         const { top, right } = {
-            top: e.clientY-16,
-            right: (window.innerWidth-e.clientX)+16
+            top: e.clientY - 16,
+            right: (window.innerWidth - e.clientX) + 16
         }
         const editCollection = () => {
             const handleEdit = async (e) => {
@@ -609,11 +604,11 @@ export default function Notes(props) {
                 let nextInLine = () => {
                     let thisCollectionIndex = user.collections.indexOf(collectionName);
                     let nextCollection;
-                    if (user.collections[thisCollectionIndex-1]) {
-                        nextCollection = user.collections[thisCollectionIndex-1];
+                    if (user.collections[thisCollectionIndex - 1]) {
+                        nextCollection = user.collections[thisCollectionIndex - 1];
                         return { type: 'collection', name: nextCollection }
-                    } else if (user.collections[thisCollectionIndex+1]) {
-                        nextCollection = user.collections[thisCollectionIndex+1];
+                    } else if (user.collections[thisCollectionIndex + 1]) {
+                        nextCollection = user.collections[thisCollectionIndex + 1];
                         return { type: 'collection', name: nextCollection }
                     } else return 'all-notes';
                 }
@@ -637,7 +632,7 @@ export default function Notes(props) {
             setModalObject(content());
         }
         let miniMenuContent = (
-            <ul onClick={() => setMiniMenu(false)} style={{ top: top+'px', right: right+'px' }} ref={miniMenuRef}>
+            <ul onClick={() => setMiniMenu(false)} style={{ top: `${top}px`, right: `${right}px` }} ref={miniMenuRef}>
                 <li><button onClick={editCollection}>Edit collection</button></li>
                 <li><button onClick={deleteCollection}>Delete collection</button></li>
             </ul>
@@ -647,8 +642,8 @@ export default function Notes(props) {
     const trashOptions = (e) => {
         if (view !== 'trash') return;
         const { top, right } = {
-            top: e.clientY-16,
-            right: (window.innerWidth-e.clientX)+16
+            top: e.clientY - 16,
+            right: (window.innerWidth - e.clientX) + 16
         }
         const confirmEmptyTrash = () => {
             const emptyTrash = async () => {
@@ -686,7 +681,7 @@ export default function Notes(props) {
             setModalObject(content());
         }
         let content = (
-            <ul onClick={() => setMiniMenu(false)} style={{ top: top+'px', right: right+'px' }} ref={miniMenuRef}>
+            <ul onClick={() => setMiniMenu(false)} style={{ top: `${top}px`, right: `${right}px` }} ref={miniMenuRef}>
                 <li><button onClick={confirmEmptyTrash}>Empty Trash</button></li>
             </ul>
         );
@@ -820,7 +815,7 @@ export default function Notes(props) {
             if (!fromMiniMenu) props.updateView({ type: 'tags', tags: [tagName] });
             else {
                 let updatedTagsList;
-                if (user.tags.indexOf(tagName) !== -1) updatedTagsList = user.tags;
+                if (elementIsInArray(tagName, user.tags)) updatedTagsList = user.tags;
                 else updatedTagsList = [...user.tags, tagName];
                 setMiniMenu(fromMiniMenu({ tags: updatedTagsList }));
             }
@@ -866,7 +861,7 @@ export default function Notes(props) {
                 e.preventDefault();
                 const { top, right } = {
                     top: e.clientY,
-                    right: (window.innerWidth-e.clientX)
+                    right: (window.innerWidth - e.clientX)
                 }
                 const editTag = () => {
                     const handleEdit = async (e) => {
@@ -957,7 +952,7 @@ export default function Notes(props) {
                     setModalObject(content);
                 }
                 let content = (
-                    <ul onClick={() => setMiniMenu(false)} className="smol" style={{ top: top+'px', right: right+'px' }} ref={miniMenuRef}>
+                    <ul onClick={() => setMiniMenu(false)} className="smol" style={{ top: `${top}px`, right: `${right}px` }} ref={miniMenuRef}>
                         <li><button className="edit" onClick={editTag}>Edit tag</button></li>
                         <li><button className="delete" onClick={confirmDeleteTag}>Delete tag</button></li>
                     </ul>
@@ -967,11 +962,11 @@ export default function Notes(props) {
             const toggleTag = (tagName) => {
                 const updatedArray = (prevView) => {
                     let currentViewTags = [...prevView.tags];
-                    let index = currentViewTags.indexOf(tagName);
-                    if (index === -1) {
+                    if (!elementIsInArray(tagName, currentViewTags)) {
                         currentViewTags.push(tagName);
                         return currentViewTags;
                     }
+                    let index = currentViewTags.indexOf(tagName);
                     currentViewTags.splice(index, 1);
                     return currentViewTags;
                 }
@@ -984,9 +979,7 @@ export default function Notes(props) {
             let tagArray = [];
             for (let i = 0; i < user.tags.length; i++) {
                 let thisTag = user.tags[i];
-                let isSelected;
-                if (view.tags.indexOf(thisTag) !== -1) isSelected = true;
-                else isSelected = false;
+                let isSelected = elementIsInArray(thisTag, view.tags);
                 tagArray.push(
                     <button
                       onClick={() => toggleTag(thisTag)}
