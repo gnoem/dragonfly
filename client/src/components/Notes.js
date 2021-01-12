@@ -153,7 +153,9 @@ export default function Notes(props) {
         setCurrentNote({});
     }
     const confirmMoveToTrash = (id) => {
-        const moveToTrash = async (id) => {
+        const moveToTrash = async (e, id) => {
+            e.preventDefault();
+            setModalObject(content({ loadingIcon: true }));
             const response = await fetch('/trash/note', {
                 method: 'POST',
                 headers: {
@@ -169,17 +171,22 @@ export default function Notes(props) {
             setUnsavedChanges(false);
             gracefullyCloseModal(modalContent.current);
         }
-        let content = (
+        let content = (breakpoints = {
+            loadingIcon: false
+        }) => (
             <div className="modalContent" ref={modalContent}>
                 <h2>Move to Trash</h2>
                 Notes moved to the Trash folder will remain there for 30 days before being automatically deleted. You can customize this option in Settings.
-                <div className="buttons">
-                    <button onClick={() => moveToTrash(id)}>Got it</button>
-                    <button className="greyed" onClick={() => gracefullyCloseModal(modalContent.current)}>Cancel</button>
-                </div>
+                {breakpoints.loadingIcon
+                    ?   <Loading />
+                    :   <form onSubmit={(e) => moveToTrash(e, id)} className="buttons">
+                            <button type="submit">Got it</button>
+                            <button type="button" className="greyed" onClick={() => gracefullyCloseModal(modalContent.current)}>Cancel</button>
+                        </form>
+                    }
             </div>
         );
-        setModalObject(content);
+        setModalObject(content());
     }
     const untrashNote = async (id) => {
         const response = await fetch('/trash/note', {
@@ -195,7 +202,9 @@ export default function Notes(props) {
         props.refreshData();
     }
     const confirmPermanentDeletion = (id) => {
-        const deleteNote = async (id) => {
+        const deleteNote = async (e, id) => {
+            e.preventDefault();
+            setModalObject(content({ loadingIcon: true }));
             const response = await fetch('/delete/note', {
                 method: 'POST',
                 headers: {
@@ -214,17 +223,22 @@ export default function Notes(props) {
             setUnsavedChanges(false);
             gracefullyCloseModal(modalContent.current);
         }
-        let content = (
+        let content = (breakpoints = {
+            loadingIcon: false
+        }) => (
             <div className="modalContent" ref={modalContent}>
                 <h2>Are you sure?</h2>
                 You are about to permanently delete this note.
-                <div className="buttons">
-                    <button onClick={() => deleteNote(id)}>Yes, I'm sure</button>
-                    <button className="greyed" onClick={() => gracefullyCloseModal(modalContent.current)}>Cancel</button>
-                </div>
+                {breakpoints.loadingIcon
+                    ?   <Loading />
+                    :   <form onSubmit={(e) => deleteNote(e, id)} className="buttons">
+                            <button type="submit">Yes, I'm sure</button>
+                            <button type="button" className="greyed" onClick={() => gracefullyCloseModal(modalContent.current)}>Cancel</button>
+                        </form>
+                    }
             </div>
         );
-        setModalObject(content);
+        setModalObject(content());
     }
     const starNote = async (id) => {
         if (!currentNote) return;
