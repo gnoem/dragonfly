@@ -253,15 +253,11 @@ export default function Notes(props) {
     }
     const moveNoteToCollection = async (e, id) => {
         if (!currentNote) return;
-        // add to collection
-        // or move to collection
-        // list with checkmarks on side
         const { top, right } = {
             top: e.clientY - 16,
             right: (window.innerWidth - e.clientX) + 16
         }
         const moveToCollection = async (e, collectionName) => {
-            console.log('clicked on', e.target);
             let clickedButton = e.target;
             const handleMove = async (collectionName) => {
                 let removingFromCollection = modalContent.current;
@@ -271,7 +267,7 @@ export default function Notes(props) {
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ _id: currentNote._id, collectionName })
+                    body: JSON.stringify({ _id: id, collectionName })
                 });
                 const body = await response.json();
                 if (!body) return console.log('no response from server');
@@ -309,66 +305,67 @@ export default function Notes(props) {
             }
             setModalObject(content());
         }
-        const collectionsList = (collections) => {
-            const createCollection = () => {
-                const handleSubmit = async (e) => {
-                    e.preventDefault();
+        const createCollection = () => {
+            console.dir(user.collections);
+            const handleSubmit = async (event) => {
+                event.preventDefault();
+                setModalObject(content({
+                    collectionNameError: null, // null or empty string?
+                    loadingIcon: true   
+                }));
+                const collectionName = event.target[0].value;
+                const response = await fetch('/add/collection', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username: props.user.username, collectionName })
+                });
+                const body = await response.json();
+                if (!body) return console.log('no response from server');
+                if (!body.success) {
                     setModalObject(content({
-                        collectionNameError: null, // null or empty string?
-                        loadingIcon: true   
+                        collectionNameError: <span className="formError">{body.collectionNameError}</span>,
+                        loadingIcon: false
                     }));
-                    const collectionName = e.target[0].value;
-                    const response = await fetch('/add/collection', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ username: props.user.username, collectionName })
-                    });
-                    const body = await response.json();
-                    if (!body) return;
-                    if (!body.success) {
-                        setModalObject(content({
-                            collectionNameError: <span className="formError">{body.collectionNameError}</span>,
-                            loadingIcon: false
-                        }));
-                        return;
-                    }
-                    gracefullyCloseModal(modalContent.current);
-                    props.refreshData();
-                    let updatedCollectionsList;
-                    if (elementIsInArray(collectionName, user.collections)) updatedCollectionsList = user.collections;
-                    else updatedCollectionsList = [...user.collections, collectionName];
-                    setMiniMenu(miniMenuContent({ collections: updatedCollectionsList }));
+                    return;
                 }
-                const initialBreakpoints = {
-                    collectionNameError: null,
-                    loadingIcon: false
-                }
-                let content = (breakpoints = initialBreakpoints) => { // todo better name / possible places for error message or similar to appear in this modal
-                    return (
-                        <div className="modalContent" ref={modalContent}>
-                            <h2>Create a new collection</h2>
-                            <form onSubmit={handleSubmit} autoComplete="off">
-                                <label htmlFor="collectionName">Enter a name for your collection:</label>
-                                <input
-                                    type="text"
-                                    name="collectionName"
-                                    className={breakpoints.collectionNameError ? 'nope' : ''}
-                                    onInput={() => setModalObject(content())} />
-                                {breakpoints.collectionNameError}
-                                {breakpoints.loadingIcon
-                                    ?   <div className="buttons"><Loading /></div>
-                                    :   <div className="buttons">
-                                            <button type="submit">Submit</button>
-                                            <button type="button" className="greyed" onClick={() => gracefullyCloseModal(modalContent.current)}>Cancel</button>
-                                        </div>}
-                            </form>
-                        </div>
-                    );
-                }
-                setModalObject(content());
+                gracefullyCloseModal(modalContent.current);
+                props.refreshData();
+                let updatedCollectionsList = (elementIsInArray(collectionName, user.collections))
+                    ? user.collections
+                    : [...user.collections, collectionName];
+                setMiniMenu(miniMenuContent({ collections: updatedCollectionsList }));
             }
+            const initialBreakpoints = {
+                collectionNameError: null,
+                loadingIcon: false
+            }
+            let content = (breakpoints = initialBreakpoints) => { // todo better name / possible places for error message or similar to appear in this modal
+                return (
+                    <div className="modalContent" ref={modalContent}>
+                        <h2>Create a new collection</h2>
+                        <form onSubmit={handleSubmit} autoComplete="off">
+                            <label htmlFor="collectionName">Enter a name for your collection:</label>
+                            <input
+                                type="text"
+                                name="collectionName"
+                                className={breakpoints.collectionNameError ? 'nope' : ''}
+                                onInput={() => setModalObject(content())} />
+                            {breakpoints.collectionNameError}
+                            {breakpoints.loadingIcon
+                                ?   <div className="buttons"><Loading /></div>
+                                :   <div className="buttons">
+                                        <button type="submit">Submit</button>
+                                        <button type="button" className="greyed" onClick={() => gracefullyCloseModal(modalContent.current)}>Cancel</button>
+                                    </div>}
+                        </form>
+                    </div>
+                );
+            }
+            setModalObject(content());
+        }
+        const collectionsList = (collections) => {
             const createNewCollection = (
                 <li key={`minimenu-user.collections-createNewCollection`}>
                     <button onClick={createCollection}>
@@ -473,14 +470,6 @@ export default function Notes(props) {
             : modal.closest('.Modal');
         container.classList.add('goodbye');
         setTimeout(() => setModalObject(false), 200);
-    }
-    const showMiniMenu = (content) => {
-        if (!content) return;
-        return (
-            <MiniMenu exitMenu={() => setMiniMenu(false)}>
-                {content}
-            </MiniMenu>
-        )
     }
     const noNoteSelected = () => {
         if (view === 'all-notes') {
@@ -604,11 +593,11 @@ export default function Notes(props) {
                 let nextInLine = () => {
                     let thisCollectionIndex = user.collections.indexOf(collectionName);
                     let nextCollection;
-                    if (user.collections[thisCollectionIndex - 1]) {
-                        nextCollection = user.collections[thisCollectionIndex - 1];
+                    if (user.collections[thisCollectionIndex--]) {
+                        nextCollection = user.collections[thisCollectionIndex--];
                         return { type: 'collection', name: nextCollection }
-                    } else if (user.collections[thisCollectionIndex + 1]) {
-                        nextCollection = user.collections[thisCollectionIndex + 1];
+                    } else if (user.collections[thisCollectionIndex++]) {
+                        nextCollection = user.collections[thisCollectionIndex++];
                         return { type: 'collection', name: nextCollection }
                     } else return 'all-notes';
                 }
@@ -619,7 +608,7 @@ export default function Notes(props) {
             }) => (
                 <div className="modalContent" ref={modalContent}>
                     <h2>Are you sure?</h2>
-                    Deleting this collection will not delete the notes inside it.
+                    Deleting the collection "{collectionName}" won't delete any notes, only the collection itself. This action cannot be undone.
                     {breakpoints.loadingIcon
                         ?   <Loading />
                         :   <form onSubmit={handleDelete} className="buttons">
@@ -629,6 +618,9 @@ export default function Notes(props) {
                         }
                 </div>
             );
+            // NOTE: .buttons div is a form with onSubmit={handleDelete} because for some odd reason, if I try to call handleDelete
+            // from a button onClick and then setModalObject to anything, modalObject immediately gets set to false and then
+            // modalContent.current gets set to null, causing an error message at gracefullyCloseModal(modalContent.current)
             setModalObject(content());
         }
         let miniMenuContent = (
@@ -1003,9 +995,9 @@ export default function Notes(props) {
     }
     return (
         <div className="Notes">
-            <div id="demo" onClick={() => console.dir(user.tags)}></div>
-            {showMiniMenu(miniMenu)}
+            <div id="demo" onClick={() => console.dir(user.collections)}></div>
             <Modal exitModal={gracefullyCloseModal} content={modalObject} />
+            <MiniMenu exitMenu={() => setMiniMenu(false)} content={miniMenu} />
             <div className="List">
                 {listHeader()}
                 <div className="NotePreviews" onClick={handleClick}>

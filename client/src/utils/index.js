@@ -3,5 +3,5 @@ export function elementHasParent(element, selector) {
 }
 
 export function elementIsInArray(element, array) {
-    return (array.indexOf(element) !== -1) ? true : false;
+    return array.indexOf(element) !== -1;
 }

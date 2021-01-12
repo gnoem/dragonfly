@@ -547,7 +547,7 @@ button.logout::before {
     margin-top: 0;
 }
 .MiniMenu {
-    z-index: 999999;
+    z-index: 999;
     position: fixed;
 }
 .MiniMenu ul {

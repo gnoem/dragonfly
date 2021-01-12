@@ -1,8 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { elementHasParent } from '../utils';
 
-export default function Modal(props) {
-    const { exitModal, content } = props;
+export default function Modal({ exitModal, content }) {
     const dim = useRef(null);
     const modalContainer = useRef(null);
     useEffect(() => {
@@ -12,14 +11,15 @@ export default function Modal(props) {
                 window.removeEventListener('click', closeModal);
             }
             if (elementHasParent(e.target, '#demo')) return;
-            if (!modalContainer.current.contains(e.target)) exitModal(dim.current);
+            if (modalContainer.current.contains(e.target)) return;
+            exitModal(dim.current);
         }
         window.addEventListener('click', closeModal);
         // todo add escape keydown event listener
         return () => {
             window.removeEventListener('click', closeModal);
         }
-    }, [exitModal]);
+    }, [exitModal]); // should be content prop instead? for when content switches between false and jsx object
     if (!content) return null;
     return (
         <div className="Modal" ref={dim}>
