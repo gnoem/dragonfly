@@ -19,7 +19,7 @@ export default function Modal({ exitModal, content }) {
         return () => {
             window.removeEventListener('click', closeModal);
         }
-    }, [exitModal]); // should be content prop instead? for when content switches between false and jsx object
+    }, [exitModal, content]);
     if (!content) return null;
     return (
         <div className="Modal" ref={dim}>

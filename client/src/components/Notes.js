@@ -46,6 +46,8 @@ export default function Notes(props) {
         setMiniMenu(false);
         if (!currentNote || !currentNote._id) return setCurrentNoteUpdate(false);
         setCurrentNoteUpdate(currentNote._id);
+    // don't need currentNote as a dependency, only currentNote._id
+    // eslint-disable-next-line
     }, [currentNote?._id]);
     useEffect(() => {
         if (prevView !== view) return; // if notes.length changed because user switched view, return
@@ -87,22 +89,12 @@ export default function Notes(props) {
     useEffect(() => {
         if (!currentNoteUpdated) return;
         else {
-            console.log('updating current note');
-            console.dir(notes); // when not in 'all-notes', notes hasnt updated after star/unstar!!!!!???????????
-            // taggedNotes and noteCollection (in Dashboard) updates with the correct data RIGHT after this - several rerenders -
-            // but at that point currentNoteUpdate has already been set to false
-            // so currentNote doesn't get updated with the most up-to-date info
-            // possibly because in 'all-notes' there is no filtering going on?
-
-            // SO in all-notes takes 5 rerenders to have the updated star data
-            // but the "updating current note" log doesn't appear until directly after that one
             setCurrentNote(notes[getIndex(currentNoteUpdated)]);
-            //debugger;
-            //setCurrentNoteUpdate(false); // now currentNoteUpdated gets changed if/when currentNote._id changes
-            // no need to setCurrentNoteUpdate(_id) along with props.refreshData() anymore!
             return;
         }
-    }, [notes]); // star/unstar, move to collection
+    // don't need getIndex as a dependency
+    // eslint-disable-next-line
+    }, [notes, currentNoteUpdated]); // star/unstar, move to collection
     const handleClick = (e, beenWarned = false) => {
         e.preventDefault();
         if (!unsavedChanges || beenWarned) {

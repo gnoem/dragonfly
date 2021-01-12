@@ -40,8 +40,6 @@ export default function Dashboard(props) {
             if (!body.success) return console.log('no success: true response from server');
             updateUser(body.user);
             updateNotes(body.notes);
-            console.log('updated notes in getData()');
-            console.dir(body.notes);
             updateIsLoaded(true);
         }
         getData();
@@ -60,14 +58,12 @@ export default function Dashboard(props) {
         )
     }
     const collection = (collectionName) => {
-        console.log('collection in Dashboard is updated');
         let notesInCollection = notes.filter(note => note.collection === collectionName);
         return (
             <Notes view={view} updateView={updateView} user={user} notes={notesInCollection} refreshData={() => updateTrigger(Date.now())} />
         )
     }
     const tags = (tags) => {
-        console.log('taggedNotes in Dashboard is updated');
         if (view.type !== 'tags') return;
         if (!tags.length) return (
             <Notes view={view} updateView={updateView} user={user} notes={[]} refreshData={() => updateTrigger(Date.now())} />
@@ -95,15 +91,12 @@ export default function Dashboard(props) {
             return taggedNotes;
         }
         let taggedNotes = notesWithTheseTags(tags);
-        console.dir(taggedNotes);
         return (
             <Notes view={view} updateView={updateView} user={user} notes={taggedNotes} refreshData={() => updateTrigger(Date.now())} />
         )
     }
     const trashedNotes = () => {
-        console.log('loading trash');
         let trashedNotes = notes.filter(note => note.trash);
-        console.dir(trashedNotes);
         return (
             <Notes view={view} user={user} notes={trashedNotes} refreshData={() => updateTrigger(Date.now())} />
         )

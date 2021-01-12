@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 
 export default function NotePreview(props) {
-    let { temp, _id, title, content, collection, starred, createdAt, lastModified } = props;
+    let { temp, _id, title, content, starred, createdAt, lastModified } = props;
     const noteExcerpt = (content) => {
         if (temp) return;
         const getTextContent = (content) => {
@@ -16,7 +16,6 @@ export default function NotePreview(props) {
     }
     const noteTitle = () => {
         if (!title) return `Note from ${dayjs(createdAt).format('MM/DD/YYYY')}`;
-        if (typeof title !== 'string') return 'wrong';
         return title;
     }
     const isCurrent = (id) => {
@@ -25,9 +24,7 @@ export default function NotePreview(props) {
         else return '';
     }
     const isStarred = () => {
-        if (starred) return (
-            <div className="hasStar"><i className="fas fa-star"></i></div>
-        )
+        if (starred) return <div className="hasStar"><i className="fas fa-star"></i></div>;
     }
     const dateInfo = () => {
         const untouched = createdAt === lastModified;
