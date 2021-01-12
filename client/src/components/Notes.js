@@ -837,12 +837,6 @@ export default function Notes(props) {
                                 refreshData={props.refreshData} />
                         </div>
                         <div className="OptionItem">
-                            <button><i className="fas fa-share-square"></i></button>
-                        </div>
-                        <div className="OptionItem">
-                            <button><i className="fas fa-file-download"></i></button>
-                        </div>
-                        <div className="OptionItem">
                             <button onClick={view === 'trash' ? () => confirmPermanentDeletion(currentNote._id) : () => confirmMoveToTrash(currentNote._id)}>
                                 <i className="fas fa-trash"></i>
                                 <span className="tooltip">Move to Trash</span>
