@@ -4,15 +4,14 @@ export default function NotePreview(props) {
     let { temp, _id, title, content, starred, createdAt, lastModified } = props;
     const noteExcerpt = (content) => {
         if (temp) return;
-        const getTextContent = (content) => {
-            let textContent = [];
-            for (let i = 0; i < content.blocks.length; i++) {
-                textContent.push(content.blocks[i].text);
-            }
+        const getExcerpt = (content) => {
+            const num = 115;
+            let textContent = content.blocks[0].text.length < num
+                ? content.blocks[0].text
+                : content.blocks[0].text.substr(0, num) + '...';
             return <span className="excerpt">{textContent}</span>;
         }
-        //if (content.length > 100) return content += '...';
-        return getTextContent(content);
+        return getExcerpt(content);
     }
     const noteTitle = () => {
         if (!title) return `Note from ${dayjs(createdAt).format('MM/DD/YYYY')}`;
@@ -40,7 +39,7 @@ export default function NotePreview(props) {
         const modified = `• Last modified ${lastModified}`;
         return (
             <span className="meta">{created} {!untouched && modified}</span>
-        )
+        );
     }
     return (
         <div className={`NotePreview${isCurrent(_id)}`} data-id={_id}>
@@ -49,5 +48,5 @@ export default function NotePreview(props) {
             {dateInfo()}
             {isStarred()}
         </div>
-    )
+    );
 }
