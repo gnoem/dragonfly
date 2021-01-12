@@ -263,7 +263,7 @@ button.caution {
     background: #f7f7f7;
     color: #666;
 }
-.Dashboard .Options button {
+.Dashboard .Options .OptionItem > button {
     background: none;
     font-size: 1.2rem;
     color: #aaa;
@@ -271,10 +271,10 @@ button.caution {
     margin: 0 auto;
     position: relative;
 }
-.Dashboard .Options button + button {
+.Dashboard .Options .OptionItem + .OptionItem {
     margin-top: 1rem;
 }
-.Dashboard .Options button .tooltip {
+.Dashboard .Options .OptionItem > button .tooltip {
     position: absolute;
     top: 50%;
     right: 100%;
@@ -289,7 +289,7 @@ button.caution {
     border-radius: 0.5rem;
     display: none;
 }
-.Dashboard .Options button .tooltip::before {
+.Dashboard .Options .OptionItem > button .tooltip::before {
     position: absolute;
     top: 50%;
     left: 100%;
@@ -301,7 +301,7 @@ button.caution {
     height: 0.5rem;
     background: #333;
 }
-.Dashboard .Options button:hover .tooltip {
+.Dashboard .Options .OptionItem > button:hover .tooltip {
     display: block;
 }
 .Sidebar h1 {

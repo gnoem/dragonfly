@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import Modal from './Modal';
-import MiniMenu from './MiniMenu';
-import Dropdown from './Dropdown';
+import ContextMenu from './ContextMenu';
 import Loading from './Loading';
 import NotePreview from './NotePreview';
 import NoteEditor from './NoteEditor';
@@ -243,219 +242,6 @@ export default function Notes(props) {
         if (!body.success) return console.log('no success: true response from server');
         props.refreshData();
     }
-    const moveNoteToCollection = async (e, id) => {
-        if (!currentNote) return;
-        const { top, right } = {
-            top: e.clientY - 16,
-            right: (window.innerWidth - e.clientX) + 16
-        }
-        const moveToCollection = async (e, collectionName) => {
-            let clickedButton = e.target;
-            const handleMove = async (collectionName) => {
-                let removingFromCollection = modalContent.current;
-                if (removingFromCollection) setModalObject(content({ loadingIcon: true }));
-                const response = await fetch('/categorize/note', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ _id: id, collectionName })
-                });
-                const body = await response.json();
-                if (!body) return console.log('no response from server');
-                if (!body.success) return console.log('no success: true response from server');
-                props.refreshData();
-                if (removingFromCollection) {
-                    clickedButton.classList.remove('hasCollection');
-                    gracefullyCloseModal(modalContent.current);
-                } else {
-                    // immediately update button with check mark and remove check mark on old collection
-                    if (miniMenuRef.current) {
-                        const prevCollection = miniMenuRef.current.querySelector('.hasCollection');
-                        if (prevCollection) prevCollection.classList.remove('hasCollection');   
-                    }
-                    clickedButton.classList.add('hasCollection');
-                }
-            }
-            if (!clickedButton.classList.contains('hasCollection')) return handleMove(collectionName);
-            let content = (breakpoints = {
-                loadingIcon: false
-            }) => {
-                return (
-                    <div className="modalContent" ref={modalContent}>
-                        <h2>Remove from collection</h2>
-                        Are you sure you want to remove this note from the collection "{collectionName}"?
-                        {breakpoints.loadingIcon
-                            ?   <Loading />
-                            :   <div className="buttons">
-                                    <button onClick={() => handleMove(false)}>Yes, I'm sure</button>
-                                    <button className="greyed" onClick={() => gracefullyCloseModal(modalContent.current)}>Take me back</button>
-                                </div>
-                            }
-                    </div>
-                );
-            }
-            setModalObject(content());
-        }
-        const createCollection = () => {
-            console.dir(user.collections);
-            const handleSubmit = async (event) => {
-                event.preventDefault();
-                setModalObject(content({
-                    collectionNameError: null, // null or empty string?
-                    loadingIcon: true   
-                }));
-                const collectionName = event.target[0].value;
-                const response = await fetch('/add/collection', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ username: props.user.username, collectionName })
-                });
-                const body = await response.json();
-                if (!body) return console.log('no response from server');
-                if (!body.success) {
-                    setModalObject(content({
-                        collectionNameError: <span className="formError">{body.collectionNameError}</span>,
-                        loadingIcon: false
-                    }));
-                    return;
-                }
-                gracefullyCloseModal(modalContent.current);
-                props.refreshData();
-                let updatedCollectionsList = (elementIsInArray(collectionName, user.collections))
-                    ? user.collections
-                    : [...user.collections, collectionName];
-                setMiniMenu(miniMenuContent({ collections: updatedCollectionsList }));
-            }
-            const initialBreakpoints = {
-                collectionNameError: null,
-                loadingIcon: false
-            }
-            let content = (breakpoints = initialBreakpoints) => { // todo better name / possible places for error message or similar to appear in this modal
-                return (
-                    <div className="modalContent" ref={modalContent}>
-                        <h2>Create a new collection</h2>
-                        <form onSubmit={handleSubmit} autoComplete="off">
-                            <label htmlFor="collectionName">Enter a name for your collection:</label>
-                            <input
-                                type="text"
-                                name="collectionName"
-                                className={breakpoints.collectionNameError ? 'nope' : ''}
-                                onInput={() => setModalObject(content())} />
-                            {breakpoints.collectionNameError}
-                            {breakpoints.loadingIcon
-                                ?   <div className="buttons"><Loading /></div>
-                                :   <div className="buttons">
-                                        <button type="submit">Submit</button>
-                                        <button type="button" className="greyed" onClick={() => gracefullyCloseModal(modalContent.current)}>Cancel</button>
-                                    </div>}
-                        </form>
-                    </div>
-                );
-            }
-            setModalObject(content());
-        }
-        const collectionsList = (collections) => {
-            const createNewCollection = (
-                <li key={`minimenu-user.collections-createNewCollection`}>
-                    <button onClick={createCollection}>
-                        <i className="fas fa-plus-circle"></i> Create new
-                    </button>
-                </li>
-            );
-            let userCollections = [];
-            if (!collections || !collections.length) return <Dropdown>{createCollection}</Dropdown>;
-            let selectedCollection;
-            for (let i = 0; i < collections.length; i++) {
-                let collectionName = collections[i];
-                let belongsToCollection = '';
-                if (currentNote.collection === collectionName) {
-                    belongsToCollection = ' hasCollection';
-                    selectedCollection = collectionName;
-                }
-                userCollections.push(
-                    <li key={`minimenu-user.collections-${collectionName}`}>
-                        <button className={`add${belongsToCollection}`} onClick={(e) => moveToCollection(e, collectionName)}>
-                            {collectionName}
-                        </button>
-                    </li>
-                );
-            }
-            userCollections.push(createNewCollection);
-            return (
-                <Dropdown display={selectedCollection}>
-                    {userCollections}
-                </Dropdown>
-            )
-        }
-        let miniMenuContent = (breakpoints = {
-            collections: user.collections
-        }) => (
-            <ul style={{ top: top+'px', right: right+'px' }} ref={miniMenuRef}>
-                <li><strong>Move to collection:</strong></li>
-                {collectionsList(breakpoints.collections)}
-            </ul>
-        );
-        setMiniMenu(miniMenuContent());
-    }
-    const tagNote = async (e, id) => {
-        if (!currentNote) return;
-        const { top, right } = {
-            top: e.clientY - 16,
-            right: (window.innerWidth - e.clientX) + 16
-        }
-        const handleTagNote = async (e, tagName) => {
-            const response = await fetch('/tag/note', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ _id: id, tagName })
-            });
-            const body = await response.json();
-            if (!body) return console.log('no response from server');
-            if (!body.success) return console.log('no success: true response from server');
-            const button = e.target;
-            if (!button.classList.contains('hasTag')) button.classList.add('hasTag');
-            else button.classList.remove('hasTag');
-            props.refreshData();
-        }
-        const tagsList = (tags) => {
-            const createNewTag = (
-                <li key={`minimenu-user.collections-createNewTag`} className="tagsList">
-                    <button className="tag createTag" onClick={() => createTag(e, miniMenuContent)}>
-                        Create new
-                    </button>
-                </li>
-            );
-            if (!tags) return createNewTag;
-            let userTags = [];
-            for (let i = 0; i < tags.length; i++) {
-                let tagName = tags[i];
-                const hasTag = (elementIsInArray(tagName, currentNote.tags)) ? ' hasTag' : '';
-                userTags.push(
-                    <li key={`minimenu-user.tags-${tagName}`} className="tagsList">
-                        <button className={`tag${hasTag}`} onClick={(e) => handleTagNote(e, tagName)}>
-                            {tagName}
-                        </button>
-                    </li>
-                );
-            }
-            userTags.push(createNewTag);
-            return userTags;
-        }
-        let miniMenuContent = (breakpoints = {
-            tags: user.tags
-        }) => (
-            <ul className="nolines" style={{ top: top+'px', right: right+'px' }} ref={miniMenuRef}>
-                <li><strong>Tag note:</strong></li>
-                {tagsList(breakpoints.tags)}
-            </ul>
-        );
-        setMiniMenu(miniMenuContent());
-    }
     const gracefullyCloseModal = (modal) => {
         let container = modal.classList.contains('Modal')
             ? modal
@@ -621,7 +407,7 @@ export default function Notes(props) {
                 <li><button onClick={deleteCollection}>Delete collection</button></li>
             </ul>
         );
-        setMiniMenu(miniMenuContent);
+        setMiniMenu({ name: 'presentChildren', content: miniMenuContent });
     }
     const trashOptions = (e) => {
         if (view !== 'trash') return;
@@ -757,20 +543,6 @@ export default function Notes(props) {
     }
     const createTag = (e, fromMiniMenu = false) => {
         e.preventDefault();
-        console.dir(user.tags);
-        // annoying issue with creating new tag or collection from editor sidebar mini menu:
-        // once u create it, instead of waiting for server response to update UI, just assume the server
-        // will respond in a second, the tags list
-        // passed to the generateMiniMenu function as a parameter and that becomes the source of truth
-        // for the list items for as long as the mini menu remains open (if u close it then open it again
-        // then  it generates the list items from actual user.tags or user.collections data)
-        ////// BUG:
-        // if u add a new tag, it shows up in the list instantly
-        // and then if u try to add a 2nd one immediately afterwards, it replaces the 1st tag u created
-        // doesnt happen if u close and then reopen (provided the api call is successful)
-        //  minimenu  does not have uptodate user.tags array while rest of app does
-        // possibly bc minimenu is launched from click event and thats when it generates the data that gets used
-        // then doesnt automatically get rerendered with updated data
         const handleSubmit = async (e) => {
             e.preventDefault();
             setModalObject(content({
@@ -796,13 +568,8 @@ export default function Notes(props) {
             }
             gracefullyCloseModal(modalContent.current);
             props.refreshData();
-            if (!fromMiniMenu) props.updateView({ type: 'tags', tags: [tagName] });
-            else {
-                let updatedTagsList;
-                if (elementIsInArray(tagName, user.tags)) updatedTagsList = user.tags;
-                else updatedTagsList = [...user.tags, tagName];
-                setMiniMenu(fromMiniMenu({ tags: updatedTagsList }));
-            }
+            if (fromMiniMenu) return;
+            props.updateView({ type: 'tags', tags: [tagName] });
         }
         let content = (breakpoints = {
             tagNameError: null,
@@ -941,7 +708,7 @@ export default function Notes(props) {
                         <li><button className="delete" onClick={confirmDeleteTag}>Delete tag</button></li>
                     </ul>
                 )
-                setMiniMenu(content);
+                setMiniMenu({ name: 'presentChildren', content });
             }
             const toggleTag = (tagName) => {
                 const updatedArray = (prevView) => {
@@ -985,11 +752,20 @@ export default function Notes(props) {
             </div>
         )
     }
+    const updateMiniMenu = (e, name) => {
+        setMiniMenu({
+            name,
+            position: {
+                top: e.clientY - 16,
+                right: (window.innerWidth - e.clientX) + 16
+            }
+        });
+    }
     return (
         <div className="Notes">
             <div id="demo" onClick={() => console.dir(user.collections)}></div>
             <Modal exitModal={gracefullyCloseModal} content={modalObject} />
-            <MiniMenu exitMenu={() => setMiniMenu(false)} content={miniMenu} />
+            {miniMenu.content && <ContextMenu menu={miniMenu} updateMiniMenu={setMiniMenu} />}
             <div className="List">
                 {listHeader()}
                 <div className="NotePreviews" onClick={handleClick}>
@@ -1019,24 +795,53 @@ export default function Notes(props) {
             </div>
             {currentNote && !currentNote.trash
                 ?   <div className="Options">
-                        <button className={currentNote.starred ? 'hasStar' : null} onClick={() => starNote(currentNote._id)}>
-                            <i className="fas fa-star"></i>
-                            <span className="tooltip">{currentNote.starred ? 'Unstar' : 'Add star'}</span>
-                        </button>
-                        <button onClick={(e) => moveNoteToCollection(e, currentNote._id)}>
-                            <i className="fas fa-book"></i>
-                            <span className="tooltip">Move to collection</span>
-                        </button>
-                        <button onClick={(e) => tagNote(e, currentNote._id)}>
-                            <i className="fas fa-tags"></i>
-                            <span className="tooltip">Add tags</span>
-                        </button>
-                        <button><i className="fas fa-share-square"></i></button>
-                        <button><i className="fas fa-file-download"></i></button>
-                        <button onClick={view === 'trash' ? () => confirmPermanentDeletion(currentNote._id) : () => confirmMoveToTrash(currentNote._id)}>
-                            <i className="fas fa-trash"></i>
-                            <span className="tooltip">Move to Trash</span>
-                        </button>
+                        <div className="OptionItem">
+                            <button className={currentNote.starred ? 'hasStar' : null} onClick={() => starNote(currentNote._id)}>
+                                <i className="fas fa-star"></i>
+                                <span className="tooltip">{currentNote.starred ? 'Unstar' : 'Add star'}</span>
+                            </button>
+                        </div>
+                        <div className="OptionItem">
+                            <button onClick={(e) => updateMiniMenu(e, 'moveNoteToCollection')}>
+                                <i className="fas fa-book"></i>
+                                <span className="tooltip">Move to collection</span>
+                            </button>
+                            <ContextMenu
+                                menu={miniMenu}
+                                user={user}
+                                currentNote={currentNote}
+                                updateMiniMenu={setMiniMenu}
+                                updateModalObject={setModalObject}
+                                gracefullyCloseModal={gracefullyCloseModal}
+                                refreshData={props.refreshData} />
+                        </div>
+                        <div className="OptionItem">
+                            <button onClick={(e) => updateMiniMenu(e, 'tagNote')}>
+                                <i className="fas fa-tags"></i>
+                                <span className="tooltip">Add tags</span>
+                            </button>
+                            <ContextMenu
+                                menu={miniMenu}
+                                user={user}
+                                currentNote={currentNote}
+                                createTag={createTag}
+                                updateMiniMenu={setMiniMenu}
+                                updateModalObject={setModalObject}
+                                gracefullyCloseModal={gracefullyCloseModal}
+                                refreshData={props.refreshData} />
+                        </div>
+                        <div className="OptionItem">
+                            <button><i className="fas fa-share-square"></i></button>
+                        </div>
+                        <div className="OptionItem">
+                            <button><i className="fas fa-file-download"></i></button>
+                        </div>
+                        <div className="OptionItem">
+                            <button onClick={view === 'trash' ? () => confirmPermanentDeletion(currentNote._id) : () => confirmMoveToTrash(currentNote._id)}>
+                                <i className="fas fa-trash"></i>
+                                <span className="tooltip">Move to Trash</span>
+                            </button>
+                        </div>
                     </div>
                 :   ''
             }
