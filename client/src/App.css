@@ -669,6 +669,9 @@ button.exit:hover {
 .buttons .Loading {
     margin: 0 1rem;
 }
+.Modal .Loading:not(.mini) {
+    margin-top: 1rem;
+}
 form label {
     font-size: 0.8rem;
     font-weight: normal;

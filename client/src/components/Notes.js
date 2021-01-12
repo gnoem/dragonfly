@@ -440,10 +440,10 @@ export default function Notes(props) {
                         If you proceed, all the notes in your Trash will be permanently erased. This action cannot be undone.
                         {breakpoints.loadingIcon
                             ?   <Loading />
-                            :   <div className="buttons">
-                                    <button onClick={emptyTrash}>Yes, I'm sure</button>
-                                    <button className="greyed" onClick={() => gracefullyCloseModal(modalContent.current)}>Cancel</button>
-                                </div>
+                            :   <form onSubmit={emptyTrash} className="buttons">
+                                    <button type="submit">Yes, I'm sure</button>
+                                    <button type="button" className="greyed" onClick={() => gracefullyCloseModal(modalContent.current)}>Cancel</button>
+                                </form>
                         }
                     </div>
                 );
@@ -455,7 +455,7 @@ export default function Notes(props) {
                 <li><button onClick={confirmEmptyTrash}>Empty Trash</button></li>
             </ul>
         );
-        setMiniMenu(content);
+        setMiniMenu({ name: 'presentChildren', content });
     }
     const listHeader = () => {
         let title, button = '';
@@ -677,6 +677,7 @@ export default function Notes(props) {
                 }
                 const confirmDeleteTag = () => {
                     const deleteTag = async () => {
+                        setModalObject(content({ loadingIcon: true }));
                         const response = await fetch('/delete/tag', {
                             method: 'POST',
                             headers: {
@@ -690,17 +691,22 @@ export default function Notes(props) {
                         props.refreshData();
                         gracefullyCloseModal(modalContent.current);
                     }
-                    let content = (
+                    let content = (breakpoints = {
+                        loadingIcon: false
+                    }) => (
                         <div className="modalContent" ref={modalContent}>
                             <h2>Are you sure?</h2>
                             Deleting the tag "{tagName}" won't delete any notes, only the tag itself. This action cannot be undone.
-                            <div className="buttons">
-                                <button onClick={deleteTag}>Yes, I'm sure</button>
-                                <button className="greyed" onClick={() => gracefullyCloseModal(modalContent.current)}>Cancel</button>
-                            </div>
+                            {breakpoints.loadingIcon
+                                ?   <Loading />
+                                :   <form onSubmit={deleteTag} className="buttons">
+                                        <button type="submit">Yes, I'm sure</button>
+                                        <button type="button" className="greyed" onClick={() => gracefullyCloseModal(modalContent.current)}>Cancel</button>
+                                    </form>
+                                }
                         </div>
                     );
-                    setModalObject(content);
+                    setModalObject(content());
                 }
                 let content = (
                     <ul onClick={() => setMiniMenu(false)} className="smol" style={{ top: `${top}px`, right: `${right}px` }} ref={miniMenuRef}>
