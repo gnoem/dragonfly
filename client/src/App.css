@@ -535,7 +535,7 @@ button.logout::before {
     margin: 0;
     margin-top: 1rem;
     border-left: 0.3rem solid #ddd;
-    padding: 0.5rem 1rem;
+    padding: 0 1rem;
     font-style: oblique;
     font-size: 0.9rem;
     color: #666;
@@ -545,6 +545,18 @@ button.logout::before {
 }
 .Editable blockquote + blockquote {
     margin-top: 0;
+}
+.Editable .align-left, .Editable .align-left * {
+    text-align: left;
+}
+.Editable .align-center, .Editable .align-center * {
+    text-align: center;
+}
+.Editable .align-right, .Editable .align-right * {
+    text-align: right;
+}
+.Editable .align-justify, .Editable .align-justify * {
+    text-align: justify;
 }
 .MiniMenu {
     z-index: 999;

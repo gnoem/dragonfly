@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Button from './Button';
-import { Editor, EditorState, RichUtils, convertToRaw, convertFromRaw } from 'draft-js';
+import Immutable from 'immutable';
+import { Editor, EditorState, RichUtils, convertToRaw, convertFromRaw, DefaultDraftBlockRenderMap } from 'draft-js';
 import 'draft-js/dist/Draft.css';
 
 export default function NoteEditor(props) {
@@ -9,8 +10,6 @@ export default function NoteEditor(props) {
     const [editorState, setEditorState] = useState(
         newNote ? () => EditorState.createEmpty() : EditorState.createWithContent(convertFromRaw(props.currentNote.content))
     );
-    const [inlineStyles, setInlineStyles] = useState([]);
-    const [blockType, setBlockType] = useState(false);
     const titleInput = useRef(null);
     const editorRef = useRef(null);
     useEffect(() => {
@@ -50,13 +49,6 @@ export default function NoteEditor(props) {
             ?   RichUtils.toggleInlineStyle(editorState, value)
             :   RichUtils.toggleBlockType(editorState, value);
         setEditorState(newState);
-        if (type === 'block') return setBlockType(value);
-        if (!inlineStyles.includes(value)) {
-            setInlineStyles([...inlineStyles, value]);
-        } else {
-            let index = inlineStyles.indexOf(value);
-            if (index > -1) inlineStyles.splice(index, 1);
-        }
     }
     const noteTitle = () => {
         const title = newNote ? '' : props.currentNote.title;
@@ -79,14 +71,8 @@ export default function NoteEditor(props) {
     const handleSubmit = async () => {
         // check if being called from above with props.submitEditorState
         // if so, take as parameter the next() function from saveChanges() in Notes.js,  which will be the value of props.submitEditorState
-        console.log('form submitted for: '+props.currentNote._id);
         const contentState = editorState.getCurrentContent();
         let ROUTE = newNote ? '/add/note' : '/edit/note';
-        /* console.dir({
-            id: newNote ? props.user._id : props.currentNote._id,
-            title: editorTitle,
-            content: convertToRaw(contentState)
-        }); // */
         const response = await fetch(ROUTE, {
             method: 'POST',
             headers: {
@@ -118,16 +104,36 @@ export default function NoteEditor(props) {
             </div>
         )
     }
+    const blockRenderMap = Immutable.Map({
+        'ALIGN-LEFT': {
+            element: 'div',
+            wrapper: <CustomBlock type="align-left" />
+        },
+        'ALIGN-CENTER': {
+            element: 'div',
+            wrapper: <CustomBlock type="align-center" />
+        },
+        'ALIGN-RIGHT': {
+            element: 'div',
+            wrapper: <CustomBlock type="align-right" />
+        },
+        'ALIGN-JUSTIFY': {
+            element: 'div',
+            wrapper: <CustomBlock type="align-justify" />
+        }
+    });
+    const extendedBlockRenderMap = DefaultDraftBlockRenderMap.merge(blockRenderMap);
     return (
         <div className="NoteEditor">
             {props.currentNote.trash
                 ? noteOptions()
-                : <EditorControls controlStyle={controlStyle} inlineStyles={inlineStyles} blockType={blockType} />}
+                : <EditorControls controlStyle={controlStyle} editorState={editorState} />}
             {noteTitle()}
             <div className="Editable" onClick={focus}>
                 <Editor
                     readOnly={props.currentNote.trash}
                     editorState={editorState}
+                    blockRenderMap={extendedBlockRenderMap}
                     handleKeyCommand={handleKeyCommand}
                     placeholder="Enter some text..."
                     onChange={handleChange}
@@ -141,31 +147,46 @@ export default function NoteEditor(props) {
 
 function EditorControls(props) {
     const isInlineStyleActive = (style) => {
-        return '';
-        //eslint-disable-next-line
-        if (props.inlineStyles.includes(style)) return 'active';
-        return '';
+        const inlineStyle = props.editorState.getCurrentInlineStyle();
+        return inlineStyle.has(style) ? 'active' : '';
     }
-    //eslint-disable-next-line
+    const getBlockType = () => {
+        const startKey = props.editorState.getSelection().getStartKey();
+        const selectedBlockType = props.editorState
+            .getCurrentContent()
+            .getBlockForKey(startKey)
+            .getType();
+        return selectedBlockType;
+    }
     const isBlockTypeActive = (type) => {
-        if (props.blockType === type) return 'active';
-        return '';
+        return (type === getBlockType())
+            ? 'active'
+            : '';
     }
     return (
         <div className="EditorControls">
+            <div id="demo" onClick={() => console.dir(getBlockType())}></div>
             <button className={isInlineStyleActive('BOLD')} onMouseDown={(e) => props.controlStyle(e, 'inline', 'BOLD')}><i className="fas fa-bold"></i></button>
             <button className={isInlineStyleActive('ITALIC')} onMouseDown={(e) => props.controlStyle(e, 'inline', 'ITALIC')}><i className="fas fa-italic"></i></button>
             <button className={isInlineStyleActive('UNDERLINE')} onMouseDown={(e) => props.controlStyle(e, 'inline', 'UNDERLINE')}><i className="fas fa-underline"></i></button>
             <button className={isInlineStyleActive('STRIKETHROUGH')} onMouseDown={(e) => props.controlStyle(e, 'inline', 'STRIKETHROUGH')}><i className="fas fa-strikethrough"></i></button>
             <hr />
-            <button onMouseDown={(e) => props.controlStyle(e, 'block', 'ALIGN-LEFT')}><i className="fas fa-align-left"></i></button>
-            <button onMouseDown={(e) => props.controlStyle(e, 'block', 'ALIGNCENTER')}><i className="fas fa-align-center"></i></button>
-            <button onMouseDown={(e) => props.controlStyle(e, 'block', 'UNDERLINE')}><i className="fas fa-align-right"></i></button>
-            <button onMouseDown={(e) => props.controlStyle(e, 'block', 'UNDERLINE')}><i className="fas fa-align-justify"></i></button>
+            <button className={isBlockTypeActive('ALIGN-LEFT')} onMouseDown={(e) => props.controlStyle(e, 'block', 'ALIGN-LEFT')}><i className="fas fa-align-left"></i></button>
+            <button className={isBlockTypeActive('ALIGN-CENTER')} onMouseDown={(e) => props.controlStyle(e, 'block', 'ALIGN-CENTER')}><i className="fas fa-align-center"></i></button>
+            <button className={isBlockTypeActive('ALIGN-RIGHT')} onMouseDown={(e) => props.controlStyle(e, 'block', 'ALIGN-RIGHT')}><i className="fas fa-align-right"></i></button>
+            <button className={isBlockTypeActive('ALIGN-JUSTIFY')} onMouseDown={(e) => props.controlStyle(e, 'block', 'ALIGN-JUSTIFY')}><i className="fas fa-align-justify"></i></button>
             <hr />
-            <button onMouseDown={(e) => props.controlStyle(e, 'block', 'blockquote')}><i className="fas fa-quote-left"></i></button>
-            <button onMouseDown={(e) => props.controlStyle(e, 'block', 'unordered-list-item')}><i className="fas fa-list-ul"></i></button>
-            <button onMouseDown={(e) => props.controlStyle(e, 'block', 'ordered-list-item')}><i className="fas fa-list-ol"></i></button>
+            <button className={isBlockTypeActive('blockquote')} onMouseDown={(e) => props.controlStyle(e, 'block', 'blockquote')}><i className="fas fa-quote-left"></i></button>
+            <button className={isBlockTypeActive('unordered-list-item')} onMouseDown={(e) => props.controlStyle(e, 'block', 'unordered-list-item')}><i className="fas fa-list-ul"></i></button>
+            <button className={isBlockTypeActive('ordered-list-item')} onMouseDown={(e) => props.controlStyle(e, 'block', 'ordered-list-item')}><i className="fas fa-list-ol"></i></button>
+        </div>
+    )
+}
+
+function CustomBlock({ type, children }) {
+    return (
+        <div className={type}>
+            {children}
         </div>
     )
 }

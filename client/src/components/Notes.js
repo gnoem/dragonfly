@@ -783,7 +783,6 @@ export default function Notes(props) {
     }
     return (
         <div className="Notes">
-            <div id="demo" onClick={() => console.dir(user.collections)}></div>
             <Modal exitModal={gracefullyCloseModal} content={modalObject} />
             {miniMenu.content && <ContextMenu menu={miniMenu} updateMiniMenu={setMiniMenu} />}
             <div className="List">
