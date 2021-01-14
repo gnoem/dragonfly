@@ -318,7 +318,7 @@ export default function Notes(props) {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        username: user.username,
+                        _id: user._id,
                         collectionName,
                         updatedName: inputCollectionName
                     })
@@ -374,7 +374,7 @@ export default function Notes(props) {
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ username: user.username, collectionName })
+                    body: JSON.stringify({ _id: user._id, collectionName })
                 });
                 const body = await response.json();
                 if (!body) return console.log('no response from server');

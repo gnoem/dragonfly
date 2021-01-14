@@ -98,12 +98,12 @@ export function MoveNoteToCollection({ menu, user, currentNote, updateMiniMenu, 
                 loadingIcon: true   
             }));
             const collectionName = event.target[0].value;
-            const response = await fetch('/add/collection', {
+            const response = await fetch('/create/collection', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ username: user.username, collectionName })
+                body: JSON.stringify({ _id: user._id, collectionName })
             });
             const body = await response.json();
             if (!body) return console.log('no response from server');

@@ -74,7 +74,7 @@ function Account(props) {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                username: user.username,
+                _id: user._id,
                 password: newPassword.password
             })
         });

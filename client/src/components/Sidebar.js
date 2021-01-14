@@ -28,12 +28,12 @@ export default function Sidebar(props) {
                         loadingIcon: true   
                     }));
                     const collectionName = e.target[0].value;
-                    const response = await fetch('/add/collection', {
+                    const response = await fetch('/create/collection', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify({ username: props.user.username, collectionName })
+                        body: JSON.stringify({ _id: props.user._id, collectionName })
                     });
                     const body = await response.json();
                     if (!body) return;

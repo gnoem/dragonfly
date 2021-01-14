@@ -210,7 +210,7 @@ module.exports = (app) => {
             });
         });
     });
-    app.post('/add/collection', [
+    app.post('/create/collection', [
         check('collectionName')
             .isLength({ min: 1, max: 25 }).withMessage('Collection name must be between 1 and 25 characters')
     ], (req, res) => {
@@ -226,10 +226,10 @@ module.exports = (app) => {
             });
             return;
         }
-        const { username, collectionName } = req.body;
-        User.findOne({ username }, (err, user) => {
+        const { _id , collectionName } = req.body;
+        User.findOne({ _id }, (err, user) => {
             if (err) return console.error('error finding user', err);
-            if (!user) return console.log(`user ${username} not found`);
+            if (!user) return console.log(`user ${_id} not found`);
             const collectionAlreadyExists = (name) => {
                 if (!user.collections || !user.collections.length) return false;
                 let index = user.collections.indexOf(name);
@@ -270,16 +270,16 @@ module.exports = (app) => {
             });
             return;
         }
-        const { username, collectionName, updatedName } = req.body;
+        const { _id, collectionName, updatedName } = req.body;
         if (collectionName === updatedName) {
             res.send({
                 success: true
             });
             return;
         }
-        User.findOne({ username }, (err, user) => {
+        User.findOne({ _id }, (err, user) => {
             if (err) return console.error('error finding user', err);
-            if (!user) return console.log(`user ${username} not found`);
+            if (!user) return console.log(`user ${_id} not found`);
             const collectionAlreadyExists = (name) => {
                 if (!user.collections || !user.collections.length) return false;
                 let index = user.collections.indexOf(name);
@@ -317,10 +317,10 @@ module.exports = (app) => {
         });
     });
     app.post('/delete/collection', (req, res) => {
-        const { username, collectionName } = req.body;
-        User.findOne({ username }, (err, user) => {
+        const { _id, collectionName } = req.body;
+        User.findOne({ _id }, (err, user) => {
             if (err) return console.error('error finding user', err);
-            if (!user) return console.log(`user ${username} not found`);
+            if (!user) return console.log(`user ${_id} not found`);
             if (!user.collections) return console.log('something went way wrong');
             let index = user.collections.indexOf(collectionName);
             if (index === -1) return console.log('something went wayyy wrong');
@@ -588,10 +588,10 @@ module.exports = (app) => {
         });
     });
     app.post('/edit/password', (req, res) => {
-        const { username, password } = req.body;
-        User.findOne({ username }, (err, user) => {
+        const { _id, password } = req.body;
+        User.findOne({ _id }, (err, user) => {
             if (err) return console.error('error finding user', err);
-            if (!user) return console.log(`user ${username} not found`);
+            if (!user) return console.log(`user ${_id} not found`);
             user.password = bcrypt.hashSync(password, 8);
             user.save(err => {
                 if (err) return console.error('error saving user', err);
