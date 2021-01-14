@@ -3,6 +3,7 @@ import Loading from './Loading';
 import Sidebar from './Sidebar';
 import Notes from './Notes';
 import MyAccount from './MyAccount';
+import Checkbox from './Checkbox';
 
 export default function Dashboard(props) {
     const { id } = props.match.params;
@@ -174,7 +175,7 @@ function Login(props) {
                     <input type="password" className={invalidPassword ? ' nope' : ''} name="password" onChange={(e) => handleInput(e.target.value)} />
                 </div>
                 <div className="formCheck">
-                    <input type="checkbox" name="rememberThisDevice" /> <label htmlFor="rememberThisDevice">Remember this device</label>
+                    <Checkbox name="rememberThisDevice" label="Remember this device" checkboxFirst={true} defaultChecked={false} />
                 </div>
                 <div className="buttons">
                     <button>Submit</button>
