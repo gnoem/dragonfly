@@ -6,7 +6,9 @@ export default function Dropdown({ display, children }) {
     const dropdownList = useRef(null);
     useEffect(() => {
         if (!dropdownList.current) return;
-        if (isOpen) dropdownList.current.style.maxHeight = dropdownList.current.scrollHeight+'px';
+        if (isOpen) dropdownList.current.style.maxHeight = (dropdownList.current.scrollHeight < 300) // todo better
+            ? dropdownList.current.scrollHeight+1+'px' // to offset 1px border on element
+            : '300px';
         else dropdownList.current.style.maxHeight = '0px';
     }, [isOpen, children]);
     const closeDropdown = (e) => {

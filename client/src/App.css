@@ -937,17 +937,21 @@ ul.nolines li.tagsList {
     border-radius: 0.5rem;
     margin-bottom: 2rem;
 }
+.Dropdown {
+    position: relative;
+}
 .Dropdown, .Dropdown * {
     user-select: none;
 }
 .Dropdown .dropdownDisplay {
     font-size: 0.9rem;
+    background: #fff;
     border: 1px solid #ddd;
     padding: 0.5rem 1rem;
     border-radius: 999px;
     cursor: pointer;
     margin-bottom: 0.5rem;
-    transition: margin-bottom 0.2s;
+    text-align: left;
 }
 .Dropdown .dropdownDisplay::after {
     content: '\f0d9';
@@ -960,16 +964,25 @@ ul.nolines li.tagsList {
 .Dropdown.expanded .dropdownDisplay::after {
     transform: rotate(-90deg);
 }
-.Dropdown.expanded .dropdownDisplay {
-    margin-bottom: 0;
-}
 .Dropdown .dropdownList {
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.2s;
+    position: absolute;
+    z-index: -1;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    border: 1px solid #ddd;
+    border-top: 0;
+    background: #fff;
+    border-radius: 0 0 0.5rem 0.5rem;
 }
-.Dropdown .dropdownList li:last-child {
-    padding-bottom: 0.2rem;
+.Dropdown.expanded .dropdownList {
+    overflow: auto;
+}
+.Dropdown .dropdownList li:first-of-type {
+    margin-top: 1rem;
 }
 .Login .Checkbox label {
     font-size: 0.9rem;
