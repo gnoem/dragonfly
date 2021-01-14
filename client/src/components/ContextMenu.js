@@ -147,10 +147,10 @@ export function MoveNoteToCollection({ menu, user, currentNote, updateMiniMenu, 
     const collectionsList = (collections) => {
         const createNewCollectionButton = (
             <li key={`createNewCollection-MiniMenu`}>
-                    <button onClick={() => createCollection()}>
-                        <i className="fas fa-plus-circle"></i> Create new
-                    </button>
-                </li>
+                <button onClick={() => createCollection()} className="notOption">
+                    <i className="fas fa-plus-circle"></i> Create new
+                </button>
+            </li>
         );
         if (!collections || !collections.length) return <Dropdown>{createNewCollectionButton}</Dropdown>;
         let array = [];

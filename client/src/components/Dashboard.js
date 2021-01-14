@@ -70,9 +70,6 @@ export default function Dashboard(props) {
             <Notes view={view} updateView={updateView} user={user} notes={[]} refreshData={() => updateTrigger(Date.now())} />
         );
         const notesWithTheseTags = (tags) => { // returns an array of notes
-            // todo add filter options: show notes with either/all of these tags
-            // if tags (param) is a sub array of note.tags, put that note into the array
-            // tags = ['recipe', 'witchy'] // all the notes whose 'tags' array contains these, should go into taggedNotes
             let taggedNotes = [];
             for (let i = 0; i < notes.length; i++) {
                 let testObject = {};
@@ -86,7 +83,9 @@ export default function Dashboard(props) {
                     } */
                 });
                 // see if tags 'recipe' and 'witchy' are in it
-                let thisNoteHasTheseTags = tags.every(tag => testObject[tag] !== undefined); // e.g. if testObject['recipe'] is defined (which it is, at index 2)
+                let thisNoteHasTheseTags = (view.sortTags === 'all')
+                    ? tags.every(tag => testObject[tag] !== undefined) // e.g. if testObject['recipe'] is defined (which it is, at index 2)
+                    : tags.some(tag => testObject[tag] !== undefined);
                 if (thisNoteHasTheseTags) taggedNotes.push(notes[i]);
             }
             return taggedNotes;

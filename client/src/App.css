@@ -164,7 +164,7 @@ button, input[type=submit] {
     margin-top: 1.5rem;
     font-size: 0.83rem;
 }
-button.stealth, .Sidebar nav button, .MiniMenu button {
+button.stealth, .Sidebar nav button, .MiniMenu button, .Dropdown button {
     margin: 0;
     padding: 0;
     border: 0;
@@ -580,9 +580,9 @@ button.logout::before {
     border-radius: 0.5rem;
     list-style: none;
     margin: 0;
-    padding: 0 0.3rem;
+    padding: 0 0.3rem 0.5rem;
 }
-.MiniMenu li + li {
+.MiniMenu li + li, .Dropdown li + li {
     border-top: 1px solid #ddd;
 }
 .MiniMenu strong {
@@ -592,14 +592,14 @@ button.logout::before {
     display: block;
     text-align: center;
 }
-.MiniMenu button {
+.Dropdown button {
     color: #333;
     padding: 0.7rem;
     width: 100%;
     text-align: left;
     transition: color 0.2s;
 }
-.MiniMenu button:hover {
+.MiniMenu button:hover, .Dropdown button:hover {
     color: #999;
 }
 .MiniMenu button::before {
@@ -908,6 +908,10 @@ ul.nolines li.tagsList {
 .showingTags .tag {
     margin: 0.25rem;
 }
+.sortTagOptions {
+    margin-top: 0.7rem;
+    font-size: 0.9rem;
+}
 .MiniMenu ul.smol button {
     font-size: 0.75rem;
     padding: 0.5rem;
@@ -939,9 +943,18 @@ ul.nolines li.tagsList {
 }
 .Dropdown {
     position: relative;
+    display: inline-block;
+}
+.MiniMenu .Dropdown {
+    display: block;
 }
 .Dropdown, .Dropdown * {
     user-select: none;
+}
+.Dropdown li {
+    list-style: none;
+    margin: 0;
+    padding: 0;
 }
 .Dropdown .dropdownDisplay {
     font-size: 0.9rem;
@@ -950,7 +963,6 @@ ul.nolines li.tagsList {
     padding: 0.5rem 1rem;
     border-radius: 999px;
     cursor: pointer;
-    margin-bottom: 0.5rem;
     text-align: left;
 }
 .Dropdown .dropdownDisplay::after {
@@ -964,12 +976,16 @@ ul.nolines li.tagsList {
 .Dropdown.expanded .dropdownDisplay::after {
     transform: rotate(-90deg);
 }
+.Dropdown .dropdownDisplay {
+    position: relative;
+    z-index: 2;
+}
 .Dropdown .dropdownList {
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.2s;
     position: absolute;
-    z-index: -1;
+    z-index: 1;
     top: 50%;
     left: 0;
     width: 100%;
@@ -983,6 +999,16 @@ ul.nolines li.tagsList {
 }
 .Dropdown .dropdownList li:first-of-type {
     margin-top: 1rem;
+}
+.showingTags .Dropdown {
+    width: 4rem;
+    margin: 0 0.3rem;
+}
+.showingTags .Dropdown .dropdownDisplay {
+    padding: 0.3rem 0.6rem;
+}
+.showingTags .Dropdown button {
+    padding: 0.3rem 0.6rem;
 }
 .Login .Checkbox label {
     font-size: 0.9rem;

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Modal from './Modal';
 import ContextMenu from './ContextMenu';
+import Dropdown from './Dropdown';
 import Loading from './Loading';
 import NotePreview from './NotePreview';
 import NoteEditor from './NoteEditor';
@@ -15,6 +16,7 @@ export default function Notes(props) {
     const [tempNotePreview, setTempNotePreview] = useState('New note');
     const [unsavedChanges, setUnsavedChanges] = useState(false);
     const [submitEditorState, setSubmitEditorState] = useState(false);
+    const [sortTags, setSortTags] = useState('all');
     const [miniMenu, setMiniMenu] = useState(false);
     const [modalObject, setModalObject] = useState(false);
     const modalContent = useRef(null);
@@ -622,7 +624,7 @@ export default function Notes(props) {
                 </button>
             )
             if (!user.tags.length) return newTagButton;
-            const tagMenu = (e, tagName) => {
+            const tagContextMenu = (e, tagName) => {
                 e.preventDefault();
                 const { top, right } = {
                     top: e.clientY,
@@ -743,7 +745,8 @@ export default function Notes(props) {
                 }
                 props.updateView(prevView => ({
                     type: 'tags',
-                    tags: updatedArray(prevView)
+                    tags: updatedArray(prevView),
+                    sortTags
                 }));
                 return;
             }
@@ -754,7 +757,7 @@ export default function Notes(props) {
                 tagArray.push(
                     <button
                       onClick={() => toggleTag(thisTag)}
-                      onContextMenu={(e) => tagMenu(e, thisTag)}
+                      onContextMenu={(e) => tagContextMenu(e, thisTag)}
                       key={`showingTag-${thisTag}`}
                       className={`tag${isSelected ? ' hasTag' : ''}`}>
                         {thisTag}
@@ -764,11 +767,22 @@ export default function Notes(props) {
             tagArray.push(newTagButton);
             return tagArray;
         }
+        const updateSortTags = (value) => {
+            props.updateView(prevView => ({ ...prevView, sortTags: value }));
+        }
         return (
             <div className="showingTags">
                 <span className="hint">Right-click on a tag for more options.</span>
                 <h2>{noTagsSelected ? 'View' : 'Viewing'} notes tagged:</h2>
                 <div className="tagsGrid">{tagList()}</div>
+                <div className="sortTagOptions">
+                    Find notes with
+                        <Dropdown display={sortTags}>
+                            <li><button onClick={() => updateSortTags('all')}>all</button></li>
+                            <li><button onClick={() => updateSortTags('any')}>any</button></li>
+                        </Dropdown>
+                    of the selected tags.
+                </div>
             </div>
         )
     }
