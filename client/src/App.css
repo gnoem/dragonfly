@@ -868,9 +868,10 @@ input.nope + .formError {
 .tag:hover, .MiniMenu .tag:hover {
     color: inherit;
 }
-.tag.hasTag {
-    background: var(--lightest-theme-color);
-    border-color: #ccc;
+.tag.hasTag, .MiniMenu .tag.hasTag:hover {
+    background: var(--med-theme-color);
+    border-color: var(--med-theme-color);
+    color: #fff;
 }
 .tag::before, .MiniMenu .tag::before {
     content: '\f067';
@@ -921,7 +922,14 @@ ul.nolines li.tagsList {
     margin-right: 0.3rem;
 }
 .tag.createTag {
-    background: var(--light-green);
+    background: var(--med-gradient);
+    border-width: 0;
+    line-height: calc(1.2rem + 2px);
+    color: #fff;
+    font-weight: 500;
+}
+.MiniMenu .tag.createTag:hover {
+    color: #fff;
 }
 .noteOptions {
     background: #f7f7f7;
