@@ -768,6 +768,7 @@ export default function Notes(props) {
             return tagArray;
         }
         const updateSortTags = (value) => {
+            setSortTags(value);
             props.updateView(prevView => ({ ...prevView, sortTags: value }));
         }
         return (
