@@ -60,7 +60,7 @@
         transform: scale(0.6);
     }
     50% {
-        transform: scale(1.3);
+        transform: scale(1.5);
     }
     100% {
         transform: scale(1);
@@ -1013,7 +1013,7 @@ ul.nolines li.tagsList {
     content: '';
     width: 1.5rem;
     height: 1.5rem;
-    margin: -1px;
+    margin: -1px; /* to offset 1px border on span.svg */
     background: var(--deep-theme-color);
     display: block;
     transform: scale(0);
