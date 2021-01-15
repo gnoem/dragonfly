@@ -601,4 +601,17 @@ module.exports = (app) => {
             });
         });
     });
+    app.post('/delete/account', (req, res) => {
+        const { _id } = req.body;
+        User.findOneAndDelete({ _id }, (err, user) => {
+            if (err) return console.error('error deleting user', err);
+            if (!user) return console.log(`user ${_id} not found`);
+            Note.deleteMany({ userId: _id }, (err) => {
+                if (err) return console.error('error deleting notes', err);
+                res.send({
+                    success: true
+                });
+            });
+        });
+    });
 }

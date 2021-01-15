@@ -73,8 +73,8 @@
     width: 1.5rem;
     height: 1.5rem;
     border-radius: 50%;
-    border: 1px solid #ccc;
-    background: #fff;
+    border: 1px solid var(--element-main-border);
+    background: var(--element-main-bg);
     cursor: pointer;
     z-index: 999999999999999999999999999999999999999;
 }
@@ -95,13 +95,33 @@
     --caution: #c55a63;
     --light-caution: #dd858c;
     --light-green: #cdf3c7;
+    --text-main: #000;
+    --text-dimmed: #666;
+    --element-main-bg: #fff;
+    --element-dimmed-bg: #f7f7f7;
+    --element-main-border: #ccc;
+    --element-secondary-border: #ddd;
+}
+:root[data-mode='dark'] {
+    --text-main: #ddd;
+    --text-dimmed: #ccc;
+    --element-main-bg: #222;
+    --element-dimmed-bg: #1a1a1a;
+    --element-main-border: #333;
+    --element-secondary-border: #444;
+    --med-theme-color: #111;
+    --light-theme-color: #58bbb6;
+    --lighter-theme-color: #a2e0dd;
+    --lightest-theme-color: #c9eceb;
 }
 html, body {
+    background: var(--element-main-bg);
     width: 100%;
     height: 100%;
     margin: 0;
     font-family: var(--default-font);
     font-size: 16px;
+    color: var(--text-main);
     font-weight: 300;
     overflow: hidden;
 }
@@ -252,7 +272,7 @@ button.caution {
 .Dashboard .Options {
     grid-area: options;
     padding: 1rem;
-    border-left: 1px solid #ccc;
+    border-left: 1px solid var(--element-main-border);
     text-align: center;
 }
 .List .Header button {
@@ -271,7 +291,6 @@ button.caution {
     transition: 0.2s;
 }
 .List .Header button:not(.newNote):hover {
-    background: #f7f7f7;
     color: #666;
 }
 .Dashboard .Options .OptionItem > button {
@@ -424,7 +443,7 @@ button.logout::before {
     font-weight: 500;
 }
 .EditorControls {
-    background: #f7f7f7;
+    background: var(--element-dimmed-bg);
     padding: 1rem;
     border-radius: 0.5rem;
     display: flex;
@@ -434,7 +453,7 @@ button.logout::before {
 .EditorControls hr {
     width: 1px;
     height: 1.5rem;
-    background: #ddd;
+    background: var(--element-secondary-border);
     border: 0;
     margin: 0 1.5rem;
 }
@@ -457,14 +476,14 @@ button.logout::before {
     margin-left: 0.5rem;
 }
 .List {
-    border-right: 1px solid #ccc;
-    background: #f7f7f7;
+    border-right: 1px solid var(--element-main-border);
+    background: var(--element-dimmed-bg);
 }
 .List .Header {
     padding: 1rem;
     padding-left: 1.5rem;
-    background: #fff;
-    border-bottom: 1px solid #ccc;
+    background: var(--element-main-bg);
+    border-bottom: 1px solid var(--element-main-border);
     display: grid;
     grid-template-columns: 1fr auto;
     align-items: center;
@@ -505,7 +524,7 @@ button.logout::before {
     padding: 1rem;
     margin: 1rem;
     border-radius: 1rem;
-    background: #fff;
+    background: var(--element-main-bg);
     transition: 0.2s;
     position: relative;
 }
@@ -545,7 +564,7 @@ button.logout::before {
 .Editable blockquote {
     margin: 0;
     margin-top: 1rem;
-    border-left: 0.3rem solid #ddd;
+    border-left: 0.3rem solid var(--element-secondary-border);
     padding: 0 1rem;
     font-style: oblique;
     font-size: 0.9rem;
@@ -575,15 +594,15 @@ button.logout::before {
 }
 .MiniMenu ul {
     position: fixed;
-    background: #fff;
-    border: 1px solid #ddd;
+    background: var(--element-main-bg);
+    border: 1px solid var(--element-secondary-border);
     border-radius: 0.5rem;
     list-style: none;
     margin: 0;
     padding: 0 0.3rem 0.5rem;
 }
 .MiniMenu li + li, .Dropdown li + li {
-    border-top: 1px solid #ddd;
+    border-top: 1px solid var(--element-secondary-border);
 }
 .MiniMenu strong {
     padding: 0.7rem;
@@ -645,7 +664,7 @@ button.logout::before {
 .modalContainer {
     width: 29rem;
     margin: auto;
-    background: #fff;
+    background: var(--element-main-bg);
     border-radius: 1rem;
     padding: 2rem;
     position: relative;
@@ -705,7 +724,7 @@ form input:not([type=submit]):not([type=checkbox]) {
     width: 100%;
     margin-top: 0.4rem;
     padding: 0.7rem;
-    border: 1px solid #ddd;
+    border: 1px solid var(--element-secondary-border);
     border-radius: 0.5rem;
     transition: 0.2s;
 }
@@ -730,7 +749,7 @@ form input:not([type=submit]):not([type=checkbox]) {
 }
 .formSection {
     margin-top: 1.5rem;
-    border-top: 1px solid #ccc;
+    border-top: 1px solid var(--element-main-border);
     padding-top: 1.5rem;
     width: 100%;
     font-size: 0.8rem;
@@ -847,8 +866,7 @@ input.nope + .formError {
     margin-right: 0.3rem;
 }
 .tag, .MiniMenu .tag {
-    background: #f7f7f7;
-    border: 1px solid #ddd;
+    border: 1px solid var(--element-secondary-border);
     display: inline-block;
     padding: 0 0.7rem;
     font-size: 0.7rem;
@@ -863,7 +881,10 @@ input.nope + .formError {
     transition: 0.2s;
 }
 .List .tag {
-    background: #fff;
+    background: var(--element-main-bg);
+}
+.MiniMenu .tag {
+    background: var(--element-dimmed-bg);
 }
 .tag:hover, .MiniMenu .tag:hover {
     color: inherit;
@@ -936,7 +957,7 @@ ul.nolines li.tagsList {
     color: #fff;
 }
 .noteOptions {
-    background: #f7f7f7;
+    background: var(--element-dimmed-bg);;
     padding: 1.5rem;
     border-radius: 0.5rem;
     margin-bottom: 2rem;
@@ -958,8 +979,8 @@ ul.nolines li.tagsList {
 }
 .Dropdown .dropdownDisplay {
     font-size: 0.9rem;
-    background: #fff;
-    border: 1px solid #ddd;
+    background: var(--element-main-bg);
+    border: 1px solid var(--element-secondary-border);
     padding: 0.5rem 1rem;
     border-radius: 999px;
     cursor: pointer;
@@ -989,9 +1010,9 @@ ul.nolines li.tagsList {
     top: 50%;
     left: 0;
     width: 100%;
-    border: 1px solid #ddd;
+    border: 1px solid var(--element-secondary-border);
     border-top: 0;
-    background: #fff;
+    background: var(--element-main-bg);
     border-radius: 0 0 0.5rem 0.5rem;
 }
 .Dropdown.expanded .dropdownList {
@@ -1053,7 +1074,7 @@ ul.nolines li.tagsList {
     width: 100%;
     height: 100%;
     border-radius: 999px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--element-main-border);
     transition: all 0.2s ease;
 }
 .checkboxElement span.svg::before {

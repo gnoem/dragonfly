@@ -35,9 +35,9 @@ export default function Notes(props) {
     const prevView = usePrevious(view);
     //const prevNoteId = usePrevious(currentNote._id);
     useEffect(() => {
-        let firstNote = notes[0];
-        if (!notes.length) firstNote = false;
-        setCurrentNote(firstNote); // not necessarily
+        /* let firstNote = notes[0];
+        if (!notes.length) firstNote = false; // */
+        setCurrentNote(false);
         setAddingNewNote(false);
         setTempNotePreview('New note');
     // do not want this firing everytime note changes

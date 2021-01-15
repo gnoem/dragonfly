@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import Modal from './Modal';
+import Loading from './Loading';
 
 export default function MyAccount(props) {
     return (
@@ -16,7 +17,7 @@ function Account(props) {
     const { user } = props;
     const [formData, updateFormData] = useState({ user });
     const [newPassword, updateNewPassword] = useState({ password: null, confirmPassword: null })
-    const [showingModal, updateShowingModal] = useState(false);
+    const [modalObject, setModalObject] = useState(false);
     const changePasswordForm = useRef(null);
     const modalContent = useRef(null);
     const handleSubmit = async (e) => {
@@ -57,7 +58,7 @@ function Account(props) {
                     </div>
                 </div>
             )
-            updateShowingModal(content);
+            setModalObject(content);
         }
         successModal(); 
     }
@@ -92,7 +93,7 @@ function Account(props) {
                 </div>
             )
             changePasswordForm.current.reset();
-            updateShowingModal(content);
+            setModalObject(content);
         }
         successModal(); 
     }
@@ -100,39 +101,48 @@ function Account(props) {
         updateNewPassword({ ...newPassword, [field]: value });
     }
     const confirmDeleteAccount = () => {
-        const content = (
+        const deleteAccount = async (e) => {
+            e.preventDefault();
+            setModalObject(content({ loadingIcon: true }));
+            const response = await ('/delete/account', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ _id: user._id })
+            });
+            const body = await response.json();
+            if (!body) return console.log('no response from server');
+            if (!body.success) return console.log('no success: true response from server');
+            window.location.href = '/';
+        }
+        const content = (options = {
+            loadingIcon: false
+        }) => (
             <div className="modalContent" ref={modalContent}>
-                <h2>Are you absolutely sure?</h2>
+                <h2>Are you sure?</h2>
                 If you continue, your data will be lost forever!
-                <div className="buttons">
-                    <button onClick={deleteAccount}>Yes, I'm sure</button>
-                    <button className="greyed" onClick={() => gracefullyCloseModal(modalContent.current)}>Take me back</button>
-                </div>
+                {options.loadingIcon
+                    ?   <Loading />
+                    :   <form onSubmit={deleteAccount} className="buttons">
+                            <button type="submit">Yes, I'm sure</button>
+                            <button type="button" className="greyed" onClick={() => gracefullyCloseModal(modalContent.current)}>Cancel</button>
+                        </form>
+                    }
             </div>
         );
-        updateShowingModal(content);
-    }
-    const deleteAccount = () => {
-        console.log('deleting account');
+        setModalObject(content());
     }
     const gracefullyCloseModal = (modal) => {
         let container = modal.classList.contains('Modal')
             ? modal
             : modal.closest('.Modal');
         container.classList.add('goodbye');
-        setTimeout(() => updateShowingModal(false), 200);
-    }
-    const showModal = (content) => {
-        if (!content) return;
-        return (
-            <Modal exitModal={gracefullyCloseModal}>
-                {content}
-            </Modal>
-        )
+        setTimeout(() => setModalObject(false), 200);
     }
     return (
         <div>
-            {showModal(showingModal)}
+            <Modal exitModal={gracefullyCloseModal} content={modalObject} />
             <h1>My Account</h1>
             <form onSubmit={handleSubmit} autoComplete="off">
                 <div className="Account">
@@ -186,7 +196,7 @@ function Account(props) {
 
 function CreateAccount(props) {
     const [formData, updateFormData] = useState({ _id: props.user._id });
-    const [showingModal, updateShowingModal] = useState(false);
+    const [modalObject, setModalObject] = useState(false);
     const modalContent = useRef(null);
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -220,7 +230,7 @@ function CreateAccount(props) {
                     </div>
                 </div>
             )
-            updateShowingModal(content);
+            setModalObject(content);
         }
         successModal(); 
     }
@@ -232,20 +242,11 @@ function CreateAccount(props) {
             ? modal
             : modal.closest('.Modal');
         container.classList.add('goodbye');
-        setTimeout(() => updateShowingModal(false), 200);
-    }
-    const showModal = (content) => {
-        if (!content) return;
-        return (
-            <Modal exitModal={gracefullyCloseModal}>
-                {content}
-            </Modal>
-        )
+        setTimeout(() => setModalObject(false), 200);
     }
     return (
         <div>
-            <div id="demo" onClick={() => console.log(formData)}></div>
-            {showModal(showingModal)}
+            <Modal exitModal={gracefullyCloseModal} content={modalObject} />
             <h1>Create an Account</h1>
             <p>It looks like you haven't registered an account yet. To customize your Dragonfly dashboard URL, password-protect your notes, and personalize your dashboard, create a free account below. Click <a href="/">here</a> to learn more.</p>
             <form onSubmit={handleSubmit} autoComplete="off">
