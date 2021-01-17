@@ -242,8 +242,8 @@ button.caution {
     height: 100%;
     display: grid;
     grid-template-rows: auto;
-    grid-template-columns: 300px 350px 1fr;
-    grid-template-areas: 'sidebar list editor';
+    grid-template-columns: 300px 1fr;
+    grid-template-areas: 'sidebar main';
 }
 .Dashboard .Sidebar {
     grid-area: sidebar;
@@ -253,86 +253,32 @@ button.caution {
     overflow: auto;
 }
 .Dashboard .Panel {
-    grid-column: 2 / -1;
+    grid-area: main;
     padding: 2rem;
     padding-right: 35%;
     height: 100%;
     overflow: auto;
 }
 .Dashboard .Notes {
-    grid-column: 2 / -1;
+    grid-area: main;
     display: grid;
     grid-template-columns: 350px 1fr auto;
     grid-template-areas: 'list editor options';
 }
-.Dashboard .Editor {
+.Notes .List {
+    grid-area: list;
+    border-right: 1px solid var(--element-main-border);
+    background: var(--element-dimmed-bg);
+}
+.Notes .Editor {
     grid-area: editor;
     padding: 2rem;
 }
-.Dashboard .Options {
+.Notes .Options {
     grid-area: options;
     padding: 1rem;
     border-left: 1px solid var(--element-main-border);
     text-align: center;
-}
-.List .Header button {
-    margin: 0;
-    padding: 0;
-    width: 2.5rem;
-    height: 2.5rem;
-    font-size: 1.4rem;
-    display: grid;
-    place-items: center;
-    border-radius: 50%;
-}
-.List .Header button:not(.newNote) {
-    background: none;
-    color: #aaa;
-    transition: 0.2s;
-}
-.List .Header button:not(.newNote):hover {
-    color: #666;
-}
-.Dashboard .Options .OptionItem > button {
-    background: none;
-    font-size: 1.2rem;
-    color: #aaa;
-    padding: 0;
-    margin: 0 auto;
-    position: relative;
-}
-.Dashboard .Options .OptionItem + .OptionItem {
-    margin-top: 1rem;
-}
-.Dashboard .Options .OptionItem > button .tooltip {
-    position: absolute;
-    top: 50%;
-    right: 100%;
-    margin-right: 0.75rem;
-    white-space: nowrap;
-    transform: translate3d(0, -50%, 0);
-    background: #333;
-    font-size: 0.7rem;
-    line-height: 2rem;
-    color: #fff;
-    padding: 0 0.75rem;
-    border-radius: 0.5rem;
-    display: none;
-}
-.Dashboard .Options .OptionItem > button .tooltip::before {
-    position: absolute;
-    top: 50%;
-    left: 100%;
-    margin-left: -0.25rem;
-    transform: translate3d(0, -50%, 0) rotate(45deg);
-    content: '';
-    display: block;
-    width: 0.5rem;
-    height: 0.5rem;
-    background: #333;
-}
-.Dashboard .Options .OptionItem > button:hover .tooltip {
-    display: block;
 }
 .Sidebar h1 {
     font-family: var(--display-font);
@@ -428,6 +374,47 @@ button.help::before {
 button.logout::before {
     content: '\f2f5';
 }
+.Options .OptionItem > button {
+    background: none;
+    font-size: 1.2rem;
+    color: #aaa;
+    padding: 0;
+    margin: 0 auto;
+    position: relative;
+}
+.Options .OptionItem + .OptionItem {
+    margin-top: 1rem;
+}
+.Options .OptionItem > button .tooltip {
+    position: absolute;
+    top: 50%;
+    right: 100%;
+    margin-right: 0.75rem;
+    white-space: nowrap;
+    transform: translate3d(0, -50%, 0);
+    background: #333;
+    font-size: 0.7rem;
+    line-height: 2rem;
+    color: #fff;
+    padding: 0 0.75rem;
+    border-radius: 0.5rem;
+    display: none;
+}
+.Options .OptionItem > button .tooltip::before {
+    position: absolute;
+    top: 50%;
+    left: 100%;
+    margin-left: -0.25rem;
+    transform: translate3d(0, -50%, 0) rotate(45deg);
+    content: '';
+    display: block;
+    width: 0.5rem;
+    height: 0.5rem;
+    background: #333;
+}
+.Options .OptionItem > button:hover .tooltip {
+    display: block;
+}
 .NoteEditor {
     width: 100%;
     height: 100%;
@@ -475,10 +462,6 @@ button.logout::before {
 .EditorControls button + button {
     margin-left: 0.5rem;
 }
-.List {
-    border-right: 1px solid var(--element-main-border);
-    background: var(--element-dimmed-bg);
-}
 .List .Header {
     padding: 1rem;
     padding-left: 1.5rem;
@@ -497,6 +480,24 @@ button.logout::before {
 }
 .List .Header div.button {
     grid-column: 2 / -1;
+}
+.List .Header button {
+    margin: 0;
+    padding: 0;
+    width: 2.5rem;
+    height: 2.5rem;
+    font-size: 1.4rem;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+}
+.List .Header button:not(.newNote) {
+    background: none;
+    color: #aaa;
+    transition: 0.2s;
+}
+.List .Header button:not(.newNote):hover {
+    color: #666;
 }
 .List .Header h1 span.collectionHeader > span {
     display: block;
@@ -962,6 +963,8 @@ ul.nolines li.tagsList {
     border-radius: 0.5rem;
     margin-bottom: 2rem;
 }
+
+/* CUSTOM DROPDOWN */
 .Dropdown {
     position: relative;
     display: inline-block;
@@ -1031,9 +1034,8 @@ ul.nolines li.tagsList {
 .showingTags .Dropdown button {
     padding: 0.3rem 0.6rem;
 }
-.Login .Checkbox label {
-    font-size: 0.9rem;
-}
+
+/* CUSTOM CHECKBOX */
 .Checkbox {
     position: relative;
     display: inline-grid;
@@ -1136,4 +1138,7 @@ ul.nolines li.tagsList {
 }
 .checkboxElement:hover span.svg {
     border-color: var(--deep-theme-color);
+}
+.Login .Checkbox label {
+    font-size: 0.9rem;
 }
