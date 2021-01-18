@@ -10,13 +10,17 @@ module.exports = (app) => {
         const { id } = req.params;
         const token = req.cookies.auth;
         if (!token) {
-            return console.log('failed to authorize user');
+            res.status(404).send({
+                success: false,
+                error: `Access token not found`
+            });
+            return;
         }
         const decoded = jwt.verify(token, secret);
         if (id !== decoded.id) {
             res.status(401).send({
                 success: false,
-                error: 'wrong token'
+                error: 'Wrong token for requested user'
             });
             return;
         }
@@ -39,7 +43,13 @@ module.exports = (app) => {
                 });
                 return console.error('error finding user', err);
             }
-            if (!user) return console.log(`user ${username} not found`);
+            if (!user) {
+                res.status(404).send({
+                    success: false,
+                    error: `User "${username}" not found`
+                });
+                return;
+            }
             const passwordIsValid = () => {
                 return bcrypt.compareSync(password, user.password);
             }
@@ -90,7 +100,13 @@ module.exports = (app) => {
                 });
                 return console.error('error finding user', err);
             }
-            if (!user) return console.log(`user ${id} not found`);
+            if (!user) {
+                res.status(404).send({
+                    success: false,
+                    error: `User "${id}" not found`
+                });
+                return;
+            }
             if (!searchingById) id = user._id;
             Note.find({ userId: id }).sort({ lastModified: 'desc' }).exec((err, notes) => {
                 if (err) {
@@ -150,7 +166,13 @@ module.exports = (app) => {
                 });
                 return console.error('error finding note', err);
             }
-            if (!note) return console.log(`note ${id} not found`);
+            if (!note) {
+                res.status(404).send({
+                    success: false,
+                    error: `Note "${id}" not found`
+                });
+                return;
+            }
             note.title = title;
             note.content = JSON.stringify(content);
             note.lastModified = Date.now();
@@ -179,7 +201,13 @@ module.exports = (app) => {
                 });
                 return console.error('error finding note', err);
             }
-            if (!note) return console.log(`note ${_id} not found`);
+            if (!note) {
+                res.status(404).send({
+                    success: false,
+                    error: `Note "${_id}" not found`
+                });
+                return;
+            }
             note.starred = !note.starred;
             note.save(err => {
                 if (err) {
@@ -203,7 +231,13 @@ module.exports = (app) => {
                 });
                 return console.error('error finding user', err);
             }
-            if (!note) return console.log(`note ${_id} not found`);
+            if (!note) {
+                res.status(404).send({
+                    success: false,
+                    error: `Note "${_id}" not found`
+                });
+                return;
+            }
             note.category = collectionName;
             note.save(err => {
                 if (err) {
@@ -227,7 +261,13 @@ module.exports = (app) => {
                 });
                 return console.error('error finding note', err);
             }
-            if (!note) return console.log(`note ${_id} not found`);
+            if (!note) {
+                res.status(404).send({
+                    success: false,
+                    error: `Note "${_id}" not found`
+                });
+                return;
+            }
             const noteAlreadyHasTag = () => note.tags && (note.tags.indexOf(tagName) !== -1);
             if (noteAlreadyHasTag()) {
                 let index = note.tags.indexOf(tagName)
@@ -258,7 +298,13 @@ module.exports = (app) => {
                 });
                 return console.error('error finding note', err);
             }
-            if (!note) return console.log(`note ${_id} not found`);
+            if (!note) {
+                res.status(404).send({
+                    success: false,
+                    error: `Note "${_id}" not found`
+                });
+                return;
+            }
             note.trash = !note.trash;
             note.save(err => {
                 if (err) {
@@ -282,8 +328,13 @@ module.exports = (app) => {
                 });
                 return console.error('error finding note', err);
             }
-            if (!note) return console.log(`note ${id} not found`);
-            console.log('deleting note');
+            if (!note) {
+                res.status(404).send({
+                    success: false,
+                    error: `Note "${id}" not found`
+                });
+                return;
+            }
             res.status(200).send({ success: true });
         })
     });
@@ -325,7 +376,13 @@ module.exports = (app) => {
                 });
                 return console.error('error finding user', err);
             }
-            if (!user) return console.log(`user ${_id} not found`);
+            if (!user) {
+                res.status(404).send({
+                    success: false,
+                    error: `User "${_id}" not found`
+                });
+                return;
+            }
             const collectionAlreadyExists = (name) => {
                 if (!user.collections || !user.collections.length) return false;
                 let index = user.collections.indexOf(name);
@@ -383,7 +440,13 @@ module.exports = (app) => {
                 });
                 return console.error('error finding user', err);
             }
-            if (!user) return console.log(`user ${_id} not found`);
+            if (!user) {
+                res.status(404).send({
+                    success: false,
+                    error: `User "${_id}" not found`
+                });
+                return;
+            }
             const collectionAlreadyExists = (name) => {
                 if (!user.collections || !user.collections.length) return false;
                 let index = user.collections.indexOf(name);
@@ -399,7 +462,13 @@ module.exports = (app) => {
                 return;
             }
             let index = user.collections.indexOf(collectionName);
-            if (index === -1) return console.log('collection not found!');
+            if (index === -1) {
+                res.status(404).send({
+                    success: false,
+                    error: `Collection "${collectionName}" not found`
+                });
+                return;
+            }
             user.collections.splice(index, 1, updatedName);
             Note.find({ userId: user._id }, (err, notes) => {
                 if (err) {
@@ -440,10 +509,28 @@ module.exports = (app) => {
                 });
                 return console.error('error finding user', err);
             }
-            if (!user) return console.log(`user ${_id} not found`);
-            if (!user.collections) return console.log('something went way wrong');
+            if (!user) {
+                res.status(404).send({
+                    success: false,
+                    error: `User "${_id}" not found`
+                });
+                return;
+            }
+            if (!user.collections) {
+                res.status(404).send({
+                    success: false,
+                    error: `No collections for user "${_id}" found`
+                });
+                return;
+            }
             let index = user.collections.indexOf(collectionName);
-            if (index === -1) return console.log('something went wayyy wrong');
+            if (index === -1) {
+                res.status(404).send({
+                    success: false,
+                    error: `Collection "${collectionName}" not found`
+                });
+                return;
+            }
             user.collections.splice(index, 1);
             Note.find({ userId: user._id }, (err, notes) => {
                 if (err) {
@@ -453,7 +540,13 @@ module.exports = (app) => {
                     });
                     return console.error('error finding notes', err);
                 }
-                if (!notes) return console.log(`notes with userId ${user._id} not found`);
+                if (!notes.length) {
+                    res.status(404).send({
+                        success: false,
+                        error: `Notes from user "${user._id}" not found`
+                    });
+                    return;
+                }
                 const updateNotes = (array) => {
                     for (let i = 0; i < array.length; i++) {
                         // find all that belong to this collection and change to false
@@ -501,7 +594,13 @@ module.exports = (app) => {
                 });
                 return console.error('error finding user', err);
             }
-            if (!user) return console.log(`user ${username} not found`);
+            if (!user) {
+                res.status(404).send({
+                    success: false,
+                    error: `User "${_id}" not found`
+                });
+                return;
+            }
             const tagAlreadyExists = (name) => {
                 if (!user.tags || !user.tags.length) return false;
                 let index = user.tags.indexOf(name);
@@ -559,7 +658,13 @@ module.exports = (app) => {
                 });
                 return console.error('error finding user', err);
             }
-            if (!user) return console.log(`user ${_id} not found`);
+            if (!user) {
+                res.status(404).send({
+                    success: false,
+                    error: `User "${_id}" not found`
+                });
+                return;
+            }
             const tagAlreadyExists = (name) => {
                 if (!user.tags || !user.tags.length) return false;
                 let index = user.tags.indexOf(name);
@@ -575,7 +680,13 @@ module.exports = (app) => {
                 return;
             }
             let index = user.tags.indexOf(tagName);
-            if (index === -1) return console.log('tag not found!');
+            if (index === -1) {
+                res.status(404).send({
+                    success: false,
+                    error: `Tag "${tagName}" not found`
+                });
+                return;
+            }
             user.tags.splice(index, 1, updatedName);
             Note.find({ userId: _id }, (err, notes) => {
                 if (err) {
@@ -622,9 +733,21 @@ module.exports = (app) => {
                 });
                 return console.error('error finding user', err);
             }
-            if (!user) return console.log(`user ${_id} not found`);
+            if (!user) {
+                res.status(404).send({
+                    success: false,
+                    error: `User "${_id}" not found`
+                });
+                return;
+            }
             let index = user.tags.indexOf(tagName);
-            if (index === -1) return console.log('something went wayyy wrong');
+            if (index === -1) {
+                res.status(404).send({
+                    success: false,
+                    error: `Tag "${tagName}" not found`
+                });
+                return;
+            }
             user.tags.splice(index, 1);
             Note.find({ userId: _id }, (err, notes) => {
                 if (err) {
@@ -634,7 +757,13 @@ module.exports = (app) => {
                     });
                     return console.error('error finding notes', err);
                 }
-                if (!notes) return console.log(`notes with userId ${_id} not found`);
+                if (!notes.length) {
+                    res.status(404).send({
+                        success: false,
+                        error: `Notes from user "${_id}" not found`
+                    });
+                    return;
+                }
                 const updateNotes = (array) => {
                     for (let i = 0; i < array.length; i++) {
                         let thisNote = array[i];
@@ -702,7 +831,13 @@ module.exports = (app) => {
                 });
                 return console.error('error finding user', err);
             }
-            if (!user) return console.log(`user ${_id} not found`);
+            if (!user) {
+                res.status(404).send({
+                    success: false,
+                    error: `User "${_id}" not found`
+                });
+                return;
+            }
             user.firstName = firstName;
             user.lastName = lastName;
             user.email = email;
@@ -759,7 +894,13 @@ module.exports = (app) => {
                 });
                 return console.error('error finding user', err);
             }
-            if (!user) return console.log(`user ${_id} not found`);
+            if (!user) {
+                res.status(404).send({
+                    success: false,
+                    error: `User "${_id}" not found`
+                });
+                return;
+            }
             user.firstName = firstName;
             user.lastName = lastName;
             user.email = email;
@@ -787,7 +928,13 @@ module.exports = (app) => {
                 });
                 return console.error('error finding user', err);
             }
-            if (!user) return console.log(`user ${_id} not found`);
+            if (!user) {
+                res.status(404).send({
+                    success: false,
+                    error: `User "${_id}" not found`
+                });
+                return;
+            }
             user.password = bcrypt.hashSync(password, 8);
             user.save(err => {
                 if (err) {
@@ -811,7 +958,13 @@ module.exports = (app) => {
                 });
                 return console.error('error finding user', err);
             }
-            if (!user) return console.log(`user ${_id} not found`);
+            if (!user) {
+                res.status(404).send({
+                    success: false,
+                    error: `User "${_id}" not found`
+                });
+                return;
+            }
             Note.deleteMany({ userId: _id }, (err) => {
                 if (err) {
                     res.status(500).send({
