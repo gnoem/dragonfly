@@ -7,12 +7,12 @@ import Login from './Login';
 
 export default function Dashboard(props) {
     const { id } = props.match.params;
-    const [accessToken, updateAccessToken] = useState(false);
-    const [user, updateUser] = useState(null);
-    const [notes, updateNotes] = useState([]);
-    const [view, updateView] = useState('all-notes');
-    const [isLoaded, updateIsLoaded] = useState(false);
-    const [triggerGetData, updateTrigger] = useState(null);
+    const [accessToken, setAccessToken] = useState(false);
+    const [user, setUser] = useState(null);
+    const [notes, setNotes] = useState([]);
+    const [view, setView] = useState('all-notes');
+    const [isLoaded, setIsLoaded] = useState(false);
+    const [triggerGetData, setTrigger] = useState(null);
     useEffect(() => {
         if (!user) return;
         if (accessToken) return;
@@ -21,7 +21,7 @@ export default function Dashboard(props) {
             const body = await response.json();
             if (!body) return console.log('no response from server');
             if (!body.success) return console.log('no success: true response from server');
-            updateAccessToken(body.accessToken);
+            setAccessToken(body.accessToken);
         }
         authorize();
     // reauthorizes fires every time getData is called
@@ -39,9 +39,9 @@ export default function Dashboard(props) {
             const body = await response.json();
             if (!body) return console.log('no response from server');
             if (!body.success) return console.log('no success: true response from server');
-            updateUser(body.user);
-            updateNotes(body.notes);
-            updateIsLoaded(true);
+            setUser(body.user);
+            setNotes(body.notes);
+            setIsLoaded(true);
         }
         getData();
     }, [id, triggerGetData]);
@@ -49,25 +49,25 @@ export default function Dashboard(props) {
     const allNotes = () => {
         let filteredNotes = notes.filter(note => !note.trash);
         return (
-            <Notes view={view} user={user} notes={filteredNotes} refreshData={() => updateTrigger(Date.now())} />
+            <Notes view={view} user={user} notes={filteredNotes} refreshData={() => setTrigger(Date.now())} />
         )
     }
     const starredNotes = () => {
         let starredNotes = notes.filter(note => note.starred);
         return (
-            <Notes view={view} user={user} notes={starredNotes} refreshData={() => updateTrigger(Date.now())} />
+            <Notes view={view} user={user} notes={starredNotes} refreshData={() => setTrigger(Date.now())} />
         )
     }
     const collection = (collectionName) => {
         let notesInCollection = notes.filter(note => note.collection === collectionName);
         return (
-            <Notes view={view} updateView={updateView} user={user} notes={notesInCollection} refreshData={() => updateTrigger(Date.now())} />
+            <Notes view={view} updateView={setView} user={user} notes={notesInCollection} refreshData={() => setTrigger(Date.now())} />
         )
     }
     const tags = (tags) => {
         if (view.type !== 'tags') return;
         if (!tags.length) return (
-            <Notes view={view} updateView={updateView} user={user} notes={[]} refreshData={() => updateTrigger(Date.now())} />
+            <Notes view={view} updateView={setView} user={user} notes={[]} refreshData={() => setTrigger(Date.now())} />
         );
         const notesWithTheseTags = (tags) => { // returns an array of notes
             let taggedNotes = [];
@@ -92,13 +92,13 @@ export default function Dashboard(props) {
         }
         let taggedNotes = notesWithTheseTags(tags);
         return (
-            <Notes view={view} updateView={updateView} user={user} notes={taggedNotes} refreshData={() => updateTrigger(Date.now())} />
+            <Notes view={view} updateView={setView} user={user} notes={taggedNotes} refreshData={() => setTrigger(Date.now())} />
         )
     }
     const trashedNotes = () => {
         let trashedNotes = notes.filter(note => note.trash);
         return (
-            <Notes view={view} user={user} notes={trashedNotes} refreshData={() => updateTrigger(Date.now())} />
+            <Notes view={view} user={user} notes={trashedNotes} refreshData={() => setTrigger(Date.now())} />
         )
     }
     const appContent = () => {
@@ -107,7 +107,7 @@ export default function Dashboard(props) {
             case 'starred-notes': return starredNotes();
             case 'trash': return trashedNotes();
             case 'my-account': return (
-                <MyAccount updateIsLoaded={updateIsLoaded} refreshData={() => updateTrigger(Date.now())} user={user} />
+                <MyAccount updateIsLoaded={setIsLoaded} refreshData={() => setTrigger(Date.now())} user={user} />
             );
             default: {
                 if (view.type === 'collection') {
@@ -128,7 +128,7 @@ export default function Dashboard(props) {
     }
     return (
         <div className="Dashboard">
-            <Sidebar user={user} view={view} updateView={updateView} refreshData={() => updateTrigger(Date.now())} />
+            <Sidebar user={user} view={view} updateView={setView} refreshData={() => setTrigger(Date.now())} />
             {appContent()}
         </div>
     )
