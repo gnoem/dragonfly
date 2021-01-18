@@ -15,7 +15,7 @@ module.exports = (app) => {
         const decoded = jwt.verify(token, secret);
         if (id !== decoded.id) {
             res.status(401).send({
-                success: false;
+                success: false,
                 error: 'wrong token'
             });
             return;
@@ -32,7 +32,13 @@ module.exports = (app) => {
     app.post('/login/user', (req, res) => {
         const { username, password } = req.body;
         User.findOne({ username }, (err, user) => {
-            if (err) return console.error('error finding user', err);
+            if (err) {
+                res.status(500).send({
+                    success: false,
+                    err
+                });
+                return console.error('error finding user', err);
+            }
             if (!user) return console.log(`user ${username} not found`);
             const passwordIsValid = () => {
                 return bcrypt.compareSync(password, user.password);
@@ -101,7 +107,7 @@ module.exports = (app) => {
                         _id, userId, title, content: JSON.parse(content), tags, collection: category, starred, trash, createdAt, lastModified
                     });
                 }
-                res.send({
+                res.status(200).send({
                     success: true,
                     user,
                     notes: preparedNotes
@@ -128,7 +134,7 @@ module.exports = (app) => {
                 return console.error('error saving note', err);
             }
             console.log('success!');
-            res.send({
+            res.status(200).send({
                 success: true,
                 id: newNote._id
             });
@@ -157,9 +163,7 @@ module.exports = (app) => {
                     return console.error('error saving note', err);
                 }
                 console.log('successfully edited note');
-                res.send({
-                    success: true
-                });
+                res.status(200).send({ success: true });
             });
         });
     });
@@ -185,9 +189,7 @@ module.exports = (app) => {
                     });
                     return console.error('error saving note', err);
                 }
-                res.send({
-                    success: true
-                });
+                res.status(200).send({ success: true });
             });
         });
     });
@@ -211,9 +213,7 @@ module.exports = (app) => {
                     });
                     return console.error('error saving note', err);
                 }
-                res.send({
-                    success: true
-                });
+                res.status(200).send({ success: true });
             });
         });
     });
@@ -244,9 +244,7 @@ module.exports = (app) => {
                     });
                     return console.error('error saving note', err);
                 }
-                return res.send({
-                    success: true
-                });
+                res.status(200).send({ success: true });
             });
         });
     });
@@ -270,9 +268,7 @@ module.exports = (app) => {
                     });
                     return console.error('error saving note', err);
                 }
-                res.send({
-                    success: true
-                });
+                res.status(200).send({ success: true });
             });
         });
     });
@@ -288,9 +284,7 @@ module.exports = (app) => {
             }
             if (!note) return console.log(`note ${id} not found`);
             console.log('deleting note');
-            res.send({
-                success: true
-            });
+            res.status(200).send({ success: true });
         })
     });
     app.post('/empty/trash', (req, res) => {
@@ -303,9 +297,7 @@ module.exports = (app) => {
                 });
                 return console.error('error deleting notes', err);
             }
-            res.send({
-                success: true
-            });
+            res.status(200).send({ success: true });
         });
     });
     app.post('/create/collection', [
@@ -358,9 +350,7 @@ module.exports = (app) => {
                     });
                     return console.error('error saving user', err);
                 }
-                res.send({
-                    success: true
-                });
+                res.status(200).send({ success: true });
             });
         });
     });
@@ -382,9 +372,7 @@ module.exports = (app) => {
         }
         const { _id, collectionName, updatedName } = req.body;
         if (collectionName === updatedName) {
-            res.send({
-                success: true
-            });
+            res.status(200).send({ success: true });
             return;
         }
         User.findOne({ _id }, (err, user) => {
@@ -437,9 +425,7 @@ module.exports = (app) => {
                         });
                         return console.error('error saving user', err);
                     }
-                    res.send({
-                        success: true
-                    });
+                    res.status(200).send({ success: true });
                 });
             });
         });
@@ -485,9 +471,7 @@ module.exports = (app) => {
                         });
                         return console.error('error saving user', err);
                     }
-                    res.send({
-                        success: true
-                    });
+                    res.status(200).send({ success: true });
                 });
             });
         });
@@ -542,9 +526,7 @@ module.exports = (app) => {
                     });
                     return console.error('error saving user', err);
                 }
-                res.send({
-                    success: true
-                });
+                res.status(200).send({ success: true });
             });
         });
     });
@@ -566,9 +548,7 @@ module.exports = (app) => {
         }
         const { _id, tagName, updatedName } = req.body;
         if (tagName === updatedName) { // remove if adding more options later, like tag color
-            res.send({
-                success: true
-            });
+            res.status(200).send({ success: true });
             return;
         }
         User.findOne({ _id }, (err, user) => {
@@ -627,9 +607,7 @@ module.exports = (app) => {
                         });
                         return console.error('error saving user', err);
                     }
-                    res.send({
-                        success: true
-                    });
+                    res.status(200).send({ success: true });
                 });
             });
         });
@@ -677,9 +655,7 @@ module.exports = (app) => {
                         });
                         return console.error('error saving user', err);
                     }
-                    res.send({
-                        success: true
-                    });
+                    res.status(200).send({ success: true });
                 });
             });
         });
@@ -744,9 +720,7 @@ module.exports = (app) => {
                     expiresIn: 86400 // 24 hours
                 });
                 res.cookie('auth', token, { httpOnly: true, secure: false, maxAge: 3600000 });
-                res.send({
-                    success: true
-                });
+                res.status(200).send({ success: true });
             });
         });
     });
@@ -799,9 +773,7 @@ module.exports = (app) => {
                     });
                     return console.error('error saving user', err);
                 }
-                res.send({
-                    success: true
-                });
+                res.status(200).send({ success: true });
             });
         });
     });
@@ -825,9 +797,7 @@ module.exports = (app) => {
                     });
                     return console.error('error saving user', err);
                 }
-                res.send({
-                    success: true
-                });
+                res.status(200).send({ success: true });
             });
         });
     });
@@ -850,9 +820,7 @@ module.exports = (app) => {
                     });
                     return console.error('error deleting notes', err);
                 }
-                res.send({
-                    success: true
-                });
+                res.status(200).send({ success: true });
             });
         });
     });
