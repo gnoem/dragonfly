@@ -8,24 +8,26 @@ const Note = require('../models/note');
 module.exports = (app) => {
     app.get('/auth/:id', (req, res) => {
         const { id } = req.params;
-        console.log('Authorizing...');
         const token = req.cookies.auth;
         if (!token) {
             return console.log('failed to authorize user');
         }
         const decoded = jwt.verify(token, secret);
         if (id !== decoded.id) {
-            return console.log('wrong token for this user');
+            res.status(401).send({
+                success: false;
+                error: 'wrong token'
+            });
+            return;
         }
-        console.log('User authorized.');
-        res.send({
+        res.status(200).send({
             success: true,
             accessToken: token
         });
     });
     app.post('/logout/user', (req, res) => {
         res.clearCookie('auth');
-        res.send({ success: true });
+        res.status(200).send({ success: true });
     });
     app.post('/login/user', (req, res) => {
         const { username, password } = req.body;
@@ -36,7 +38,7 @@ module.exports = (app) => {
                 return bcrypt.compareSync(password, user.password);
             }
             if (!passwordIsValid()) {
-                res.send({
+                res.status(401).send({
                     success: false,
                     error: 'invalid-password'
                 });
@@ -46,7 +48,7 @@ module.exports = (app) => {
                 expiresIn: 86400 // 24 hours
             });
             res.cookie('auth', token, { httpOnly: true, secure: false, maxAge: 3600000 });
-            res.send({
+            res.status(200).send({
                 success: true,
                 accessToken: token
             });
@@ -55,8 +57,14 @@ module.exports = (app) => {
     app.post('/create/user', (req, res) => {
         const newUser = new User();
         newUser.save(err => {
-            if (err) return console.error('error saving new user', err);
-            res.send({
+            if (err) {
+                res.status(500).send({
+                    success: false,
+                    err
+                });
+                return console.error('error saving new user', err);
+            }
+            res.status(200).send({
                 success: true,
                 user: newUser
             });
@@ -69,11 +77,23 @@ module.exports = (app) => {
         if (searchingById) userParams = { _id: id };
         else userParams = { username: id };
         User.findOne(userParams, (err, user) => {
-            if (err) return console.error('error finding user', err);
+            if (err) {
+                res.status(500).send({
+                    success: false,
+                    err
+                });
+                return console.error('error finding user', err);
+            }
             if (!user) return console.log(`user ${id} not found`);
             if (!searchingById) id = user._id;
             Note.find({ userId: id }).sort({ lastModified: 'desc' }).exec((err, notes) => {
-                if (err) return console.error('error finding notes');
+                if (err) {
+                    res.status(500).send({
+                        success: false,
+                        err
+                    });
+                    return console.error('error finding notes', err);
+                }
                 let preparedNotes = [];
                 for (let i = 0; i < notes.length; i++) {
                     const { _id, userId, title, content, tags, category, starred, trash, createdAt, lastModified } = notes[i];
@@ -100,7 +120,13 @@ module.exports = (app) => {
             lastModified: Date.now()
         });
         newNote.save(err => {
-            if (err) return console.error('error saving note', err);
+            if (err) {
+                res.status(500).send({
+                    success: false,
+                    err
+                });
+                return console.error('error saving note', err);
+            }
             console.log('success!');
             res.send({
                 success: true,
@@ -111,13 +137,25 @@ module.exports = (app) => {
     app.post('/edit/note', (req, res) => {
         const { id, title, content } = req.body;
         Note.findOne({ _id: id }, (err, note) => {
-            if (err) return console.error('error finding note', err);
+            if (err) {
+                res.status(500).send({
+                    success: false,
+                    err
+                });
+                return console.error('error finding note', err);
+            }
             if (!note) return console.log(`note ${id} not found`);
             note.title = title;
             note.content = JSON.stringify(content);
             note.lastModified = Date.now();
             note.save(err => {
-                if (err) return console.error('error saving note', err);
+                if (err) {
+                    res.status(500).send({
+                        success: false,
+                        err
+                    });
+                    return console.error('error saving note', err);
+                }
                 console.log('successfully edited note');
                 res.send({
                     success: true
@@ -130,11 +168,23 @@ module.exports = (app) => {
         console.log('starring note');
         Note.findOne({ _id }, (err, note) => {
             console.log('findig note');
-            if (err) return console.error('error finding note', err);
+            if (err) {
+                res.status(500).send({
+                    success: false,
+                    err
+                });
+                return console.error('error finding note', err);
+            }
             if (!note) return console.log(`note ${_id} not found`);
             note.starred = !note.starred;
             note.save(err => {
-                if (err) return console.error('error saving note', err);
+                if (err) {
+                    res.status(500).send({
+                        success: false,
+                        err
+                    });
+                    return console.error('error saving note', err);
+                }
                 res.send({
                     success: true
                 });
@@ -144,11 +194,23 @@ module.exports = (app) => {
     app.post('/categorize/note', (req, res) => {
         const { _id, collectionName } = req.body;
         Note.findOne({ _id }, (err, note) => {
-            if (err) return console.error('error finding user', err);
+            if (err) {
+                res.status(500).send({
+                    success: false,
+                    err
+                });
+                return console.error('error finding user', err);
+            }
             if (!note) return console.log(`note ${_id} not found`);
             note.category = collectionName;
             note.save(err => {
-                if (err) return console.error('error saving note', err);
+                if (err) {
+                    res.status(500).send({
+                        success: false,
+                        err
+                    });
+                    return console.error('error saving note', err);
+                }
                 res.send({
                     success: true
                 });
@@ -158,7 +220,13 @@ module.exports = (app) => {
     app.post('/tag/note', (req, res) => {
         const { _id, tagName } = req.body;
         Note.findOne({ _id }, (err, note) => {
-            if (err) return console.error('error finding note', err);
+            if (err) {
+                res.status(500).send({
+                    success: false,
+                    err
+                });
+                return console.error('error finding note', err);
+            }
             if (!note) return console.log(`note ${_id} not found`);
             const noteAlreadyHasTag = () => note.tags && (note.tags.indexOf(tagName) !== -1);
             if (noteAlreadyHasTag()) {
@@ -169,7 +237,13 @@ module.exports = (app) => {
                 else note.tags.push(tagName);
             }
             note.save(err => {
-                if (err) return console.error('error saving note', err);
+                if (err) {
+                    res.status(500).send({
+                        success: false,
+                        err
+                    });
+                    return console.error('error saving note', err);
+                }
                 return res.send({
                     success: true
                 });
@@ -179,11 +253,23 @@ module.exports = (app) => {
     app.post('/trash/note', (req, res) => { // or untrash; note.trash = !note.trash
         const { _id } = req.body;
         Note.findOne({ _id }, (err, note) => {
-            if (err) return console.error('error finding note', err);
+            if (err) {
+                res.status(500).send({
+                    success: false,
+                    err
+                });
+                return console.error('error finding note', err);
+            }
             if (!note) return console.log(`note ${_id} not found`);
             note.trash = !note.trash;
             note.save(err => {
-                if (err) return console.error('error saving note', err);
+                if (err) {
+                    res.status(500).send({
+                        success: false,
+                        err
+                    });
+                    return console.error('error saving note', err);
+                }
                 res.send({
                     success: true
                 });
@@ -193,7 +279,13 @@ module.exports = (app) => {
     app.post('/delete/note', (req, res) => {
         const { id } = req.body;
         Note.findOneAndDelete({ _id: id }, (err, note) => {
-            if (err) return console.error('error finding note', err);
+            if (err) {
+                res.status(500).send({
+                    success: false,
+                    err
+                });
+                return console.error('error finding note', err);
+            }
             if (!note) return console.log(`note ${id} not found`);
             console.log('deleting note');
             res.send({
@@ -204,7 +296,13 @@ module.exports = (app) => {
     app.post('/empty/trash', (req, res) => {
         const { _id } = req.body;
         Note.deleteMany({ userId: _id, trash: true }, (err) => {
-            if (err) return console.error('error deleting notes', err);
+            if (err) {
+                res.status(500).send({
+                    success: false,
+                    err
+                });
+                return console.error('error deleting notes', err);
+            }
             res.send({
                 success: true
             });
@@ -228,7 +326,13 @@ module.exports = (app) => {
         }
         const { _id , collectionName } = req.body;
         User.findOne({ _id }, (err, user) => {
-            if (err) return console.error('error finding user', err);
+            if (err) {
+                res.status(500).send({
+                    success: false,
+                    err
+                });
+                return console.error('error finding user', err);
+            }
             if (!user) return console.log(`user ${_id} not found`);
             const collectionAlreadyExists = (name) => {
                 if (!user.collections || !user.collections.length) return false;
@@ -247,7 +351,13 @@ module.exports = (app) => {
             if (!user.collections) user.collections = [collectionName];
             else user.collections.push(collectionName);
             user.save(err => {
-                if (err) return console.error('error saving user', err);
+                if (err) {
+                    res.status(500).send({
+                        success: false,
+                        err
+                    });
+                    return console.error('error saving user', err);
+                }
                 res.send({
                     success: true
                 });
@@ -278,7 +388,13 @@ module.exports = (app) => {
             return;
         }
         User.findOne({ _id }, (err, user) => {
-            if (err) return console.error('error finding user', err);
+            if (err) {
+                res.status(500).send({
+                    success: false,
+                    err
+                });
+                return console.error('error finding user', err);
+            }
             if (!user) return console.log(`user ${_id} not found`);
             const collectionAlreadyExists = (name) => {
                 if (!user.collections || !user.collections.length) return false;
@@ -298,7 +414,13 @@ module.exports = (app) => {
             if (index === -1) return console.log('collection not found!');
             user.collections.splice(index, 1, updatedName);
             Note.find({ userId: user._id }, (err, notes) => {
-                if (err) return console.error('error finding notes', err);
+                if (err) {
+                    res.status(500).send({
+                        success: false,
+                        err
+                    });
+                    return console.error('error finding notes', err);
+                }
                 const updateNotes = (array) => {
                     for (let i = 0; i < array.length; i++) {
                         // find all that belong to this collection and change the collection name
@@ -308,7 +430,13 @@ module.exports = (app) => {
                 }
                 updateNotes(notes);
                 user.save(err => {
-                    if (err) return console.error('error saving user', err);
+                    if (err) {
+                        res.status(500).send({
+                            success: false,
+                            err
+                        });
+                        return console.error('error saving user', err);
+                    }
                     res.send({
                         success: true
                     });
@@ -319,15 +447,27 @@ module.exports = (app) => {
     app.post('/delete/collection', (req, res) => {
         const { _id, collectionName } = req.body;
         User.findOne({ _id }, (err, user) => {
-            if (err) return console.error('error finding user', err);
+            if (err) {
+                res.status(500).send({
+                    success: false,
+                    err
+                });
+                return console.error('error finding user', err);
+            }
             if (!user) return console.log(`user ${_id} not found`);
             if (!user.collections) return console.log('something went way wrong');
             let index = user.collections.indexOf(collectionName);
             if (index === -1) return console.log('something went wayyy wrong');
             user.collections.splice(index, 1);
             Note.find({ userId: user._id }, (err, notes) => {
-                if (err) return console.error('error finding notes', err);
-                if (!notes) return console.error(`notes with userId ${user._id} not found`);
+                if (err) {
+                    res.status(500).send({
+                        success: false,
+                        err
+                    });
+                    return console.error('error finding notes', err);
+                }
+                if (!notes) return console.log(`notes with userId ${user._id} not found`);
                 const updateNotes = (array) => {
                     for (let i = 0; i < array.length; i++) {
                         // find all that belong to this collection and change to false
@@ -338,7 +478,13 @@ module.exports = (app) => {
                 }
                 updateNotes(notes);
                 user.save(err => {
-                    if (err) return console.error('error saving user', err);
+                    if (err) {
+                        res.status(500).send({
+                            success: false,
+                            err
+                        });
+                        return console.error('error saving user', err);
+                    }
                     res.send({
                         success: true
                     });
@@ -364,7 +510,13 @@ module.exports = (app) => {
         }
         const { _id, tagName } = req.body;
         User.findOne({ _id }, (err, user) => {
-            if (err) return console.error('error finding user', err);
+            if (err) {
+                res.status(500).send({
+                    success: false,
+                    err
+                });
+                return console.error('error finding user', err);
+            }
             if (!user) return console.log(`user ${username} not found`);
             const tagAlreadyExists = (name) => {
                 if (!user.tags || !user.tags.length) return false;
@@ -383,7 +535,13 @@ module.exports = (app) => {
             if (!user.tags) user.tags = [tagName];
             else user.tags.push(tagName);
             user.save(err => {
-                if (err) return console.error('error saving user', err);
+                if (err) {
+                    res.status(500).send({
+                        success: false,
+                        err
+                    });
+                    return console.error('error saving user', err);
+                }
                 res.send({
                     success: true
                 });
@@ -414,7 +572,13 @@ module.exports = (app) => {
             return;
         }
         User.findOne({ _id }, (err, user) => {
-            if (err) return console.error('error finding user', err);
+            if (err) {
+                res.status(500).send({
+                    success: false,
+                    err
+                });
+                return console.error('error finding user', err);
+            }
             if (!user) return console.log(`user ${_id} not found`);
             const tagAlreadyExists = (name) => {
                 if (!user.tags || !user.tags.length) return false;
@@ -434,7 +598,13 @@ module.exports = (app) => {
             if (index === -1) return console.log('tag not found!');
             user.tags.splice(index, 1, updatedName);
             Note.find({ userId: _id }, (err, notes) => {
-                if (err) return console.error('error finding notes', err);
+                if (err) {
+                    res.status(500).send({
+                        success: false,
+                        err
+                    });
+                    return console.error('error finding notes', err);
+                }
                 const updateNotes = (array) => {
                     for (let i = 0; i < array.length; i++) {
                         // find all that have this tag and change the tag name in the tag array
@@ -450,7 +620,13 @@ module.exports = (app) => {
                 }
                 updateNotes(notes);
                 user.save(err => {
-                    if (err) return console.error('error saving user', err);
+                    if (err) {
+                        res.status(500).send({
+                            success: false,
+                            err
+                        });
+                        return console.error('error saving user', err);
+                    }
                     res.send({
                         success: true
                     });
@@ -461,14 +637,26 @@ module.exports = (app) => {
     app.post('/delete/tag', (req, res) => {
         const { _id, tagName } = req.body;
         User.findOne({ _id }, (err, user) => {
-            if (err) return console.error('error finding user', err);
+            if (err) {
+                res.status(500).send({
+                    success: false,
+                    err
+                });
+                return console.error('error finding user', err);
+            }
             if (!user) return console.log(`user ${_id} not found`);
             let index = user.tags.indexOf(tagName);
             if (index === -1) return console.log('something went wayyy wrong');
             user.tags.splice(index, 1);
             Note.find({ userId: _id }, (err, notes) => {
-                if (err) return console.error('error finding notes', err);
-                if (!notes) return console.error(`notes with userId ${_id} not found`);
+                if (err) {
+                    res.status(500).send({
+                        success: false,
+                        err
+                    });
+                    return console.error('error finding notes', err);
+                }
+                if (!notes) return console.log(`notes with userId ${_id} not found`);
                 const updateNotes = (array) => {
                     for (let i = 0; i < array.length; i++) {
                         let thisNote = array[i];
@@ -482,7 +670,13 @@ module.exports = (app) => {
                 }
                 updateNotes(notes);
                 user.save(err => {
-                    if (err) return console.error('error saving user', err);
+                    if (err) {
+                        res.status(500).send({
+                            success: false,
+                            err
+                        });
+                        return console.error('error saving user', err);
+                    }
                     res.send({
                         success: true
                     });
@@ -525,7 +719,13 @@ module.exports = (app) => {
         }
         const { _id, firstName, lastName, email, username, password } = req.body;
         User.findOne({ _id }, (err, user) => {
-            if (err) return console.error('error finding user', err);
+            if (err) {
+                res.status(500).send({
+                    success: false,
+                    err
+                });
+                return console.error('error finding user', err);
+            }
             if (!user) return console.log(`user ${_id} not found`);
             user.firstName = firstName;
             user.lastName = lastName;
@@ -533,7 +733,13 @@ module.exports = (app) => {
             user.username = username;
             user.password = bcrypt.hashSync(password, 8);
             user.save(err => {
-                if (err) return console.error('error saving user', err);
+                if (err) {
+                    res.status(500).send({
+                        success: false,
+                        err
+                    });
+                    return console.error('error saving user', err);
+                }
                 let token = jwt.sign({ id: user.id }, secret, {
                     expiresIn: 86400 // 24 hours
                 });
@@ -572,7 +778,13 @@ module.exports = (app) => {
         }
         const { _id, firstName, lastName, email, username, password } = req.body;
         User.findOne({ _id }, (err, user) => {
-            if (err) return console.error('error finding user', err);
+            if (err) {
+                res.status(500).send({
+                    success: false,
+                    err
+                });
+                return console.error('error finding user', err);
+            }
             if (!user) return console.log(`user ${_id} not found`);
             user.firstName = firstName;
             user.lastName = lastName;
@@ -580,7 +792,13 @@ module.exports = (app) => {
             user.username = username;
             user.password = bcrypt.hashSync(password, 8);
             user.save(err => {
-                if (err) return console.error('error saving user', err);
+                if (err) {
+                    res.status(500).send({
+                        success: false,
+                        err
+                    });
+                    return console.error('error saving user', err);
+                }
                 res.send({
                     success: true
                 });
@@ -590,11 +808,23 @@ module.exports = (app) => {
     app.post('/edit/password', (req, res) => {
         const { _id, password } = req.body;
         User.findOne({ _id }, (err, user) => {
-            if (err) return console.error('error finding user', err);
+            if (err) {
+                res.status(500).send({
+                    success: false,
+                    err
+                });
+                return console.error('error finding user', err);
+            }
             if (!user) return console.log(`user ${_id} not found`);
             user.password = bcrypt.hashSync(password, 8);
             user.save(err => {
-                if (err) return console.error('error saving user', err);
+                if (err) {
+                    res.status(500).send({
+                        success: false,
+                        err
+                    });
+                    return console.error('error saving user', err);
+                }
                 res.send({
                     success: true
                 });
@@ -604,10 +834,22 @@ module.exports = (app) => {
     app.post('/delete/account', (req, res) => {
         const { _id } = req.body;
         User.findOneAndDelete({ _id }, (err, user) => {
-            if (err) return console.error('error deleting user', err);
+            if (err) {
+                res.status(500).send({
+                    success: false,
+                    err
+                });
+                return console.error('error finding user', err);
+            }
             if (!user) return console.log(`user ${_id} not found`);
             Note.deleteMany({ userId: _id }, (err) => {
-                if (err) return console.error('error deleting notes', err);
+                if (err) {
+                    res.status(500).send({
+                        success: false,
+                        err
+                    });
+                    return console.error('error deleting notes', err);
+                }
                 res.send({
                     success: true
                 });
