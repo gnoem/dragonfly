@@ -7,6 +7,7 @@ import Login from './Login';
 
 export default function Dashboard(props) {
     const { id } = props.match.params;
+    const isMobile = window.innerWidth < 900;
     const [accessToken, setAccessToken] = useState(false);
     const [user, setUser] = useState(null);
     const [notes, setNotes] = useState([]);
@@ -19,8 +20,7 @@ export default function Dashboard(props) {
         const authorize = async () => {
             const response = await fetch(`/auth/${user._id}`);
             const body = await response.json();
-            if (!body) return console.log('no response from server');
-            if (!body.success) return console.log('no success: true response from server');
+            if (!body || !body.success) return;
             setAccessToken(body.accessToken);
         }
         authorize();
@@ -45,91 +45,89 @@ export default function Dashboard(props) {
         }
         getData();
     }, [id, triggerGetData]);
-    if (!isLoaded) return <Loading />
-    const allNotes = () => {
-        let filteredNotes = notes.filter(note => !note.trash);
-        return (
-            <Notes view={view} user={user} notes={filteredNotes} refreshData={() => setTrigger(Date.now())} />
-        )
-    }
-    const starredNotes = () => {
-        let starredNotes = notes.filter(note => note.starred);
-        return (
-            <Notes view={view} user={user} notes={starredNotes} refreshData={() => setTrigger(Date.now())} />
-        )
-    }
-    const collection = (collectionName) => {
-        let notesInCollection = notes.filter(note => note.collection === collectionName);
-        return (
-            <Notes view={view} updateView={setView} user={user} notes={notesInCollection} refreshData={() => setTrigger(Date.now())} />
-        )
-    }
-    const tags = (tags) => {
-        if (view.type !== 'tags') return;
-        if (!tags.length) return (
-            <Notes view={view} updateView={setView} user={user} notes={[]} refreshData={() => setTrigger(Date.now())} />
-        );
-        const notesWithTheseTags = (tags) => { // returns an array of notes
-            let taggedNotes = [];
-            for (let i = 0; i < notes.length; i++) {
-                let testObject = {};
-                // look in notes[i].tags
-                notes[i].tags.forEach((note, index) => {
-                    testObject[note] = index;
-                    /* testObject = {
-                        'reference',        testObject[0]
-                        'witchy',           testObject[1]
-                        'recipe'            testObject[2]
-                    } */
-                });
-                // see if tags 'recipe' and 'witchy' are in it
-                let thisNoteHasTheseTags = (view.sortTags === 'all')
-                    ? tags.every(tag => testObject[tag] !== undefined) // e.g. if testObject['recipe'] is defined (which it is, at index 2)
-                    : tags.some(tag => testObject[tag] !== undefined);
-                if (thisNoteHasTheseTags) taggedNotes.push(notes[i]);
-            }
-            return taggedNotes;
-        }
-        let taggedNotes = notesWithTheseTags(tags);
-        return (
-            <Notes view={view} updateView={setView} user={user} notes={taggedNotes} refreshData={() => setTrigger(Date.now())} />
-        )
-    }
-    const trashedNotes = () => {
-        let trashedNotes = notes.filter(note => note.trash);
-        return (
-            <Notes view={view} user={user} notes={trashedNotes} refreshData={() => setTrigger(Date.now())} />
-        )
-    }
+    if (!isLoaded) return <Loading />;
     const appContent = () => {
-        switch (view) {
-            case 'all-notes': return allNotes();
-            case 'starred-notes': return starredNotes();
-            case 'trash': return trashedNotes();
-            case 'my-account': return (
-                <MyAccount updateIsLoaded={setIsLoaded} refreshData={() => setTrigger(Date.now())} user={user} />
-            );
-            default: {
-                if (view.type === 'collection') {
-                    return collection(view.name);
+        const allNotes = () => {
+            let allNotes = notes.filter(note => !note.trash);
+            return allNotes;
+        }
+        if (['all-notes', 'starred-notes', 'trash'].includes(view)) {
+            const getNotes = (view) => {
+                switch (view) {
+                    case 'all-notes': return allNotes();
+                    case 'starred-notes': {
+                        let starredNotes = notes.filter(note => note.starred);
+                        return starredNotes;
+                    }
+                    case 'trash': {
+                        let trashedNotes = notes.filter(note => note.trash);
+                        return trashedNotes;
+                    }
+                    default: return allNotes();
                 }
-                if (view.type === 'tags') {
-                    return tags(view.tags);
-                }
-                return allNotes();
             }
+            return <Notes view={view} updateView={setView} user={user} notes={getNotes(view)} refreshData={() => setTrigger(Date.now())} />
+        }
+        if (view === 'my-account') return <MyAccount updateIsLoaded={setIsLoaded} refreshData={() => setTrigger(Date.now())} user={user} />;
+        if (!view.type) return allNotes();
+        switch (view.type) {
+            case 'collection': {
+                const notesInCollection = (collectionName) => {
+                    let notesInCollection = notes.filter(note => note.collection === collectionName);
+                    return notesInCollection;
+                }
+                return <Notes view={view} updateView={setView} user={user} notes={notesInCollection(view.name)} refreshData={() => setTrigger(Date.now())} />
+            }
+            case 'tags': {
+                const notesWithTheseTags = (tags) => {
+                    if (!tags.length) return [];
+                    const notesArray = (tags) => {
+                        let taggedNotes = [];
+                        for (let i = 0; i < notes.length; i++) {
+                            let testObject = {};
+                            notes[i].tags.forEach((tag, index) => {
+                                testObject[tag] = index;
+                                /* generates an object by which to compare/crosscheck the tags array passed to notesWithTheseTags as a parameter
+                                and see if the note currently being iterated - notes[i] - has all/some of the tags contained in that array;
+                                for example: the following object corresponds to a note containing the tags "diy", "recipe", "breakfast"
+                                    testObject = {
+                                        diy: 0,
+                                        recipe: 1,
+                                        breakfast: 2
+                                    }
+                                */
+                            });
+                            let thisNoteHasTheseTags = (view.sortTags === 'all')
+                                ? tags.every(tag => testObject[tag] !== undefined)
+                                : tags.some(tag => testObject[tag] !== undefined);
+                            /* let's say the user searches for notes tagged with "diy", "recipe", "dinner"
+                                tags.every(tag => testObject[tag] !== undefined) says to return true if
+                                    testObject[diy], testObject[recipe], and testObject[dinner] are ALL defined;
+                                tags.some(tag => testObject[tag] !== undefined) says to return true if
+                                    testObject[diy], testObject[recipe], OR testObject[dinner] is defined
+                            */
+                            if (thisNoteHasTheseTags) taggedNotes.push(notes[i]);
+                        }
+                        return taggedNotes;
+                    }
+                    return notesArray(tags);
+                }
+                return <Notes view={view} updateView={setView} user={user} notes={notesWithTheseTags(view.tags)} refreshData={() => setTrigger(Date.now())} />
+            }
+            default: return allNotes();
         }
     }
-    const passwordProtected = user.username;
-    if (passwordProtected && !accessToken) {
+    if (user.username /* (is password protected) */ && !accessToken) {
         return (
             <Login user={user} />
-        )
+        );
     }
     return (
-        <div className="Dashboard">
-            <Sidebar user={user} view={view} updateView={setView} refreshData={() => setTrigger(Date.now())} />
+        <div className="Dashboard" data-mobile={isMobile}>
+            {isMobile
+                ? ''
+                : <Sidebar user={user} view={view} updateView={setView} refreshData={() => setTrigger(Date.now())} />}
             {appContent()}
         </div>
-    )
+    );
 }
