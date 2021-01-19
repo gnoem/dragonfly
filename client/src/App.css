@@ -184,7 +184,7 @@ button, input[type=submit] {
     margin-top: 1.5rem;
     font-size: 0.83rem;
 }
-button.stealth, .Sidebar nav button, .MiniMenu button, .Dropdown button {
+button.stealth, .Nav nav button, .MiniMenu button, .Dropdown button {
     margin: 0;
     padding: 0;
     border: 0;
@@ -268,6 +268,11 @@ button.caution {
 @media screen and (max-width: 900px) {
     .Dashboard, .Dashboard .Notes {
         display: block;
+        height: 100%;
+    }
+    .Dashboard .Panel {
+        padding: 1.5rem;
+        padding-bottom: 6.5rem;
     }
 }
 .Notes .List {
@@ -294,27 +299,27 @@ button.caution {
     margin-bottom: 1rem;
     text-shadow: 2px 2px 0.5rem var(--deep-theme-color);
 }
-.Sidebar nav + nav {
+.Nav nav + nav {
     margin-top: 2rem;
     border-top: 1px solid rgba(255, 255, 255, 0.3);
     padding-top: 0.5rem;
 }
-.Sidebar nav ul {
+.Nav nav ul {
     margin: 0;
     padding: 0;
     list-style: none;
 }
-.Sidebar nav ul li {
+.Nav nav ul li {
     margin: 1.5rem 0;
 }
-.Sidebar nav button {
+.Nav nav button {
     font-weight: normal;
     margin: 0 0.5rem;
     display: grid;
     grid-template-columns: 2rem 1fr;
     align-items: center;
 }
-.Sidebar nav button::before {
+.Nav nav button::before {
     font-family: 'Font Awesome 5 Free';
     font-weight: 900;
     font-size: 1.2rem;
@@ -322,24 +327,24 @@ button.caution {
     margin-right: 0.5rem;
     transition: 0.2s;
 }
-.Sidebar nav button:hover::before {
+.Nav nav button:hover::before {
     transform: scale(1.2);
     text-shadow: 0 0 0.5rem #fff;
 }
-.Sidebar nav ul.subList {
+.Nav nav ul.subList {
     max-height: 0;
     transition: max-height 0.2s;
     transform-origin: top left;
     overflow: hidden;
     margin-left: 2.5rem;
 }
-.Sidebar nav ul.subList li {
+.Nav nav ul.subList li {
     margin: 0;
 }
-.Sidebar nav ul.subList li:first-of-type {
+.Nav nav ul.subList li:first-of-type {
     padding-top: 1rem;
 }
-.Sidebar nav ul.subList button {
+.Nav nav ul.subList button {
     font-size: 0.7rem;
     color: var(--lighter-theme-color);
     font-weight: 500;
@@ -349,8 +354,67 @@ button.caution {
     transition: color 0.2s;
     display: block;
 }
-.Sidebar nav ul.subList button:hover {
+.Nav nav ul.subList button:hover {
     color: #fff;
+}
+.Menu {
+    background: transparent;
+}
+.Menu button.menuButton {
+    position: fixed;
+    z-index: 999;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    font-size: 1.7rem;
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 999px;
+    background: var(--med-gradient);
+    margin: 0;
+    padding: 0;
+    display: grid;
+    place-items: center;
+    box-shadow: 0.2rem 0.2rem 1rem rgba(0, 0, 0, 0.2);
+}
+.Menu button.menuButton::before {
+    content: '\f0c9';
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+}
+.Menu[data-expanded=true] button.menuButton {
+    display: none;
+}
+.MainMenu {
+    position: fixed;
+    z-index: 9999;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--deep-theme-color);
+    transition: 0.2s ease-in-out;
+    transform: translate(0, 0, 0);
+}
+.MainMenu.mounting {
+    opacity: 0;
+    transform: translate3d(0, 100%, 0);
+}
+.MainMenu button.exit {
+    position: fixed;
+    top: 1.5rem;
+    right: 1.5rem;
+    font-size: 1.5rem;
+    color: #fff;
+}
+.MainMenu button.exit::before {
+    content: '\f00d';
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+}
+.MainMenu .Nav {
+    padding: 1rem 1.5rem 1.5rem;
+    height: 100%;
+    overflow: auto;
 }
 button.notes::before {
     content: '\f01c';
@@ -477,6 +541,11 @@ button.logout::before {
     align-items: center;
     height: 5rem;
 }
+.List .Header div.title {
+    font-family: var(--display-font);
+    font-size: 3.5rem;
+    margin-bottom: 0.5rem;
+}
 .List .Header div.h1 {
     grid-column: 1 / 2;
 }
@@ -486,7 +555,7 @@ button.logout::before {
 .List .Header div.button {
     grid-column: 2 / -1;
 }
-.List .Header button {
+.List .Header button.newNote, .List .Header button.menu {
     margin: 0;
     padding: 0;
     width: 2.5rem;
@@ -496,12 +565,12 @@ button.logout::before {
     place-items: center;
     border-radius: 50%;
 }
-.List .Header button:not(.newNote) {
+.List .Header button.menu {
     background: none;
     color: #aaa;
     transition: 0.2s;
 }
-.List .Header button:not(.newNote):hover {
+.List .Header button.menu:hover {
     color: #666;
 }
 .List .Header h1 span.collectionHeader > span {
@@ -524,6 +593,33 @@ button.logout::before {
 .List .Header[hidden] + .NotePreviews {
     height: 100vh;
     overflow: auto;
+}
+@media screen and (max-width: 900px) {
+    .Notes .List {
+        height: 100%;
+        overflow: auto;
+    }
+    .List .Header {
+        background: var(--element-dimmed-bg);
+        border-bottom-color: transparent;
+        height: auto;
+        margin-top: 1.5rem;
+        padding: 0.5rem 1.5rem;
+    }
+    .List .Header h1 {
+        font-weight: 300;
+        font-size: 1.7rem;
+    }
+    .List .Header.allNotes {
+        display: block;
+        margin-bottom: 0.5rem;
+    }
+    .List .Header.allNotes button {
+        margin-top: 1rem;
+    }
+    .List .NotePreviews {
+        height: auto;
+    }
 }
 .NotePreview {
     cursor: pointer;
@@ -676,7 +772,7 @@ button.logout::before {
     position: relative;
     transition: transform 0.2s;
 }
-button.exit {
+.Modal button.exit {
     position: absolute;
     top: 1rem;
     right: 1.3rem;
@@ -684,7 +780,12 @@ button.exit {
     color: #aaa;
     transition: color 0.2s;
 }
-button.exit:hover {
+.Modal button.exit::before {
+    content: '\f00d';
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+}
+.Modal button.exit::before:hover {
     color: #666;
 }
 .Modal .buttons {
@@ -692,6 +793,11 @@ button.exit:hover {
 }
 .Modal .buttons button {
     margin-top: 1rem;
+}
+@media screen and (max-width: 600px) {
+    .modalContainer {
+        width: 90%;
+    }
 }
 .Loading {
     width: 100%;
@@ -798,6 +904,28 @@ form input:not([type=submit]):not([type=checkbox]) {
 .changePassword button {
     margin-top: 1.5rem;
     padding: 1rem 2rem;
+}
+@media screen and (max-width: 900px) {
+    .Account > div.half {
+        flex: 0 1 100%;
+    }
+    .Account > div.half + div.half {
+        margin-left: 0;
+        margin-top: 1rem;
+    }
+    .formGrid {
+        grid-gap: 1rem;
+        grid-template-rows: 1fr auto;
+        grid-template-columns: auto;
+    }
+    .changePassword {
+        flex-direction: column;
+        margin-top: 1rem;
+    }
+    .changePassword > div + div {
+        margin: 0;
+        margin-top: 1rem;
+    }
 }
 form input:not([type=submit]):focus {
     border-color: var(--med-theme-color);

@@ -25,7 +25,7 @@ export default function Modal({ exitModal, content }) {
         <div className="Modal" ref={dim}>
             <div className="modalSpacer">
                 <div className="modalContainer" ref={modalContainer}>
-                    <button className="stealth exit" onClick={() => exitModal(dim.current)}><i className="fas fa-times"></i></button>
+                    <button className="stealth exit" onClick={() => exitModal(dim.current)}></button>
                     {content}
                 </div>
             </div>

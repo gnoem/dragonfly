@@ -8,8 +8,8 @@ import NoteEditor from './NoteEditor';
 import { elementHasParent, elementIsInArray } from '../utils';
 
 export default function Notes(props) {
-    const { view, user, notes } = props;
-    const [currentNote, setCurrentNote] = useState(notes[0]);
+    const { view, user, notes, isMobile } = props;
+    const [currentNote, setCurrentNote] = useState(false);
     const [currentNoteUpdated, setCurrentNoteUpdate] = useState(false); // set equal to _id
     const [newestNote, setNewestNote] = useState(null);
     const [addingNewNote, setAddingNewNote] = useState(false);
@@ -478,7 +478,11 @@ export default function Notes(props) {
         switch (view) {
             case 'all-notes': {
                 title = 'All notes';
-                button = (
+                if (isMobile) button = (
+                    <button onClick={createNewNote}>
+                        <i className="fas fa-plus" style={{ marginRight: '0.5rem' }}></i> Create new
+                    </button>
+                ); else button = (
                     <button className="newNote" onClick={createNewNote}>
                         <i className="fas fa-plus"></i>
                     </button>
@@ -492,7 +496,7 @@ export default function Notes(props) {
             case 'trash': {
                 title = 'Trash';
                 button = (
-                    <button className="viewOptions" onClick={(e) => trashOptions(e)}>
+                    <button className="menu viewOptions" onClick={(e) => trashOptions(e)}>
                         <i className="fas fa-ellipsis-v"></i>
                     </button>
                 );
@@ -507,7 +511,7 @@ export default function Notes(props) {
                         </span>
                     );
                     button = (
-                        <button className="viewOptions" onClick={(e) => editOrDeleteCollection(e, view.name)}>
+                        <button className="menu viewOptions" onClick={(e) => editOrDeleteCollection(e, view.name)}>
                             <i className="fas fa-ellipsis-v"></i>
                         </button>
                     );
@@ -516,7 +520,11 @@ export default function Notes(props) {
                     button = '';
                 } else {
                     title = 'All notes';
-                    button = (
+                    if (isMobile) button = (
+                        <button onClick={createNewNote}>
+                            <i className="fas fa-plus" style={{ marginRight: '0.5rem' }}></i> Create new
+                        </button>
+                    ); else button = (
                         <button className="newNote" onClick={createNewNote}>
                             <i className="fas fa-plus"></i>
                         </button>
@@ -526,7 +534,8 @@ export default function Notes(props) {
             }
         }
         return (
-            <div className="Header" hidden={view.type === 'tags'}>
+            <div className={`Header${view === 'all-notes' ? ' allNotes' : ''}`} hidden={view.type === 'tags'}>
+                {isMobile && <div className="title">Dragonfly</div>}
                 <div className="h1"><h1>{title}</h1></div>
                 <div className="button">{button}</div>
             </div>

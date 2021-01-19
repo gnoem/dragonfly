@@ -165,7 +165,6 @@ function EditorControls(props) {
     }
     return (
         <div className="EditorControls">
-            <div id="demo" onClick={() => console.dir(getBlockType())}></div>
             <button className={isInlineStyleActive('BOLD')} onMouseDown={(e) => props.controlStyle(e, 'inline', 'BOLD')}><i className="fas fa-bold"></i></button>
             <button className={isInlineStyleActive('ITALIC')} onMouseDown={(e) => props.controlStyle(e, 'inline', 'ITALIC')}><i className="fas fa-italic"></i></button>
             <button className={isInlineStyleActive('UNDERLINE')} onMouseDown={(e) => props.controlStyle(e, 'inline', 'UNDERLINE')}><i className="fas fa-underline"></i></button>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import Loading from './Loading';
+import Menu from './Menu';
 import Sidebar from './Sidebar';
 import Notes from './Notes';
 import MyAccount from './MyAccount';
@@ -66,9 +67,22 @@ export default function Dashboard(props) {
                     default: return allNotes();
                 }
             }
-            return <Notes view={view} updateView={setView} user={user} notes={getNotes(view)} refreshData={() => setTrigger(Date.now())} />
+            return (
+                <Notes
+                    view={view}
+                    updateView={setView}
+                    user={user}
+                    notes={getNotes(view)}
+                    isMobile={isMobile}
+                    refreshData={() => setTrigger(Date.now())} />
+            );
         }
-        if (view === 'my-account') return <MyAccount updateIsLoaded={setIsLoaded} refreshData={() => setTrigger(Date.now())} user={user} />;
+        if (view === 'my-account') return (
+            <MyAccount
+                user={user}
+                updateIsLoaded={setIsLoaded}
+                refreshData={() => setTrigger(Date.now())} />
+        );
         if (!view.type) return allNotes();
         switch (view.type) {
             case 'collection': {
@@ -76,7 +90,15 @@ export default function Dashboard(props) {
                     let notesInCollection = notes.filter(note => note.collection === collectionName);
                     return notesInCollection;
                 }
-                return <Notes view={view} updateView={setView} user={user} notes={notesInCollection(view.name)} refreshData={() => setTrigger(Date.now())} />
+                return (
+                    <Notes
+                        view={view}
+                        updateView={setView}
+                        user={user}
+                        notes={notesInCollection(view.name)}
+                        isMobile={isMobile}
+                        refreshData={() => setTrigger(Date.now())} />
+                );
             }
             case 'tags': {
                 const notesWithTheseTags = (tags) => {
@@ -112,7 +134,15 @@ export default function Dashboard(props) {
                     }
                     return notesArray(tags);
                 }
-                return <Notes view={view} updateView={setView} user={user} notes={notesWithTheseTags(view.tags)} refreshData={() => setTrigger(Date.now())} />
+                return (
+                    <Notes
+                        view={view}
+                        updateView={setView}
+                        user={user}
+                        notes={notesWithTheseTags(view.tags)}
+                        isMobile={isMobile}
+                        refreshData={() => setTrigger(Date.now())} />
+                );
             }
             default: return allNotes();
         }
@@ -125,7 +155,7 @@ export default function Dashboard(props) {
     return (
         <div className="Dashboard" data-mobile={isMobile}>
             {isMobile
-                ? ''
+                ? <Menu user={user} view={view} updateView={setView} refreshData={() => setTrigger(Date.now())} />
                 : <Sidebar user={user} view={view} updateView={setView} refreshData={() => setTrigger(Date.now())} />}
             {appContent()}
         </div>
