@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import Button from './Button';
+import EditorToolbar from './EditorToolbar';
 import Immutable from 'immutable';
 import { Editor, EditorState, RichUtils, convertToRaw, convertFromRaw, DefaultDraftBlockRenderMap } from 'draft-js';
 import 'draft-js/dist/Draft.css';
@@ -127,7 +128,7 @@ export default function NoteEditor(props) {
         <div className="NoteEditor">
             {props.currentNote.trash
                 ? noteOptions()
-                : <EditorControls controlStyle={controlStyle} editorState={editorState} />}
+                : <EditorToolbar controlStyle={controlStyle} editorState={editorState} />}
             {noteTitle()}
             <div className="Editable" onClick={focus}>
                 <Editor
@@ -140,44 +141,7 @@ export default function NoteEditor(props) {
                     ref={editorRef}
                 />
             </div>
-            {props.unsavedChanges && <Button onClick={handleSubmit} loadingIconSize="2.5rem">Save Changes</Button>}
-        </div>
-    )
-}
-
-function EditorControls(props) {
-    const isInlineStyleActive = (style) => {
-        const inlineStyle = props.editorState.getCurrentInlineStyle();
-        return inlineStyle.has(style) ? 'active' : '';
-    }
-    const getBlockType = () => {
-        const startKey = props.editorState.getSelection().getStartKey();
-        const selectedBlockType = props.editorState
-            .getCurrentContent()
-            .getBlockForKey(startKey)
-            .getType();
-        return selectedBlockType;
-    }
-    const isBlockTypeActive = (type) => {
-        return (type === getBlockType())
-            ? 'active'
-            : '';
-    }
-    return (
-        <div className="EditorControls">
-            <button className={isInlineStyleActive('BOLD')} onMouseDown={(e) => props.controlStyle(e, 'inline', 'BOLD')}><i className="fas fa-bold"></i></button>
-            <button className={isInlineStyleActive('ITALIC')} onMouseDown={(e) => props.controlStyle(e, 'inline', 'ITALIC')}><i className="fas fa-italic"></i></button>
-            <button className={isInlineStyleActive('UNDERLINE')} onMouseDown={(e) => props.controlStyle(e, 'inline', 'UNDERLINE')}><i className="fas fa-underline"></i></button>
-            <button className={isInlineStyleActive('STRIKETHROUGH')} onMouseDown={(e) => props.controlStyle(e, 'inline', 'STRIKETHROUGH')}><i className="fas fa-strikethrough"></i></button>
-            <hr />
-            <button className={isBlockTypeActive('ALIGN-LEFT')} onMouseDown={(e) => props.controlStyle(e, 'block', 'ALIGN-LEFT')}><i className="fas fa-align-left"></i></button>
-            <button className={isBlockTypeActive('ALIGN-CENTER')} onMouseDown={(e) => props.controlStyle(e, 'block', 'ALIGN-CENTER')}><i className="fas fa-align-center"></i></button>
-            <button className={isBlockTypeActive('ALIGN-RIGHT')} onMouseDown={(e) => props.controlStyle(e, 'block', 'ALIGN-RIGHT')}><i className="fas fa-align-right"></i></button>
-            <button className={isBlockTypeActive('ALIGN-JUSTIFY')} onMouseDown={(e) => props.controlStyle(e, 'block', 'ALIGN-JUSTIFY')}><i className="fas fa-align-justify"></i></button>
-            <hr />
-            <button className={isBlockTypeActive('blockquote')} onMouseDown={(e) => props.controlStyle(e, 'block', 'blockquote')}><i className="fas fa-quote-left"></i></button>
-            <button className={isBlockTypeActive('unordered-list-item')} onMouseDown={(e) => props.controlStyle(e, 'block', 'unordered-list-item')}><i className="fas fa-list-ul"></i></button>
-            <button className={isBlockTypeActive('ordered-list-item')} onMouseDown={(e) => props.controlStyle(e, 'block', 'ordered-list-item')}><i className="fas fa-list-ol"></i></button>
+            {props.unsavedChanges && <Button className="saveChanges" onClick={handleSubmit} loadingIconSize="2.5rem">Save Changes</Button>}
         </div>
     )
 }

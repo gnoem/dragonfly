@@ -45,6 +45,7 @@ export default function Notes(props) {
     }, [view]);
     useEffect(() => {
         setMiniMenu(false);
+        props.updateCurrentNote(currentNote ? true : false);
         if (!currentNote || !currentNote._id) return setCurrentNoteUpdate(false);
         setCurrentNoteUpdate(currentNote._id);
     // don't need currentNote as a dependency, only currentNote._id
@@ -623,7 +624,7 @@ export default function Notes(props) {
         }
         setModalObject(content());
     }
-    const showingTags = () => {
+    const sortByTag = () => {
         if (view.type !== 'tags') return;
         let noTagsSelected = view.tags.length === 0;
         const tagList = () => {
@@ -781,7 +782,7 @@ export default function Notes(props) {
             props.updateView(prevView => ({ ...prevView, sortTags: value }));
         }
         return (
-            <div className="showingTags">
+            <div className="sortByTag">
                 <span className="hint">Right-click on a tag for more options.</span>
                 <h2>{noTagsSelected ? 'View' : 'Viewing'} notes tagged:</h2>
                 <div className="tagsGrid">{tagList()}</div>
@@ -806,13 +807,13 @@ export default function Notes(props) {
         });
     }
     return (
-        <div className="Notes">
+        <div className="Notes" data-editor={currentNote ? 'true' : 'false'}>
             <Modal exitModal={gracefullyCloseModal} content={modalObject} />
             {miniMenu.content && <ContextMenu menu={miniMenu} updateMiniMenu={setMiniMenu} />}
             <div className="List">
                 {listHeader()}
                 <div className="NotePreviews" onClick={handleClick}>
-                    {showingTags()}
+                    {sortByTag()}
                     {addingNewNote && <NotePreview temp={true} title={tempNotePreview} />}
                     {generateNotesList()}
                     {listFooter()}

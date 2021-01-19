@@ -10,6 +10,7 @@ export default function Dashboard(props) {
     const { id } = props.match.params;
     const isMobile = window.innerWidth < 900;
     const [accessToken, setAccessToken] = useState(false);
+    const [currentNote, setCurrentNote] = useState(false);
     const [user, setUser] = useState(null);
     const [notes, setNotes] = useState([]);
     const [view, setView] = useState('all-notes');
@@ -73,6 +74,7 @@ export default function Dashboard(props) {
                     updateView={setView}
                     user={user}
                     notes={getNotes(view)}
+                    updateCurrentNote={setCurrentNote}
                     isMobile={isMobile}
                     refreshData={() => setTrigger(Date.now())} />
             );
@@ -96,6 +98,7 @@ export default function Dashboard(props) {
                         updateView={setView}
                         user={user}
                         notes={notesInCollection(view.name)}
+                        updateCurrentNote={setCurrentNote}
                         isMobile={isMobile}
                         refreshData={() => setTrigger(Date.now())} />
                 );
@@ -140,6 +143,7 @@ export default function Dashboard(props) {
                         updateView={setView}
                         user={user}
                         notes={notesWithTheseTags(view.tags)}
+                        updateCurrentNote={setCurrentNote}
                         isMobile={isMobile}
                         refreshData={() => setTrigger(Date.now())} />
                 );
@@ -155,7 +159,7 @@ export default function Dashboard(props) {
     return (
         <div className="Dashboard" data-mobile={isMobile}>
             {isMobile
-                ? <Menu user={user} view={view} updateView={setView} refreshData={() => setTrigger(Date.now())} />
+                ? (!currentNote && <Menu user={user} view={view} updateView={setView} refreshData={() => setTrigger(Date.now())} />)
                 : <Sidebar user={user} view={view} updateView={setView} refreshData={() => setTrigger(Date.now())} />}
             {appContent()}
         </div>
