@@ -2,10 +2,12 @@ import { useState } from 'react';
 import Checkbox from './Checkbox';
 
 export default function Login(props) {
-    const [password, updatePassword] = useState('');
-    const [invalidPassword, updateInvalidPassword] = useState(false);
+    const [password, setPassword] = useState('');
+    const [invalidPassword, setInvalidPassword] = useState(false);
+    const [loadingIcon, setLoadingIcon] = useState(false);
     const handleLogin = async (e) => {
         e.preventDefault();
+        setLoadingIcon(true);
         const response = await fetch('/login/user', {
             method: 'POST',
             headers: {
@@ -18,15 +20,16 @@ export default function Login(props) {
         });
         const body = await response.json();
         if (!body) return console.log('no response from server');
+        setLoadingIcon(false);
         if (!body.success) {
             console.log('no success: true response from server');
-            if (body.error && body.error === 'invalid-password') return updateInvalidPassword(true);
+            if (body.error && body.error === 'invalid-password') return setInvalidPassword(true);
         }
         window.location.reload();
     }
     const handleInput = (value) => {
-        if (invalidPassword) updateInvalidPassword(false);
-        updatePassword(value);
+        if (invalidPassword) setInvalidPassword(false);
+        setPassword(value);
     }
     return (
         <div className="Login">
@@ -43,10 +46,13 @@ export default function Login(props) {
                 <div className="formCheck">
                     <Checkbox name="rememberThisDevice" label="Remember this device" checkboxFirst={true} defaultChecked={false} />
                 </div>
-                <div className="buttons">
-                    <button>Submit</button>
-                </div>
+                {loadingIcon
+                    ?   <Loading />
+                    :   <div className="buttons">
+                            <button>Submit</button>
+                        </div>
+                    }
             </form>
         </div>
-    )
+    );
 }
