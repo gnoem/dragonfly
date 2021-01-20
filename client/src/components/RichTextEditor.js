@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Button from './Button';
 import EditorToolbar from './EditorToolbar';
 import Immutable from 'immutable';
@@ -6,7 +6,7 @@ import { Editor, EditorState, RichUtils, convertToRaw, convertFromRaw, DefaultDr
 import 'draft-js/dist/Draft.css';
 
 export default function NoteEditor(props) {
-    const { user, currentNote, unsavedChanges, updateUnsavedChanges, refreshData } = props;
+    const { user, currentNote, updateCurrentNote, updateViewingEditor, unsavedChanges, updateUnsavedChanges, refreshData } = props;
     const newNote = !currentNote.content;
     const [editorTitle, setEditorTitle] = useState('');
     const [editorState, setEditorState] = useState(
@@ -14,6 +14,9 @@ export default function NoteEditor(props) {
     );
     const titleInput = useRef(null);
     const editorRef = useRef(null);
+    useEffect(() => {
+        if (newNote) titleInput.current.focus();
+    }, [newNote]);
     // todo useeffect for Ctrl + S
     const handleKeyCommand = (command, editorState) => {
         const newState = RichUtils.handleKeyCommand(editorState, command);
@@ -24,7 +27,7 @@ export default function NoteEditor(props) {
         }
         return 'not-handled';
     }
-    const focus = (e) => {
+    const focusEditor = (e) => {
         if (!editorRef.current.editor.contains(e.target)) setEditorState(EditorState.moveFocusToEnd(editorState));
     }
     const controlStyle = (e, type, value) => {
@@ -72,12 +75,27 @@ export default function NoteEditor(props) {
         refreshData();
     }
     const noteIsInTrash = () => {
+        const untrashNote = async (id) => {
+            const response = await fetch('/trash/note', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ _id: id })
+            });
+            const body = await response.json();
+            if (!body) return console.log('no response from server');
+            if (!body.success) return console.log('no success: true response from server');
+            refreshData();
+            //updateCurrentNote(false);
+            //setTimeout(() => updateViewingEditor(false), 2000);
+        }
         return (
             <div className="noteIsInTrash">
                 <i className="giantIcon fas fa-exclamation-triangle"></i>
                 <p>This note can't be edited while still in the Trash.</p>
                 <div className="smaller buttons">
-                    <Button onClick={() => props.untrashNote(currentNote._id)} loadingIconSize="2rem">Restore note</Button>
+                    <Button onClick={() => untrashNote(currentNote._id)} loadingIconSize="2rem">Restore note</Button>
                     <button className="caution" onClick={() => props.deleteNotePermanently(currentNote._id)}>Delete permanently</button>
                 </div>
             </div>
@@ -108,7 +126,7 @@ export default function NoteEditor(props) {
                 ? noteIsInTrash()
                 : <EditorToolbar controlStyle={controlStyle} editorState={editorState} />}
             {noteTitle()}
-            <div className="Editable" onClick={focus}>
+            <div className="Editable" onClick={focusEditor}>
                 <Editor
                     readOnly={currentNote.trash}
                     editorState={editorState}

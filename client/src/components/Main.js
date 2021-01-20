@@ -1,15 +1,37 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import dayjs from 'dayjs'; // NotePreview
 import NoteEditor from './RichTextEditor';
+import Loading from './Loading';
+import Modal from './Modal';
 
 export default function Main(props) {
-    const { view } = props;
+    const { view, notes } = props;
     const [viewingEditor, setViewingEditor] = useState(false);
     const [currentNote, setCurrentNote] = useState(false);
+    const usePrevious = (value) => {
+        const ref = useRef();
+        useEffect(() => {
+            ref.current = value;
+        });
+        return ref.current;
+    }
+    const prevNotesCount = usePrevious(notes.length);
     useEffect(() => {
         setCurrentNote(false);
         setViewingEditor(false);
     }, [view]);
+    useEffect(() => {
+        const getNoteIndexFromId = (id) => {
+            return notes.findIndex(note => id === note._id);
+        }
+        if (viewingEditor) {
+            if (!currentNote || !currentNote.content) return;
+            if (prevNotesCount > notes.length) return; // when deleting/removing note and notes[getIndex(currentNote._id)] is undefined
+            setCurrentNote(notes[getNoteIndexFromId(currentNote._id)]);
+        }
+    // figure out if currentNote + viewingEditor need to be listed as dependencies
+    // eslint-disable-next-line
+    }, [notes]);
     return (
         <div className="Main" data-editor={viewingEditor}>
             <Notes
@@ -17,10 +39,11 @@ export default function Main(props) {
                 currentNote={currentNote}
                 updateCurrentNote={setCurrentNote}
                 updateViewingEditor={setViewingEditor} />
-            {viewingEditor
+            {viewingEditor /* && currentNote i guess?? */
                 && <Editor
                     {...props}
                     currentNote={currentNote}
+                    updateCurrentNote={setCurrentNote}
                     updateViewingEditor={setViewingEditor} />
                 }
         </div>
@@ -30,7 +53,7 @@ export default function Main(props) {
 const isMobile = false;
 
 function Editor(props) {
-    const { user, currentNote, updateViewingEditor } = props;
+    const { currentNote, updateViewingEditor } = props;
     const [unsavedChanges, setUnsavedChanges] = useState(false);
     const handleExit = () => {
         if (unsavedChanges) console.log('warning');
@@ -41,29 +64,93 @@ function Editor(props) {
             <button className="stealth exit" onClick={handleExit}></button>
             <NoteEditor
                 {...props}
-                user={user}
-                currentNote={currentNote}
                 unsavedChanges={unsavedChanges}
                 updateUnsavedChanges={setUnsavedChanges} />
-            {!currentNote.trash && <NoteOperations {...props} currentNote={currentNote} />}
+            {!currentNote.trash && <NoteOperations {...props} updateUnsavedChanges={setUnsavedChanges} />}
         </div>
     );
 }
 
-function NoteOperations({ currentNote }) {
-    const starNote = () => {
-
+function NoteOperations({ currentNote, updateCurrentNote, updateViewingEditor, updateUnsavedChanges, refreshData }) {
+    const [modalObject, setModalObject] = useState(false);
+    const modalContent = useRef(null);
+    const gracefullyCloseModal = (modal) => {
+        let container = modal.classList.contains('Modal')
+            ? modal
+            : modal.closest('.Modal');
+        container.classList.add('goodbye');
+        setTimeout(() => setModalObject(false), 200);
+    }
+    const starNote = async (e, id) => {
+        // eslint-disable-next-line
+        const updateUI = () => {
+            if (e.currentTarget.classList.contains('hasStar')) {
+                e.currentTarget.classList.remove('hasStar');
+                e.currentTarget.querySelector('.tooltip').innerHTML = 'Add star';
+            } else {
+                e.currentTarget.classList.add('hasStar');
+                e.currentTarget.querySelector('.tooltip').innerHTML = 'Unstar';
+            }
+        }
+        // todo: if unsavedChanges, star note gets rid of save changes button? fix this
+        const response = await fetch('/star/note', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ _id: id })
+        });
+        const body = await response.json();
+        if (!body) return console.log('no response from server');
+        if (!body.success) return console.log('no success: true response from server');
+        refreshData();
     }
     const updateMiniMenu = () => {
         
     }
-    const confirmMoveToTrash = () => {
-        
+    const confirmMoveToTrash = (id) => {
+        const moveToTrash = async (e, id) => {
+            e.preventDefault();
+            setModalObject(content({ loadingIcon: true }));
+            const response = await fetch('/trash/note', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ _id: id })
+            });
+            const body = await response.json();
+            if (!body) return console.log('no response from server');
+            if (!body.success) return console.log('no success: true response from server');
+            // todo: find NotePreview with id and shrink it down, with 200ms delay on refreshData()
+            refreshData();
+            updateUnsavedChanges(false);
+            updateCurrentNote(false);
+            gracefullyCloseModal(modalContent.current);
+            updateViewingEditor(false); // needs to come AFTER close modal
+        }
+        let content = (breakpoints = {
+            loadingIcon: false
+        }) => (
+            <div className="modalContent" ref={modalContent}>
+                <h2>Move to Trash</h2>
+                Notes moved to the Trash folder will remain there for 30 days before being automatically deleted. You can customize this option in Settings.
+                {breakpoints.loadingIcon
+                    ?   <Loading />
+                    :   <form onSubmit={(e) => moveToTrash(e, id)} className="buttons">
+                            <button type="submit">Got it</button>
+                            <button type="button" className="greyed" onClick={() => gracefullyCloseModal(modalContent.current)}>Cancel</button>
+                        </form>
+                    }
+            </div>
+        );
+        setModalObject(content());
     }
     return (
         <div className="NoteOperations">
+            <Modal exitModal={gracefullyCloseModal} content={modalObject} />
             <div className="OptionItem">
-                <button className={currentNote.starred ? 'hasStar' : null} onClick={() => starNote(currentNote._id)}>
+                <button className={currentNote.starred ? 'hasStar' : null} onClick={(e) => starNote(e, currentNote._id)}>
                     <i className="fas fa-star"></i>
                     <span className="tooltip">{currentNote.starred ? 'Unstar' : 'Add star'}</span>
                 </button>
@@ -95,7 +182,8 @@ function Notes({ view, notes, currentNote, updateCurrentNote, updateViewingEdito
         return notes.findIndex(note => id === note._id);
     }
     const createNewNote = () => {
-
+        updateCurrentNote(true);
+        updateViewingEditor(true);
     }
     const trashOptions = () => {
 

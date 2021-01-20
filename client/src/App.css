@@ -18,6 +18,36 @@
         transform: translate3d(0, 0, 0);
     }
 }
+@keyframes slidedown {
+    from {
+        opacity: 0;
+        transform: translate3d(0, -2rem, 0);
+    }
+    to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+    }
+}
+@keyframes slideleft {
+    from {
+        opacity: 0;
+        transform: translate3d(2rem, 0, 0);
+    }
+    to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+    }
+}
+@keyframes slideright {
+    from {
+        opacity: 0;
+        transform: translate3d(-2rem, 0, 0);
+    }
+    to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+    }
+}
 @keyframes showSubMenu {
     from {
         opacity: 0;
@@ -97,7 +127,8 @@
     --default-font: 'Work Sans', sans-serif;
     --display-font: 'Abril Fatface', cursive;
     --button-font: 'Work Sans', sans-serif;
-    --deep-gradient: linear-gradient(135deg, #43a8a3, #75c964);
+    --deep-gradient: linear-gradient(135deg, #197c77, #55a047);
+    --dark-gradient: linear-gradient(135deg, #43a8a3, #75c964);
     --med-gradient: linear-gradient(135deg, #5ebbb6, #99da8c);
     --light-gradient: linear-gradient(135deg, #bbf5f2, #cdf3c7);
     --deep-theme-color: #238f8a;
@@ -153,9 +184,10 @@ html[data-mode='mini']::before {
     left: 0;
     width: 100%;
     height: 100%;
-    background: url('https://www.muralswallpaper.com/app/uploads/White-Rattan-Chair-Swatch.jpg');
+    background: url('https://www.muralswallpaper.com/app/uploads/albert-kuip-grey-chair-swatch.jpg');
     background-size: cover;
-    opacity: 0.5;
+    opacity: 0.2;
+    filter: hue-rotate(-80deg);
 }
 b, strong {
     font-weight: 600;
@@ -263,7 +295,7 @@ button.caution {
     margin-bottom: 1rem;
 }
 .Home button {
-    background: var(--deep-gradient);
+    background: var(--dark-gradient);
 }
 #root, .App {
     width: 100%;
@@ -308,8 +340,11 @@ button.caution {
     height: 100%;
     position: relative;
 }
-.Dashboard .Main[data-editor='true'] .Notes {
+.Main[data-editor='true'] .Notes {
     display: none;
+}
+.Main[data-editor='false'] .Notes {
+    animation: slideright 0.2s 1;
 }
 .Notes h1 {
     font-family: var(--display-font);
@@ -416,7 +451,18 @@ button.createNew:hover .tooltip {
 }
 .NoteExcerpts {
     height: 50vh;
-    overflow: auto;
+    overflow: scroll;
+}
+.NoteExcerpts::-webkit-scrollbar {
+	width: 0.5rem;
+	height: 0;
+	background-color: inherit;
+}
+.NoteExcerpts::-webkit-scrollbar-track {
+	background-color: inherit;
+}
+.NoteExcerpts::-webkit-scrollbar-thumb {
+	background-color: rgba(0, 0, 0, 0.2);
 }
 .NoteExcerpt {
     width: 400px;
@@ -457,7 +503,7 @@ button.createNew:hover .tooltip {
     margin-left: 0.5rem;
 }
 .endofnotes {
-    padding: 2rem 0 3rem;
+    padding: 2rem 0;
     font-weight: 300;
     font-size: 1.5rem;
     color: #444;
@@ -483,6 +529,7 @@ button.createNew:hover .tooltip {
     color: #ccc;
     font-size: 2.5rem;
     transition: 0.2s;
+    animation: slideleft 0.2s 1;
 }
 .Editor button.exit::before {
     content: '\f00d';
@@ -537,13 +584,8 @@ button.createNew:hover .tooltip {
 .Editor .saveChanges button {
     background: var(--deep-gradient);
     display: inline-block;
-    box-shadow: 0.5rem 0.5rem 0rem #222;
     animation: slideup 0.2s 1;
     transition: 0.2s;
-}
-.Editor .saveChanges button:hover {
-    transform: translate3d(0.3rem, 0.3rem, 0);
-    box-shadow: 0.2rem 0.2rem 0rem #222;
 }
 .NoteOperations {
     position: fixed;
@@ -866,6 +908,7 @@ button.logout::before {
     height: 100%;
     display: grid;
     grid-template-rows: auto auto 1fr;
+    animation: slidedown 0.2s 1;
 }
 .NoteEditor input[type=text] {
     margin-bottom: 1rem;
