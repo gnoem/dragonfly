@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
@@ -5,6 +7,16 @@
 @keyframes fadeOut {
     from { opacity: 1; }
     to { opacity: 0; }
+}
+@keyframes slideup {
+    from {
+        opacity: 0;
+        transform: translate3d(0, 2rem, 0);
+    }
+    to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+    }
 }
 @keyframes showSubMenu {
     from {
@@ -84,6 +96,7 @@
 :root {
     --default-font: 'Work Sans', sans-serif;
     --display-font: 'Abril Fatface', cursive;
+    --button-font: 'Work Sans', sans-serif;
     --deep-gradient: linear-gradient(135deg, #43a8a3, #75c964);
     --med-gradient: linear-gradient(135deg, #5ebbb6, #99da8c);
     --light-gradient: linear-gradient(135deg, #bbf5f2, #cdf3c7);
@@ -114,8 +127,15 @@
     --lighter-theme-color: #a2e0dd;
     --lightest-theme-color: #c9eceb;
 }
+:root[data-mode='mini'] {
+    --default-font: 'Lato', sans-serif;
+    /* --deep-gradient: linear-gradient(135deg, #294c69, #296951); */
+    --deep-theme-color: #296951;
+    --sidebar-bg: #222;
+    --element-offwhite-bg: #FEF6F3;
+    --element-dimmed-bg: transparent;
+}
 html, body {
-    background: var(--element-main-bg);
     width: 100%;
     height: 100%;
     margin: 0;
@@ -124,6 +144,18 @@ html, body {
     color: var(--text-main);
     font-weight: 300;
     overflow: hidden;
+}
+html[data-mode='mini']::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('https://www.muralswallpaper.com/app/uploads/White-Rattan-Chair-Swatch.jpg');
+    background-size: cover;
+    opacity: 0.5;
 }
 b, strong {
     font-weight: 600;
@@ -242,24 +274,351 @@ button.caution {
     height: 100%;
     display: grid;
     grid-template-rows: auto;
-    grid-template-columns: 300px 1fr;
+    grid-template-columns: 250px 1fr;
     grid-template-areas: 'sidebar main';
 }
 .Dashboard .Sidebar {
     grid-area: sidebar;
-    background: var(--med-theme-color);
-    padding: 2rem;
+    background: var(--sidebar-bg);
+    padding: 1.5rem;
     height: 100%;
     overflow: auto;
 }
 .Dashboard .Panel {
+    background: var(--element-main-bg);
     grid-area: main;
     padding: 2rem;
     padding-right: 35%;
     height: 100%;
     overflow: auto;
 }
-.Dashboard .Notes {
+.Dashboard .Main {
+    grid-area: main;
+    height: 100%;
+}
+.Main .Notes {
+    padding: 2rem 5rem;
+    width: 100%;
+    min-width: 400px;
+    height: 100%;
+}
+.Main .Editor {
+    padding: 5rem;
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+.Dashboard .Main[data-editor='true'] .Notes {
+    display: none;
+}
+.Notes h1 {
+    font-family: var(--display-font);
+    font-size: 10vh;
+    margin: 0;
+}
+.Notes .Header {
+    margin: 1rem 0 2rem;
+}
+.Notes .Header.grid {
+    width: 400px;
+    display: grid;
+    grid-template-rows: 1fr auto;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+        'dragonfly dragonfly'
+        'header button';
+    grid-gap: 0.5rem;
+}
+.Notes .Header h2 {
+    grid-area: header;
+    font-size: 2rem;
+    font-weight: 300;
+    margin: 0;
+}
+.Notes .Header button.createNew {
+    margin: 0;
+    margin-top: 1rem;
+    padding: 0;
+    width: 2.5rem;
+    height: 2.5rem;
+    font-size: 1.4rem;
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    position: relative;
+}
+.Notes .Header button.createNew::before {
+    content: '\f067';
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+}
+button.createNew .tooltip {
+    position: absolute;
+    top: 50%;
+    left: 100%;
+    margin-left: 0.75rem;
+    white-space: nowrap;
+    transform: translate3d(0, -50%, 0);
+    background: #333;
+    font-size: 0.7rem;
+    line-height: 2rem;
+    color: #fff;
+    padding: 0 0.75rem;
+    border-radius: 0.5rem;
+    display: none;
+}
+button.createNew .tooltip::before {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    margin-left: -0.25rem;
+    transform: translate3d(0, -50%, 0) rotate(45deg);
+    content: '';
+    display: block;
+    width: 0.5rem;
+    height: 0.5rem;
+    background: #333;
+}
+button.createNew:hover .tooltip {
+    display: block;
+}
+.Notes .Header span.collectionHeader {
+    grid-area: header;
+}
+.Notes .Header span.collectionHeader > span {
+    display: block;
+}
+.Notes .Header span.collectionHeader > span:first-of-type {
+    font-size: 0.7rem;
+    margin-bottom: 0.1rem;
+    font-weight: 400;
+}
+.Notes .Header span.collectionHeader > span + span {
+    font-size: 1.5rem;
+}
+.Notes .Header button.viewOptions {
+    grid-area: button;
+    margin: 0;
+    padding: 0;
+    background: 0;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 999px;
+    font-size: 1.4rem;
+    display: grid;
+    place-items: center;
+    color: #666;
+    transition: 0.2s;
+}
+.Notes .Header button.viewOptions:hover {
+    background: rgba(0, 0, 0, 0.1);
+    color: #333;
+}
+.NoteExcerpts {
+    height: 50vh;
+    overflow: auto;
+}
+.NoteExcerpt {
+    width: 400px;
+    padding-bottom: 1rem;
+    padding-left: 2rem;
+    border-left: 2px solid #C6CBC9;
+    transition: 0.2s;
+}
+.NoteExcerpt + .NoteExcerpt {
+    padding-top: 1rem;
+}
+.NoteExcerpt:hover {
+    cursor: pointer;
+    border-left-color: #666;
+}
+.NoteExcerpt h2 {
+    font-size: 1rem;
+    text-transform: uppercase;
+    margin: 0;
+}
+.NoteExcerpt span.meta {
+    display: block;
+    font-size: 0.8rem;
+    margin-top: 0.5rem;
+    opacity: 0.7;
+}
+.NoteExcerpt .title {
+    display: flex;
+    place-items: center;
+    margin-bottom: 0.5rem;
+}
+.NoteOperations .OptionItem .hasStar {
+    color: #2f9e72;
+}
+.NoteExcerpt .hasStar {
+    color: #52d19e;
+    font-size: 0.8rem;
+    margin-left: 0.5rem;
+}
+.endofnotes {
+    padding: 2rem 0 3rem;
+    font-weight: 300;
+    font-size: 1.5rem;
+    color: #444;
+}
+.Editor .noteInfo {
+    padding-right: 3rem;
+    border-right: 1px solid #aaa;
+    margin-right: 3rem;
+    text-align: right;
+}
+.Editor .noteInfo h3 {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    margin-bottom: 0.2rem;
+}
+.Editor .noteInfo .group + .group {
+    margin-top: 1rem;
+}
+.Editor button.exit {
+    position: absolute;
+    top: 2.5rem;
+    right: 3rem;
+    color: #ccc;
+    font-size: 2.5rem;
+    transition: 0.2s;
+}
+.Editor button.exit::before {
+    content: '\f00d';
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+}
+.Editor button.exit:hover {
+    color: #aaa;
+}
+.EditorToolbar {
+    display: flex;
+    flex-wrap: wrap;
+    place-items: center;
+    margin-bottom: 2rem;
+}
+.EditorToolbar hr {
+    margin: auto 1.5rem;
+    background: #ddd;
+    border: 0;
+    width: 0.3rem;
+    height: 0.3rem;
+    border-radius: 999px;
+}
+.EditorToolbar .group {
+    display: flex;
+}
+.EditorToolbar button {
+    background: 0;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    width: 1.5rem;
+    height: 1.5rem;
+    color: #666;
+    display: grid;
+    place-items: center;
+}
+.EditorToolbar button.active {
+    background: #ddd;
+    border-radius: 0.2rem;
+}
+.EditorToolbar button + button {
+    margin-left: 0.5rem;
+}
+.Editable {
+    width: 100%;
+}
+.Editor .saveChanges {
+    text-align: right;
+    padding-right: 3rem;
+}
+.Editor .saveChanges button {
+    background: var(--deep-gradient);
+    display: inline-block;
+    box-shadow: 0.5rem 0.5rem 0rem #222;
+    animation: slideup 0.2s 1;
+    transition: 0.2s;
+}
+.Editor .saveChanges button:hover {
+    transform: translate3d(0.3rem, 0.3rem, 0);
+    box-shadow: 0.2rem 0.2rem 0rem #222;
+}
+.NoteOperations {
+    position: fixed;
+    bottom: 3rem;
+    right: 3rem;
+}
+.Main[data-editor='true'] .NoteOperations {
+    animation: slideup 0.2s 1;
+}
+.NoteOperations .OptionItem {
+    text-align: center;
+}
+.NoteOperations > .OptionItem + .OptionItem {
+    margin-top: 1.5rem;
+}
+.NoteOperations .OptionItem button {
+    background: 0;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    font-size: 1.2rem;
+    color: #222;
+    position: relative;
+    display: inline-block;
+}
+.NoteOperations .OptionItem > button .tooltip {
+    position: absolute;
+    top: 50%;
+    right: 100%;
+    margin-right: 0.75rem;
+    white-space: nowrap;
+    transform: translate3d(0, -50%, 0);
+    background: #222;
+    font-size: 0.7rem;
+    line-height: 2rem;
+    color: #fff;
+    padding: 0 0.75rem;
+    border-radius: 0.5rem;
+    display: none;
+}
+.NoteOperations .OptionItem > button .tooltip::before {
+    position: absolute;
+    top: 50%;
+    left: 100%;
+    margin-left: -0.25rem;
+    transform: translate3d(0, -50%, 0) rotate(45deg);
+    content: '';
+    display: block;
+    width: 0.5rem;
+    height: 0.5rem;
+    background: #333;
+}
+.NoteOperations .OptionItem > button:hover .tooltip {
+    display: block;
+}
+.noteIsInTrash {
+    margin-bottom: 2.5rem;
+}
+.noteIsInTrash .giantIcon {
+    display: block;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    margin-left: 0.5rem;
+    color: #333;
+}
+.noteIsInTrash .buttons {
+    text-align: left;
+}
+
+
+
+
+
+
+.Dashboard .OldNotes {
     grid-area: main;
     display: grid;
     grid-template-columns: 350px 1fr auto;
@@ -274,36 +633,36 @@ button.caution {
         padding: 1.5rem;
         padding-bottom: 6.5rem;
     }
-    .Dashboard .Notes {
+    .Dashboard .OldNotes {
         grid-template-rows: 100%;
         grid-template-columns: 100%;
         grid-template-areas: 'list';
         height: 100%;
     }
-    .Dashboard .Notes[data-editor=true] {
+    .Dashboard .OldNotes[data-editor=true] {
         grid-template-areas: 'editor';
     }
 }
-.Notes .List {
+.OldNotes .List {
     grid-area: list;
     border-right: 1px solid var(--element-main-border);
     background: var(--element-dimmed-bg);
 }
-.Notes .Editor {
+.OldNotes .Editor {
     grid-area: editor;
     padding: 2rem;
 }
-.Notes .Options {
+.OldNotes .Options {
     grid-area: options;
     padding: 1rem;
     border-left: 1px solid var(--element-main-border);
     text-align: center;
 }
 @media screen and (max-width: 900px) {
-    .Notes .List {
+    .OldNotes .List {
         border-right: 0;
     }
-    .Notes .Editor {
+    .OldNotes .Editor {
         padding: 0;
     }
 }
@@ -318,7 +677,7 @@ button.caution {
 }
 .Nav nav + nav {
     margin-top: 2rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.3);
+    border-top: 1px solid #333;
     padding-top: 0.5rem;
 }
 .Nav nav ul {
@@ -335,6 +694,7 @@ button.caution {
     display: grid;
     grid-template-columns: 2rem 1fr;
     align-items: center;
+    color: #ccc;
 }
 .Nav nav button::before {
     font-family: 'Font Awesome 5 Free';
@@ -526,44 +886,6 @@ button.logout::before {
         margin: 1rem;
     }
 }
-.EditorToolbar {
-    background: var(--element-dimmed-bg);
-    padding: 1rem;
-    border-radius: 0.5rem;
-    display: flex;
-    flex-wrap: wrap;
-    place-items: center;
-    margin-bottom: 2rem;
-}
-.EditorToolbar hr {
-    margin: auto 1.5rem;
-    background: #ddd;
-    border: 0;
-    width: 0.3rem;
-    height: 0.3rem;
-    border-radius: 999px;
-}
-.EditorToolbar .group {
-    display: flex;
-}
-.EditorToolbar button {
-    background: 0;
-    border: 0;
-    padding: 0;
-    margin: 0;
-    width: 1.5rem;
-    height: 1.5rem;
-    color: #666;
-    display: grid;
-    place-items: center;
-}
-.EditorToolbar button.active {
-    background: #ddd;
-    border-radius: 0.2rem;
-}
-.EditorToolbar button + button {
-    margin-left: 0.5rem;
-}
 .EditorControls {
     background: var(--element-dimmed-bg);
     padding: 1rem;
@@ -662,7 +984,7 @@ button.logout::before {
     overflow: auto;
 }
 @media screen and (max-width: 900px) {
-    .Notes .List {
+    .OldNotes .List {
         height: 100%;
         overflow: auto;
     }
@@ -724,16 +1046,10 @@ button.logout::before {
     font-size: 0.7rem;
     color: #666;
 }
-.endofnotes {
-    padding: 1rem 3rem 3rem;
-    text-align: center;
-    font-weight: normal;
-    color: #aaa;
-}
 .Editable blockquote {
     margin: 0;
     margin-top: 1rem;
-    border-left: 0.3rem solid var(--element-secondary-border);
+    border-left: 0.2rem solid #ddd;
     padding: 0 1rem;
     font-style: oblique;
     font-size: 0.9rem;
@@ -1156,12 +1472,6 @@ ul.nolines li.tagsList {
 }
 .MiniMenu .tag.createTag:hover {
     color: #fff;
-}
-.noteOptions {
-    background: var(--element-dimmed-bg);;
-    padding: 1.5rem;
-    border-radius: 0.5rem;
-    margin-bottom: 2rem;
 }
 
 /* CUSTOM DROPDOWN */

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import Loading from './Loading';
 import Menu from './Menu';
 import Sidebar from './Sidebar';
-import Notes from './Notes';
+import Main from './Main';
 import MyAccount from './MyAccount';
 import Login from './Login';
 
@@ -69,7 +69,7 @@ export default function Dashboard(props) {
                 }
             }
             return (
-                <Notes
+                <Main
                     view={view}
                     updateView={setView}
                     user={user}
@@ -93,7 +93,7 @@ export default function Dashboard(props) {
                     return notesInCollection;
                 }
                 return (
-                    <Notes
+                    <Main
                         view={view}
                         updateView={setView}
                         user={user}
@@ -138,7 +138,7 @@ export default function Dashboard(props) {
                     return notesArray(tags);
                 }
                 return (
-                    <Notes
+                    <Main
                         view={view}
                         updateView={setView}
                         user={user}
