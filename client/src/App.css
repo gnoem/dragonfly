@@ -600,6 +600,7 @@ button.createNew:hover .tooltip {
 }
 .NoteOperations .OptionItem {
     text-align: center;
+    position: relative;
 }
 .NoteOperations > .OptionItem + .OptionItem {
     margin-top: 1.5rem;
@@ -611,38 +612,48 @@ button.createNew:hover .tooltip {
     margin: 0;
     font-size: 1.2rem;
     color: #222;
-    position: relative;
     display: inline-block;
 }
-.NoteOperations .OptionItem > button .tooltip {
+.NoteOperations .OptionItem .tooltip {
     position: absolute;
-    top: 50%;
+    bottom: 50%;
     right: 100%;
     margin-right: 0.75rem;
     white-space: nowrap;
-    transform: translate3d(0, -50%, 0);
+    margin-bottom: -1rem;
     background: #222;
     font-size: 0.7rem;
     line-height: 2rem;
+    font-weight: 400;
     color: #fff;
     padding: 0 0.75rem;
     border-radius: 0.5rem;
     display: none;
+    height: 300px;
+    max-height: 2rem;
+    transition: 0.2s;
 }
-.NoteOperations .OptionItem > button .tooltip::before {
+.NoteOperations .OptionItem .tooltipArrow {
     position: absolute;
     top: 50%;
-    left: 100%;
-    margin-left: -0.25rem;
+    right: 100%;
+    margin-right: 0.5rem;
     transform: translate3d(0, -50%, 0) rotate(45deg);
-    content: '';
-    display: block;
+    display: none;
     width: 0.5rem;
     height: 0.5rem;
-    background: #333;
+    background: #222;
 }
-.NoteOperations .OptionItem > button:hover .tooltip {
-    display: block;
+.NoteOperations .OptionItem:hover .tooltip,
+.NoteOperations .OptionItem:hover .tooltipArrow,
+.NoteOperations .OptionItem .tooltip.menu + .tooltipArrow {
+    display: inline-block;
+}
+.NoteOperations .OptionItem .tooltip.menu {
+    display: inline-block;
+    max-height: 300px;
+    width: 200px;
+    max-width: 200px;
 }
 .noteIsInTrash {
     margin-bottom: 2.5rem;

@@ -6,6 +6,7 @@ import Modal from './Modal';
 import ContextMenu from './ContextMenu';
 import { elementIsInArray } from '../utils';
 import Dropdown from './Dropdown';
+import Tooltip from './Tooltip';
 
 export default function Main(props) {
     const { view, notes } = props;
@@ -72,8 +73,10 @@ function Editor(props) {
 }
 
 function NoteOperations({ currentNote, updateCurrentNote, refreshData }) {
+    const [collectionsTooltip, setCollectionsTooltip] = useState(false);
     const [modalObject, setModalObject] = useState(false);
     const modalContent = useRef(null);
+    const collectionsRef = useRef(null);
     const gracefullyCloseModal = (modal) => {
         let container = modal.classList.contains('Modal')
             ? modal
@@ -105,8 +108,8 @@ function NoteOperations({ currentNote, updateCurrentNote, refreshData }) {
         if (!body.success) return console.log('no success: true response from server');
         refreshData();
     }
-    const updateContextMenu = (e, name) => {
-        
+    const moveNoteToCollection = () => {
+        setCollectionsTooltip('how about this');
     }
     const confirmMoveToTrash = (id) => {
         const moveToTrash = async (e, id) => {
@@ -155,13 +158,18 @@ function NoteOperations({ currentNote, updateCurrentNote, refreshData }) {
                 </button>
             </div>
             <div className="OptionItem">
-                <button onClick={(e) => updateContextMenu(e, 'moveNoteToCollection')}>
+                <button onClick={moveNoteToCollection} ref={collectionsRef}>
                     <i className="fas fa-book"></i>
-                    <span className="tooltip">Move to collection</span>
                 </button>
+                <Tooltip
+                    content={collectionsTooltip}
+                    defaultContent="Move to collection"
+                    parent={collectionsRef.current}
+                    updateTooltipContent={setCollectionsTooltip} />
+                <div className="tooltipArrow"></div>
             </div>
             <div className="OptionItem">
-                <button onClick={(e) => updateContextMenu(e, 'tagNote')}>
+                <button>
                     <i className="fas fa-tags"></i>
                     <span className="tooltip">Add tags</span>
                 </button>
