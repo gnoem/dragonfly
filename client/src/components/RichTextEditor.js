@@ -6,7 +6,7 @@ import { Editor, EditorState, RichUtils, convertToRaw, convertFromRaw, DefaultDr
 import 'draft-js/dist/Draft.css';
 
 export default function NoteEditor(props) {
-    const { user, currentNote, updateCurrentNote, updateViewingEditor, unsavedChanges, updateUnsavedChanges, refreshData } = props;
+    const { user, currentNote, updateCurrentNote, unsavedChanges, updateUnsavedChanges, refreshData } = props;
     const newNote = !currentNote.content;
     const [editorTitle, setEditorTitle] = useState('');
     const [editorState, setEditorState] = useState(
@@ -87,8 +87,7 @@ export default function NoteEditor(props) {
             if (!body) return console.log('no response from server');
             if (!body.success) return console.log('no success: true response from server');
             refreshData();
-            //updateCurrentNote(false);
-            //setTimeout(() => updateViewingEditor(false), 2000);
+            updateCurrentNote(false);
         }
         return (
             <div className="noteIsInTrash">

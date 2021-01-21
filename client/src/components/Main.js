@@ -3,10 +3,12 @@ import dayjs from 'dayjs'; // NotePreview
 import NoteEditor from './RichTextEditor';
 import Loading from './Loading';
 import Modal from './Modal';
+import ContextMenu from './ContextMenu';
+import { elementIsInArray } from '../utils';
+import Dropdown from './Dropdown';
 
 export default function Main(props) {
     const { view, notes } = props;
-    const [viewingEditor, setViewingEditor] = useState(false);
     const [currentNote, setCurrentNote] = useState(false);
     const usePrevious = (value) => {
         const ref = useRef();
@@ -18,33 +20,31 @@ export default function Main(props) {
     const prevNotesCount = usePrevious(notes.length);
     useEffect(() => {
         setCurrentNote(false);
-        setViewingEditor(false);
     }, [view]);
     useEffect(() => {
+        // what this does: when refreshData is called, update currentNote with updated note data
+        // a thought for later: maybe makes sense to set currentNote to just the note _id, or call it currentNoteId, and skip having to do this
+        // const currentNote = notes[getIndexFromNoteId(props.currentNoteId)] at the top of every component that would ordinarily use currentNote
         const getNoteIndexFromId = (id) => {
             return notes.findIndex(note => id === note._id);
         }
-        if (viewingEditor) {
-            if (!currentNote || !currentNote.content) return;
-            if (prevNotesCount > notes.length) return; // when deleting/removing note and notes[getIndex(currentNote._id)] is undefined
-            setCurrentNote(notes[getNoteIndexFromId(currentNote._id)]);
-        }
-    // figure out if currentNote + viewingEditor need to be listed as dependencies
+        if (!currentNote || !currentNote.content) return;
+        if (prevNotesCount > notes.length) return setCurrentNote(false); // after deleting/removing note and refreshing data, notes[current] is no longer defined
+        setCurrentNote(notes[getNoteIndexFromId(currentNote._id)]);
+    // figure out if currentNote + prevNotesCount need to be listed as dependencies
     // eslint-disable-next-line
     }, [notes]);
     return (
-        <div className="Main" data-editor={viewingEditor}>
+        <div className="Main" data-editor={currentNote ? true : false}>
             <Notes
                 {...props}
                 currentNote={currentNote}
-                updateCurrentNote={setCurrentNote}
-                updateViewingEditor={setViewingEditor} />
-            {viewingEditor /* && currentNote i guess?? */
+                updateCurrentNote={setCurrentNote} />
+            {currentNote
                 && <Editor
                     {...props}
                     currentNote={currentNote}
-                    updateCurrentNote={setCurrentNote}
-                    updateViewingEditor={setViewingEditor} />
+                    updateCurrentNote={setCurrentNote} />
                 }
         </div>
     );
@@ -53,11 +53,11 @@ export default function Main(props) {
 const isMobile = false;
 
 function Editor(props) {
-    const { currentNote, updateViewingEditor } = props;
+    const { currentNote, updateCurrentNote } = props;
     const [unsavedChanges, setUnsavedChanges] = useState(false);
     const handleExit = () => {
         if (unsavedChanges) console.log('warning');
-        updateViewingEditor(false);
+        updateCurrentNote(false);
     }
     return (
         <div className="Editor">
@@ -71,7 +71,7 @@ function Editor(props) {
     );
 }
 
-function NoteOperations({ currentNote, updateCurrentNote, updateViewingEditor, updateUnsavedChanges, refreshData }) {
+function NoteOperations({ currentNote, updateCurrentNote, refreshData }) {
     const [modalObject, setModalObject] = useState(false);
     const modalContent = useRef(null);
     const gracefullyCloseModal = (modal) => {
@@ -105,7 +105,7 @@ function NoteOperations({ currentNote, updateCurrentNote, updateViewingEditor, u
         if (!body.success) return console.log('no success: true response from server');
         refreshData();
     }
-    const updateMiniMenu = () => {
+    const updateContextMenu = (e, name) => {
         
     }
     const confirmMoveToTrash = (id) => {
@@ -124,10 +124,9 @@ function NoteOperations({ currentNote, updateCurrentNote, updateViewingEditor, u
             if (!body.success) return console.log('no success: true response from server');
             // todo: find NotePreview with id and shrink it down, with 200ms delay on refreshData()
             refreshData();
-            updateUnsavedChanges(false);
-            updateCurrentNote(false);
             gracefullyCloseModal(modalContent.current);
-            updateViewingEditor(false); // needs to come AFTER close modal
+            console.log('moved to trash');
+            updateCurrentNote(false); // needs to come AFTER close modal
         }
         let content = (breakpoints = {
             loadingIcon: false
@@ -156,13 +155,13 @@ function NoteOperations({ currentNote, updateCurrentNote, updateViewingEditor, u
                 </button>
             </div>
             <div className="OptionItem">
-                <button onClick={(e) => updateMiniMenu(e, 'moveNoteToCollection')}>
+                <button onClick={(e) => updateContextMenu(e, 'moveNoteToCollection')}>
                     <i className="fas fa-book"></i>
                     <span className="tooltip">Move to collection</span>
                 </button>
             </div>
             <div className="OptionItem">
-                <button onClick={(e) => updateMiniMenu(e, 'tagNote')}>
+                <button onClick={(e) => updateContextMenu(e, 'tagNote')}>
                     <i className="fas fa-tags"></i>
                     <span className="tooltip">Add tags</span>
                 </button>
@@ -177,19 +176,153 @@ function NoteOperations({ currentNote, updateCurrentNote, updateViewingEditor, u
     )
 }
 
-function Notes({ view, notes, currentNote, updateCurrentNote, updateViewingEditor }) {
+function Notes({ user, view, updateView, notes, currentNote, updateCurrentNote, refreshData }) {
+    const [contextMenu, setContextMenu] = useState(false);
+    const [modalObject, setModalObject] = useState(false);
+    const [sortTags, setSortTags] = useState('all');
+    const contextMenuRef = useRef();
+    const modalContent = useRef(null);
+    const gracefullyCloseModal = (modal) => {
+        let container = modal.classList.contains('Modal')
+            ? modal
+            : modal.closest('.Modal');
+        container.classList.add('goodbye');
+        setTimeout(() => setModalObject(false), 200);
+    }
     const getNoteIndexFromId = (id) => {
         return notes.findIndex(note => id === note._id);
     }
     const createNewNote = () => {
         updateCurrentNote(true);
-        updateViewingEditor(true);
     }
     const trashOptions = () => {
 
     }
-    const editOrDeleteCollection = () => {
-
+    const editOrDeleteCollection = (e, collectionName) => {
+        const { top, right } = {
+            top: e.clientY - 16,
+            right: (window.innerWidth - e.clientX) + 16
+        }
+        const editCollection = () => {
+            setContextMenu(false);
+            const handleEdit = async (e) => {
+                e.preventDefault();
+                setModalObject(content({
+                    updatedNameError: null,
+                    loadingIcon: true
+                }));
+                const updatedName = e.target[0].value;
+                const response = await fetch('/edit/collection', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        _id: user._id,
+                        collectionName,
+                        updatedName
+                    })
+                });
+                const body = await response.json();
+                if (!body) return console.log('no response from server');
+                if (!body.success) {
+                    setModalObject(content({
+                        updatedNameError: <span className="formError">{body.updatedNameError}</span>,
+                        loadingIcon: false
+                    }));
+                    return;
+                }
+                refreshData();
+                gracefullyCloseModal(modalContent.current);
+                // change view
+                updateView({ type: 'collection', name: updatedName });
+            }
+            const initialBreakpoints = {
+                updatedNameError: null,
+                loadingIcon: false
+            }
+            let content = (breakpoints = initialBreakpoints) => {
+                return (
+                    <div className="modalContent" ref={modalContent}>
+                        <h2>Edit collection</h2>
+                        <form onSubmit={handleEdit} autoComplete="off">
+                            <label htmlFor="updatedName">Edit collection name:</label>
+                            <input
+                                type="text"
+                                name="updatedName"
+                                className={breakpoints.updatedNameError ? 'nope' : ''}
+                                onInput={() => setModalObject(content())} />
+                            {breakpoints.updatedNameError}
+                            {breakpoints.loadingIcon
+                                ?   <div className="buttons"><Loading /></div>
+                                :   <div className="buttons">
+                                        <button type="submit">Submit</button>
+                                        <button type="button" className="greyed" onClick={() => gracefullyCloseModal(modalContent.current)}>Cancel</button>
+                                    </div>}
+                        </form>
+                    </div>
+                );
+            }
+            setModalObject(content());
+        }
+        const deleteCollection = () => {
+            setContextMenu(false);
+            const handleDelete = async (e) => {
+                e.preventDefault();
+                setModalObject(content({ loadingIcon: true }));
+                const response = await fetch('/delete/collection', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ _id: user._id, collectionName })
+                });
+                const body = await response.json();
+                if (!body) return console.log('no response from server');
+                if (!body.success) return console.log('no success: true response from server');
+                refreshData();
+                gracefullyCloseModal(modalContent.current);
+                // switch to the one above it; if none, switch to the one below it; else all-notes
+                let nextInLine = () => {
+                    let thisCollectionIndex = user.collections.indexOf(collectionName);
+                    let nextCollection;
+                    if (user.collections[thisCollectionIndex--]) {
+                        nextCollection = user.collections[thisCollectionIndex--];
+                        return { type: 'collection', name: nextCollection }
+                    } else if (user.collections[thisCollectionIndex++]) {
+                        nextCollection = user.collections[thisCollectionIndex++];
+                        return { type: 'collection', name: nextCollection }
+                    } else return 'all-notes';
+                }
+                updateView(nextInLine); // */
+            }
+            let content = (breakpoints = {
+                loadingIcon: false
+            }) => (
+                <div className="modalContent" ref={modalContent}>
+                    <h2>Are you sure?</h2>
+                    Deleting the collection "{collectionName}" won't delete any notes, only the collection itself. This action cannot be undone.
+                    {breakpoints.loadingIcon
+                        ?   <Loading />
+                        :   <form onSubmit={handleDelete} className="buttons">
+                                <button type="submit">Yes, I'm sure</button>
+                                <button type="button" className="greyed" onClick={() => gracefullyCloseModal(modalContent.current)}>Take me back</button>
+                            </form>
+                        }
+                </div>
+            );
+            // NOTE: .buttons div is a form with onSubmit={handleDelete} because for some odd reason, if I try to call handleDelete
+            // from a button onClick and then setModalObject to anything, modalObject immediately gets set to false and then
+            // modalContent.current gets set to null, causing an error message at gracefullyCloseModal(modalContent.current)
+            setModalObject(content());
+        }
+        let content = (
+            <ul style={{ top: `${top}px`, right: `${right}px` }} ref={contextMenuRef}>
+                <li><button onClick={editCollection}>Edit collection</button></li>
+                <li><button onClick={deleteCollection}>Delete collection</button></li>
+            </ul>
+        );
+        setContextMenu({ name: 'presentChildren', content });
     }
     const generateHeader = () => {
         let title, button = '';
@@ -252,7 +385,7 @@ function Notes({ view, notes, currentNote, updateCurrentNote, updateViewingEdito
             }
         }
         return (
-            <div className={`Header${view === 'all-notes' ? '' : ' grid'}`}>
+            <div className={`Header${view === 'all-notes' || view.type === 'tags' ? '' : ' grid'}`}>
                 <h1>Dragonfly</h1>
                 {title}
                 {button}
@@ -268,8 +401,9 @@ function Notes({ view, notes, currentNote, updateCurrentNote, updateViewingEdito
         )
         if (view === 'all-notes') return null;
         if ((view.type === 'tags') && (!view.tags.length)) return null;
+        if (view.type === 'collection') return <div className="endofnotes nonotes" style={{ marginTop: '1rem' }}>No notes found in this collection</div>
         return (
-            <div className="endofnotes" style={{ marginTop: '1rem' }}>None found</div>
+            <div className="endofnotes nonotes" style={{ marginTop: '1rem' }}>None found</div>
         );
     }
     const generateNotesList = () => {
@@ -281,7 +415,6 @@ function Notes({ view, notes, currentNote, updateCurrentNote, updateViewingEdito
                 temp={false}
                 {...notes[i]}
                 updateCurrentNoteId={(id) => updateCurrentNote(notes[getNoteIndexFromId(id)])}
-                updateViewingEditor={updateViewingEditor}
             />)
         }
         return (
@@ -291,16 +424,195 @@ function Notes({ view, notes, currentNote, updateCurrentNote, updateViewingEdito
             </div>
         );
     }
+    const createTag = () => {
+
+    }
+    const sortByTag = () => {
+        console.log('sorting by tag');
+        let noTagsSelected = view.tags.length === 0;
+        const tagList = () => {
+            const newTagButton = (
+                <button onClick={createTag} onContextMenu={(e) => e.preventDefault()} key="createTag" className="tag createTag">
+                    Create new tag
+                </button>
+            )
+            if (!user.tags.length) return newTagButton;
+            const tagContextMenu = (e, tagName) => {
+                e.preventDefault();
+                const { top, right } = {
+                    top: e.clientY,
+                    right: (window.innerWidth - e.clientX)
+                }
+                const editTag = () => {
+                    const handleEdit = async (e) => {
+                        e.preventDefault();
+                        setModalObject(content({
+                            updatedNameError: null,
+                            loadingIcon: true
+                        }));
+                        const updatedName = e.target[0].value;
+                        const response = await fetch('/edit/tag', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                _id: user._id,
+                                tagName,
+                                updatedName
+                            })
+                        });
+                        const body = await response.json();
+                        if (!body) return console.log('no response from server');
+                        if (!body.success) {
+                            setModalObject(content({
+                                updatedNameError: <span className="formError">{body.updatedNameError}</span>,
+                                loadingIcon: false
+                            }));
+                            return;
+                        }
+                        refreshData();
+                        gracefullyCloseModal(modalContent.current);
+                        updateView({ type: 'tags', tags: [updatedName] });
+                    }
+                    const initialBreakpoints = {
+                        updatedNameError: null,
+                        loadingIcon: false
+                    }
+                    let content = (breakpoints = initialBreakpoints) => {
+                        return (
+                            <div className="modalContent" ref={modalContent}>
+                                <h2>Edit tag</h2>
+                                <form onSubmit={handleEdit} autoComplete="off">
+                                    <label htmlFor="updatedName">Edit tag name:</label>
+                                    <input
+                                        type="text"
+                                        name="updatedName"
+                                        defaultValue={tagName}
+                                        className={breakpoints.updatedNameError ? 'nope' : ''}
+                                        onInput={() => setModalObject(content())} />
+                                    {breakpoints.updatedNameError}
+                                    {breakpoints.loadingIcon
+                                        ?   <div className="buttons"><Loading /></div>
+                                        :   <div className="buttons">
+                                                <button type="submit">Submit</button>
+                                                <button type="button" className="greyed" onClick={() => gracefullyCloseModal(modalContent.current)}>Cancel</button>
+                                            </div>}
+                                </form>
+                            </div>
+                        );
+                    }
+                    setModalObject(content());
+                }
+                const confirmDeleteTag = () => {
+                    const deleteTag = async () => {
+                        setModalObject(content({ loadingIcon: true }));
+                        const response = await fetch('/delete/tag', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ _id: user._id, tagName })
+                        });
+                        const body = await response.json();
+                        if (!body) return console.log('no response from server');
+                        if (!body.success) return console.log('no success: true response from server');
+                        refreshData();
+                        gracefullyCloseModal(modalContent.current);
+                    }
+                    let content = (breakpoints = {
+                        loadingIcon: false
+                    }) => (
+                        <div className="modalContent" ref={modalContent}>
+                            <h2>Are you sure?</h2>
+                            Deleting the tag "{tagName}" won't delete any notes, only the tag itself. This action cannot be undone.
+                            {breakpoints.loadingIcon
+                                ?   <Loading />
+                                :   <form onSubmit={deleteTag} className="buttons">
+                                        <button type="submit">Yes, I'm sure</button>
+                                        <button type="button" className="greyed" onClick={() => gracefullyCloseModal(modalContent.current)}>Cancel</button>
+                                    </form>
+                                }
+                        </div>
+                    );
+                    setModalObject(content());
+                }
+                let content = (
+                    <ul onClick={() => setContextMenu(false)} className="smol" style={{ top: `${top}px`, right: `${right}px` }} ref={contextMenuRef}>
+                        <li><button className="edit" onClick={editTag}>Edit tag</button></li>
+                        <li><button className="delete" onClick={confirmDeleteTag}>Delete tag</button></li>
+                    </ul>
+                )
+                setContextMenu({ name: 'presentChildren', content });
+            }
+            const toggleTag = (tagName) => {
+                const updatedArray = (prevView) => {
+                    let currentViewTags = [...prevView.tags];
+                    if (!elementIsInArray(tagName, currentViewTags)) {
+                        currentViewTags.push(tagName);
+                        return currentViewTags;
+                    }
+                    let index = currentViewTags.indexOf(tagName);
+                    currentViewTags.splice(index, 1);
+                    return currentViewTags;
+                }
+                updateView(prevView => ({
+                    type: 'tags',
+                    tags: updatedArray(prevView),
+                    sortTags
+                }));
+                return;
+            }
+            let tagArray = [];
+            for (let i = 0; i < user.tags.length; i++) {
+                let thisTag = user.tags[i];
+                let isSelected = elementIsInArray(thisTag, view.tags);
+                tagArray.push(
+                    <button
+                      onClick={() => toggleTag(thisTag)}
+                      onContextMenu={(e) => tagContextMenu(e, thisTag)}
+                      key={`showingTag-${thisTag}`}
+                      className={`tag${isSelected ? ' hasTag' : ''}`}>
+                        {thisTag}
+                    </button>
+                );
+            }
+            tagArray.push(newTagButton);
+            return tagArray;
+        }
+        const updateSortTags = (value) => {
+            setSortTags(value);
+            updateView(prevView => ({ ...prevView, sortTags: value }));
+        }
+        return (
+            <div className="sortByTag">
+                <span className="hint">Right-click on a tag for more options.</span>
+                <h2>{noTagsSelected ? 'View' : 'Viewing'} notes tagged:</h2>
+                <div className="tagsGrid">{tagList()}</div>
+                <div className="sortTagOptions">
+                    Find notes with
+                        <Dropdown display={sortTags}>
+                            <li><button onClick={() => updateSortTags('all')}>all</button></li>
+                            <li><button onClick={() => updateSortTags('any')}>any</button></li>
+                        </Dropdown>
+                    of the selected tags.
+                </div>
+            </div>
+        );
+    }
     return (
         <div className="Notes">
+            {contextMenu && <ContextMenu menu={contextMenu} updateMiniMenu={setContextMenu} />}
+            <Modal exitModal={gracefullyCloseModal} content={modalObject} />
             {generateHeader()}
+            {(view.type === 'tags') && sortByTag()}
             {generateNotesList()}
         </div>
     );
 }
 
 function NotePreview(props) {
-    let { _id, title, content, starred, createdAt, lastModified, updateCurrentNoteId, updateViewingEditor } = props;
+    let { _id, title, content, starred, createdAt, lastModified, updateCurrentNoteId } = props;
     const noteExcerpt = (content) => {
         const getExcerpt = (content) => {
             const num = 115;
@@ -340,7 +652,6 @@ function NotePreview(props) {
     }
     const handleClick = () => {
         updateCurrentNoteId(_id);
-        updateViewingEditor(true);
     }
     return (
         <div className={`NoteExcerpt${isCurrent(_id)}`} onClick={handleClick}>

@@ -1,4 +1,5 @@
 export default function EditorToolbar(props) {
+    // todo if focus is on title input, do nothing
     const isInlineStyleActive = (style) => {
         const inlineStyle = props.editorState.getCurrentInlineStyle();
         return inlineStyle.has(style) ? 'active' : '';

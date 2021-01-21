@@ -19,7 +19,7 @@ export function MiniMenu({ exitMenu, children }) {
         if (!children) return;
         const closeMenu = (e) => {
             if (elementHasParent(e.target, '#demo')) return; // todo dev only
-            if (elementHasParent(e.target, '.MiniMenu ul')) return;
+            if (elementHasParent(e.target, '.ContextMenu ul')) return;
             if (elementHasParent(e.target, '.Modal')) return; // specifically so that collections minimenu doesn't disappear when creating new collection
             exitMenu();
         }
@@ -32,7 +32,7 @@ export function MiniMenu({ exitMenu, children }) {
     }, [exitMenu, children]);
     if (!children) return null;
     return (
-        <div className="MiniMenu" ref={menuBox}>
+        <div className="ContextMenu" ref={menuBox}>
             {children}
         </div>
     )
