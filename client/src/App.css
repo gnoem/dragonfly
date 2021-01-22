@@ -4,6 +4,16 @@
     from { opacity: 0; }
     to { opacity: 1; }
 }
+@keyframes fadeAndScaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.5);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
 @keyframes fadeOut {
     from { opacity: 1; }
     to { opacity: 0; }
@@ -592,8 +602,20 @@ button.createNew:hover .tooltip {
 }
 .NoteOperations {
     position: fixed;
-    bottom: 3rem;
+    bottom: 14rem;
     right: 3rem;
+}
+.NoteOperations::after {
+    content: '';
+    display: block;
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-top: 3rem;
+    margin-left: -0.5px;
+    width: 1px;
+    height: 8rem;
+    background: #666;
 }
 .Main[data-editor='true'] .NoteOperations {
     animation: slideup 0.2s 1;
@@ -629,9 +651,9 @@ button.createNew:hover .tooltip {
     padding: 0 0.75rem;
     border-radius: 0.5rem;
     display: none;
-    height: 300px;
     max-height: 2rem;
     transition: 0.2s;
+    overflow: hidden;
 }
 .NoteOperations .OptionItem .tooltipArrow {
     position: absolute;
@@ -651,9 +673,30 @@ button.createNew:hover .tooltip {
 }
 .NoteOperations .OptionItem .tooltip.menu {
     display: inline-block;
-    max-height: 300px;
-    width: 200px;
-    max-width: 200px;
+    overflow: auto;
+    padding: 1rem;
+    box-sizing: content-box;
+}
+.NoteOperations .OptionItem .tooltip.menu .Dropdown {
+    animation: fadeAndScaleIn 0.2s 1;
+}
+.NoteOperations .OptionItem .tooltip.menu.hasDropdown {
+    overflow: visible;
+}
+.tooltip.menu ul, .tooltip.menu li {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    line-height: normal;
+}
+.tooltip.menu li strong {
+    display: block;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+}
+.tooltip.menu .Dropdown {
+    width: 100%;
+    color: #333;
 }
 .noteIsInTrash {
     margin-bottom: 2.5rem;
@@ -691,6 +734,98 @@ button.createNew:hover .tooltip {
     color: #fff;
 }
 
+
+
+
+/* CUSTOM DROPDOWN */
+.Dropdown {
+    position: relative;
+    display: inline-block;
+}
+.Dropdown, .Dropdown * {
+    user-select: none;
+    font-weight: 400;
+}
+.Dropdown li {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.Dropdown button, .tooltip.menu .Dropdown button {
+    color: #333;
+    font-size: 0.8rem;
+    padding: 0.5rem;
+    width: 100%;
+    text-align: left;
+    transition: color 0.2s;
+}
+.Dropdown .dropdownDisplay {
+    font-size: 0.8rem;
+    line-height: 1.1rem;
+    background: var(--element-main-bg);
+    border: 1px solid var(--element-secondary-border);
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    text-align: left;
+    position: relative;
+}
+.Dropdown .dropdownDisplay::after {
+    content: '\f0d9';
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    display: block;
+    transition: transform 0.2s;
+    position: absolute;
+    top: 0;
+    right: 0.5rem;
+    line-height: 1.1rem;
+    padding: 0.5rem 0;
+}
+.Dropdown.expanded .dropdownDisplay::after {
+    transform: rotate(-90deg);
+}
+.Dropdown .dropdownDisplay {
+    position: relative;
+    z-index: 2;
+}
+.Dropdown .dropdownList {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.2s;
+    position: absolute;
+    z-index: 1;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    border: 1px solid var(--element-secondary-border);
+    border-top: 0;
+    background: var(--element-main-bg);
+    border-radius: 0 0 0.5rem 0.5rem;
+    padding-bottom: 0.2rem;
+}
+.Dropdown.expanded .dropdownDisplay {
+    border-radius: 0.5rem 0.5rem 0 0;
+}
+.Dropdown.expanded .dropdownList {
+    overflow: auto;
+}
+.Dropdown .dropdownList li:first-of-type {
+    margin-top: 1rem;
+}
+.sortByTag .Dropdown {
+    width: 4rem;
+    margin: 0 0.3rem;
+}
+.sortByTag .Dropdown .dropdownDisplay {
+    padding: 0.3rem 0.6rem;
+}
+.sortByTag .Dropdown .dropdownDisplay::after {
+    padding: 0.3rem 0;
+}
+.sortByTag .Dropdown button {
+    padding: 0.3rem 0.6rem;
+}
 
 
 
@@ -1564,77 +1699,6 @@ ul.nolines li.tagsList {
     color: #fff;
 }
 
-/* CUSTOM DROPDOWN */
-.Dropdown {
-    position: relative;
-    display: inline-block;
-}
-.MiniMenu .Dropdown {
-    display: block;
-}
-.Dropdown, .Dropdown * {
-    user-select: none;
-}
-.Dropdown li {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-}
-.Dropdown .dropdownDisplay {
-    font-size: 0.9rem;
-    background: var(--element-main-bg);
-    border: 1px solid var(--element-secondary-border);
-    padding: 0.5rem 1rem;
-    border-radius: 999px;
-    cursor: pointer;
-    text-align: left;
-}
-.Dropdown .dropdownDisplay::after {
-    content: '\f0d9';
-    font-family: 'Font Awesome 5 Free';
-    font-weight: 900;
-    display: block;
-    transition: transform 0.2s;
-    float: right;
-}
-.Dropdown.expanded .dropdownDisplay::after {
-    transform: rotate(-90deg);
-}
-.Dropdown .dropdownDisplay {
-    position: relative;
-    z-index: 2;
-}
-.Dropdown .dropdownList {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.2s;
-    position: absolute;
-    z-index: 1;
-    top: 50%;
-    left: 0;
-    width: 100%;
-    border: 1px solid var(--element-secondary-border);
-    border-top: 0;
-    background: var(--element-main-bg);
-    border-radius: 0 0 0.5rem 0.5rem;
-}
-.Dropdown.expanded .dropdownList {
-    overflow: auto;
-}
-.Dropdown .dropdownList li:first-of-type {
-    margin-top: 1rem;
-}
-.sortByTag .Dropdown {
-    width: 4rem;
-    margin: 0 0.3rem;
-}
-.sortByTag .Dropdown .dropdownDisplay {
-    padding: 0.3rem 0.6rem;
-}
-.sortByTag .Dropdown button {
-    padding: 0.3rem 0.6rem;
-}
-
 /* CUSTOM CHECKBOX */
 .Checkbox {
     position: relative;
@@ -1677,6 +1741,7 @@ ul.nolines li.tagsList {
     height: 100%;
     border-radius: 999px;
     border: 1px solid var(--element-main-border);
+    background: var(--element-main-bg);
     transition: all 0.2s ease;
 }
 .checkboxElement span.svg::before {

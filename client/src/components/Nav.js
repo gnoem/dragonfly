@@ -117,12 +117,12 @@ export default function Nav({ user, exitMenu, refreshData, updateView }) {
             <nav>
                 <ul>
                     <li><button className="notes" onClick={() => switchView('all-notes')}>All Notes</button></li>
+                    <li><button className="starred" onClick={() => switchView('starred-notes')}>Starred</button></li>
                     <li>
                         <button className="collections" onClick={() => setShowingCollections(show => !show)}>Collections</button>
                         {subList(showingCollections, 'collections')}
                     </li>
                     <li><button className="tags" onClick={() => switchView({ type: 'tags', tags: [] })}>Tags</button></li>
-                    <li><button className="starred" onClick={() => switchView('starred-notes')}>Starred</button></li>
                     <li><button className="trash" onClick={() => switchView('trash')}>Trash</button></li>
                 </ul>
             </nav>

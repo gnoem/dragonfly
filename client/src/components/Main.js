@@ -72,7 +72,8 @@ function Editor(props) {
     );
 }
 
-function NoteOperations({ currentNote, updateCurrentNote, refreshData }) {
+function NoteOperations(props) {
+    const { currentNote, updateCurrentNote, refreshData } = props;
     const [collectionsTooltip, setCollectionsTooltip] = useState(false);
     const [modalObject, setModalObject] = useState(false);
     const modalContent = useRef(null);
@@ -109,7 +110,7 @@ function NoteOperations({ currentNote, updateCurrentNote, refreshData }) {
         refreshData();
     }
     const moveNoteToCollection = () => {
-        setCollectionsTooltip('how about this');
+
     }
     const confirmMoveToTrash = (id) => {
         const moveToTrash = async (e, id) => {
@@ -158,15 +159,16 @@ function NoteOperations({ currentNote, updateCurrentNote, refreshData }) {
                 </button>
             </div>
             <div className="OptionItem">
-                <button onClick={moveNoteToCollection} ref={collectionsRef}>
+                <button onClick={() => setCollectionsTooltip(true)} ref={collectionsRef}>
                     <i className="fas fa-book"></i>
                 </button>
                 <Tooltip
-                    content={collectionsTooltip}
+                    {...props}
+                    open={collectionsTooltip}
                     defaultContent="Move to collection"
                     parent={collectionsRef.current}
-                    updateTooltipContent={setCollectionsTooltip} />
-                <div className="tooltipArrow"></div>
+                    updateTooltipOpen={setCollectionsTooltip} />
+                <div className="tooltipArrow"></div> {/* used to be .tooltip::before but needs to be positioned relative to .optionItem, not .tooltip */}
             </div>
             <div className="OptionItem">
                 <button>
@@ -181,7 +183,7 @@ function NoteOperations({ currentNote, updateCurrentNote, refreshData }) {
                 </button>
             </div>
         </div>
-    )
+    );
 }
 
 function Notes({ user, view, updateView, notes, currentNote, updateCurrentNote, refreshData }) {
