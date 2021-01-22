@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Loading from './Loading';
 import Dropdown from './Dropdown';
+import { elementHasParent } from '../utils';
 
 export default function Tooltip(props) {
     const { open, defaultContent, parent, updateTooltipOpen } = props;
@@ -17,11 +18,12 @@ export default function Tooltip(props) {
             }
         });
         const closeTooltip = (e) => {
-            if (!parent.contains(e.target) && !tooltip.current.contains(e.target)) {
-                setTooltipContent(defaultContent);
-                updateTooltipOpen(false);
-                if (tooltip.current) tooltip.current.style.maxHeight = '2rem';
-            }
+            if (parent.contains(e.target)) return;
+            if (tooltip.current.contains(e.target)) return;
+            if (elementHasParent(e.target, '.Modal')) return;
+            setTooltipContent(defaultContent);
+            updateTooltipOpen(false);
+            if (tooltip.current) tooltip.current.style.maxHeight = '2rem';
         }
         window.addEventListener('click', closeTooltip);
         return () => {console.log('removing event listener'); window.removeEventListener('click', closeTooltip);}

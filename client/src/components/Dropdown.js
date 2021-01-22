@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
+import { elementHasParent } from '../utils';
 
-export default function Dropdown({ display, children }) {
+export default function Dropdown({ addClass, display, children }) {
     const [isOpen, setIsOpen] = useState(false);
     const [displayedOption, setDisplayedOption] = useState(display ?? 'Select one...');
     const dropdownList = useRef(null);
@@ -13,13 +14,19 @@ export default function Dropdown({ display, children }) {
         else dropdownList.current.style.maxHeight = '0px';
     }, [isOpen, children]);
     const closeDropdown = (e) => {
-        const selectedOption = e.target.closest('button:not(.notOption)')?.innerHTML;
+        if (elementHasParent(e.target, '.Modal')) return;
+        if (!elementHasParent(e.target, '.Dropdown')) return setIsOpen(false);
+        const selectedOption = e.target.closest('.dropdownList button:not(.notOption)')?.innerHTML;
         if (!selectedOption) return;
         setDisplayedOption(selectedOption);
         setIsOpen(false);
     }
+    useEffect(() => {
+        window.addEventListener('click', closeDropdown);
+        return () => window.removeEventListener('click', closeDropdown);
+    }, []);
     return (
-        <div className={`Dropdown${isOpen ? ' expanded' : ''}`} ref={wholeDropdown}>
+        <div className={`Dropdown${isOpen ? ' expanded' : ''}${addClass ? ' '+addClass : ''}`} ref={wholeDropdown}>
             <div className="dropdownDisplay" onClick={() => setIsOpen(open => !open)}>{displayedOption}</div>
             <div className="dropdownList" ref={dropdownList} onClick={closeDropdown}>
                 {children}

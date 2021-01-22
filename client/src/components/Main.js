@@ -167,7 +167,8 @@ function NoteOperations(props) {
                     open={collectionsTooltip}
                     defaultContent="Move to collection"
                     parent={collectionsRef.current}
-                    updateTooltipOpen={setCollectionsTooltip} />
+                    updateTooltipOpen={setCollectionsTooltip}
+                    updateModalObject={setModalObject} />
                 <div className="tooltipArrow"></div> {/* used to be .tooltip::before but needs to be positioned relative to .optionItem, not .tooltip */}
             </div>
             <div className="OptionItem">
@@ -601,7 +602,7 @@ function Notes({ user, view, updateView, notes, currentNote, updateCurrentNote, 
                 <div className="tagsGrid">{tagList()}</div>
                 <div className="sortTagOptions">
                     Find notes with
-                        <Dropdown display={sortTags}>
+                        <Dropdown addClass="noscroll" display={sortTags}>
                             <li><button onClick={() => updateSortTags('all')}>all</button></li>
                             <li><button onClick={() => updateSortTags('any')}>any</button></li>
                         </Dropdown>
