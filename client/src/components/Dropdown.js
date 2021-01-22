@@ -8,10 +8,13 @@ export default function Dropdown({ addClass, display, children }) {
     const wholeDropdown = useRef(null);
     useEffect(() => {
         if (!dropdownList.current) return;
-        if (isOpen) dropdownList.current.style.maxHeight = (dropdownList.current.scrollHeight < 150) // todo better
-            ? dropdownList.current.scrollHeight+1+'px' // to offset 1px border on element
-            : '150px';
-        else dropdownList.current.style.maxHeight = '0px';
+        const dropdownMaxHeight = (dropdown) => {
+            const distanceFromTop = dropdown.getBoundingClientRect().top;
+            const elementHeight = dropdown.scrollHeight;
+            if (distanceFromTop + elementHeight < window.innerHeight) return elementHeight + 1; // to offset 1px bottom border on dropdown element
+            return (window.innerHeight - distanceFromTop) - 24; // add a bit of padding
+        }
+        dropdownList.current.style.maxHeight = isOpen ? dropdownMaxHeight(dropdownList.current) + 'px' : '0px';
     }, [isOpen, children]);
     const closeDropdown = (e) => {
         if (elementHasParent(e.target, '.Modal')) return;
