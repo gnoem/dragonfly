@@ -5,6 +5,7 @@ import Sidebar from './Sidebar';
 import Main from './Main';
 import MyAccount from './MyAccount';
 import Login from './Login';
+import Modal from './Modal';
 
 export default function Dashboard(props) {
     const { id } = props.match.params;
@@ -15,6 +16,7 @@ export default function Dashboard(props) {
     const [notes, setNotes] = useState([]);
     const [view, setView] = useState('all-notes');
     const [isLoaded, setIsLoaded] = useState(false);
+    const [modalObject, setModalObject] = useState(false);
     const [triggerGetData, setTrigger] = useState(null);
     useEffect(() => {
         if (!user) return;
@@ -47,6 +49,13 @@ export default function Dashboard(props) {
         }
         getData();
     }, [id, triggerGetData]);
+    const gracefullyCloseModal = (modal) => {
+        let container = modal.classList.contains('Modal')
+            ? modal
+            : modal.closest('.Modal');
+        container.classList.add('goodbye');
+        setTimeout(() => setModalObject(false), 200);
+    }
     if (!isLoaded) return <Loading />;
     const appContent = () => {
         const allNotes = () => {
@@ -76,6 +85,8 @@ export default function Dashboard(props) {
                     notes={getNotes(view)}
                     updateCurrentNote={setCurrentNote}
                     isMobile={isMobile}
+                    updateModalObject={setModalObject}
+                    gracefullyCloseModal={gracefullyCloseModal}
                     refreshData={() => setTrigger(Date.now())} />
             );
         }
@@ -83,6 +94,8 @@ export default function Dashboard(props) {
             <MyAccount
                 user={user}
                 updateIsLoaded={setIsLoaded}
+                updateModalObject={setModalObject}
+                gracefullyCloseModal={gracefullyCloseModal}
                 refreshData={() => setTrigger(Date.now())} />
         );
         if (!view.type) return allNotes();
@@ -100,6 +113,8 @@ export default function Dashboard(props) {
                         notes={notesInCollection(view.name)}
                         updateCurrentNote={setCurrentNote}
                         isMobile={isMobile}
+                        updateModalObject={setModalObject}
+                        gracefullyCloseModal={gracefullyCloseModal}
                         refreshData={() => setTrigger(Date.now())} />
                 );
             }
@@ -145,6 +160,8 @@ export default function Dashboard(props) {
                         notes={notesWithTheseTags(view.tags)}
                         updateCurrentNote={setCurrentNote}
                         isMobile={isMobile}
+                        updateModalObject={setModalObject}
+                        gracefullyCloseModal={gracefullyCloseModal}
                         refreshData={() => setTrigger(Date.now())} />
                 );
             }
@@ -158,9 +175,22 @@ export default function Dashboard(props) {
     }
     return (
         <div className="Dashboard" data-mobile={isMobile}>
+            <Modal exitModal={gracefullyCloseModal} content={modalObject} />
             {isMobile
-                ? (!currentNote && <Menu user={user} view={view} updateView={setView} refreshData={() => setTrigger(Date.now())} />)
-                : <Sidebar user={user} view={view} updateView={setView} refreshData={() => setTrigger(Date.now())} />}
+                ? (!currentNote && <Menu
+                    user={user}
+                    view={view}
+                    updateView={setView}
+                    updateModalObject={setModalObject}
+                    gracefullyCloseModal={gracefullyCloseModal}
+                    refreshData={() => setTrigger(Date.now())} />)
+                : <Sidebar
+                    user={user}
+                    view={view}
+                    updateView={setView}
+                    updateModalObject={setModalObject}
+                    gracefullyCloseModal={gracefullyCloseModal}
+                    refreshData={() => setTrigger(Date.now())} />}
             {appContent()}
         </div>
     );

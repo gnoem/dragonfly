@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 import dayjs from 'dayjs'; // NotePreview
 import NoteEditor from './RichTextEditor';
 import Loading from './Loading';
-import Modal from './Modal';
 import ContextMenu from './ContextMenu';
 import { elementIsInArray } from '../utils';
 import Dropdown from './Dropdown';
@@ -54,11 +53,11 @@ export default function Main(props) {
 const isMobile = false;
 
 function Editor(props) {
-    const { currentNote, updateCurrentNote } = props;
+    const { currentNote } = props;
     const [unsavedChanges, setUnsavedChanges] = useState(false);
     const handleExit = () => {
         if (unsavedChanges) console.log('warning');
-        updateCurrentNote(false);
+        props.updateCurrentNote(false);
     }
     return (
         <div className="Editor">
@@ -73,18 +72,10 @@ function Editor(props) {
 }
 
 function NoteOperations(props) {
-    const { currentNote, updateCurrentNote, refreshData } = props;
+    const { currentNote } = props;
     const [collectionsTooltip, setCollectionsTooltip] = useState(false);
-    const [modalObject, setModalObject] = useState(false);
     const modalContent = useRef(null);
     const collectionsRef = useRef(null);
-    const gracefullyCloseModal = (modal) => {
-        let container = modal.classList.contains('Modal')
-            ? modal
-            : modal.closest('.Modal');
-        container.classList.add('goodbye');
-        setTimeout(() => setModalObject(false), 200);
-    }
     const starNote = async (e, id) => {
         // eslint-disable-next-line
         const updateUI = () => {
@@ -107,15 +98,12 @@ function NoteOperations(props) {
         const body = await response.json();
         if (!body) return console.log('no response from server');
         if (!body.success) return console.log('no success: true response from server');
-        refreshData();
-    }
-    const moveNoteToCollection = () => {
-
+        props.refreshData();
     }
     const confirmMoveToTrash = (id) => {
         const moveToTrash = async (e, id) => {
             e.preventDefault();
-            setModalObject(content({ loadingIcon: true }));
+            props.updateModalObject(content({ loadingIcon: true }));
             const response = await fetch('/trash/note', {
                 method: 'POST',
                 headers: {
@@ -127,10 +115,9 @@ function NoteOperations(props) {
             if (!body) return console.log('no response from server');
             if (!body.success) return console.log('no success: true response from server');
             // todo: find NotePreview with id and shrink it down, with 200ms delay on refreshData()
-            refreshData();
-            gracefullyCloseModal(modalContent.current);
-            console.log('moved to trash');
-            updateCurrentNote(false); // needs to come AFTER close modal
+            props.refreshData();
+            props.gracefullyCloseModal(modalContent.current);
+            props.updateCurrentNote(false); // needs to come AFTER close modal
         }
         let content = (breakpoints = {
             loadingIcon: false
@@ -142,16 +129,15 @@ function NoteOperations(props) {
                     ?   <Loading />
                     :   <form onSubmit={(e) => moveToTrash(e, id)} className="buttons">
                             <button type="submit">Got it</button>
-                            <button type="button" className="greyed" onClick={() => gracefullyCloseModal(modalContent.current)}>Cancel</button>
+                            <button type="button" className="greyed" onClick={() => props.gracefullyCloseModal(modalContent.current)}>Cancel</button>
                         </form>
                     }
             </div>
         );
-        setModalObject(content());
+        props.updateModalObject(content());
     }
     return (
         <div className="NoteOperations">
-            <Modal exitModal={gracefullyCloseModal} content={modalObject} />
             <div className="OptionItem">
                 <button className={currentNote.starred ? 'hasStar' : null} onClick={(e) => starNote(e, currentNote._id)}>
                     <i className="fas fa-star"></i>
@@ -168,7 +154,7 @@ function NoteOperations(props) {
                     defaultContent="Move to collection"
                     parent={collectionsRef.current}
                     updateTooltipOpen={setCollectionsTooltip}
-                    updateModalObject={setModalObject} />
+                    updateModalObject={props.updateModalObject} />
                 <div className="tooltipArrow"></div> {/* used to be .tooltip::before but needs to be positioned relative to .optionItem, not .tooltip */}
             </div>
             <div className="OptionItem">
@@ -187,24 +173,17 @@ function NoteOperations(props) {
     );
 }
 
-function Notes({ user, view, updateView, notes, currentNote, updateCurrentNote, refreshData }) {
+function Notes(props) {
+    const { user, view, notes, currentNote } = props;
     const [contextMenu, setContextMenu] = useState(false);
-    const [modalObject, setModalObject] = useState(false);
     const [sortTags, setSortTags] = useState('all');
-    const contextMenuRef = useRef();
+    const contextMenuRef = useRef(null);
     const modalContent = useRef(null);
-    const gracefullyCloseModal = (modal) => {
-        let container = modal.classList.contains('Modal')
-            ? modal
-            : modal.closest('.Modal');
-        container.classList.add('goodbye');
-        setTimeout(() => setModalObject(false), 200);
-    }
     const getNoteIndexFromId = (id) => {
         return notes.findIndex(note => id === note._id);
     }
     const createNewNote = () => {
-        updateCurrentNote(true);
+        props.updateCurrentNote(true);
     }
     const trashOptions = () => {
 
@@ -218,7 +197,7 @@ function Notes({ user, view, updateView, notes, currentNote, updateCurrentNote, 
             setContextMenu(false);
             const handleEdit = async (e) => {
                 e.preventDefault();
-                setModalObject(content({
+                props.updateModalObject(content({
                     updatedNameError: null,
                     loadingIcon: true
                 }));
@@ -237,16 +216,15 @@ function Notes({ user, view, updateView, notes, currentNote, updateCurrentNote, 
                 const body = await response.json();
                 if (!body) return console.log('no response from server');
                 if (!body.success) {
-                    setModalObject(content({
+                    props.updateModalObject(content({
                         updatedNameError: <span className="formError">{body.updatedNameError}</span>,
                         loadingIcon: false
                     }));
                     return;
                 }
-                refreshData();
-                gracefullyCloseModal(modalContent.current);
-                // change view
-                updateView({ type: 'collection', name: updatedName });
+                props.refreshData();
+                props.gracefullyCloseModal(modalContent.current);
+                props.updateView({ type: 'collection', name: updatedName });
             }
             const initialBreakpoints = {
                 updatedNameError: null,
@@ -262,25 +240,26 @@ function Notes({ user, view, updateView, notes, currentNote, updateCurrentNote, 
                                 type="text"
                                 name="updatedName"
                                 className={breakpoints.updatedNameError ? 'nope' : ''}
-                                onInput={() => setModalObject(content())} />
+                                onInput={() => props.updateModalObject(content())} />
                             {breakpoints.updatedNameError}
                             {breakpoints.loadingIcon
                                 ?   <div className="buttons"><Loading /></div>
                                 :   <div className="buttons">
                                         <button type="submit">Submit</button>
-                                        <button type="button" className="greyed" onClick={() => gracefullyCloseModal(modalContent.current)}>Cancel</button>
-                                    </div>}
+                                        <button type="button" className="greyed" onClick={() => props.gracefullyCloseModal(modalContent.current)}>Cancel</button>
+                                    </div>
+                                }
                         </form>
                     </div>
                 );
             }
-            setModalObject(content());
+            props.updateModalObject(content());
         }
         const deleteCollection = () => {
             setContextMenu(false);
             const handleDelete = async (e) => {
                 e.preventDefault();
-                setModalObject(content({ loadingIcon: true }));
+                props.updateModalObject(content({ loadingIcon: true }));
                 const response = await fetch('/delete/collection', {
                     method: 'POST',
                     headers: {
@@ -291,8 +270,8 @@ function Notes({ user, view, updateView, notes, currentNote, updateCurrentNote, 
                 const body = await response.json();
                 if (!body) return console.log('no response from server');
                 if (!body.success) return console.log('no success: true response from server');
-                refreshData();
-                gracefullyCloseModal(modalContent.current);
+                props.refreshData();
+                props.gracefullyCloseModal(modalContent.current);
                 // switch to the one above it; if none, switch to the one below it; else all-notes
                 let nextInLine = () => {
                     let thisCollectionIndex = user.collections.indexOf(collectionName);
@@ -305,7 +284,7 @@ function Notes({ user, view, updateView, notes, currentNote, updateCurrentNote, 
                         return { type: 'collection', name: nextCollection }
                     } else return 'all-notes';
                 }
-                updateView(nextInLine); // */
+                props.updateView(nextInLine); // */
             }
             let content = (breakpoints = {
                 loadingIcon: false
@@ -317,15 +296,15 @@ function Notes({ user, view, updateView, notes, currentNote, updateCurrentNote, 
                         ?   <Loading />
                         :   <form onSubmit={handleDelete} className="buttons">
                                 <button type="submit">Yes, I'm sure</button>
-                                <button type="button" className="greyed" onClick={() => gracefullyCloseModal(modalContent.current)}>Take me back</button>
+                                <button type="button" className="greyed" onClick={() => props.gracefullyCloseModal(modalContent.current)}>Take me back</button>
                             </form>
                         }
                 </div>
             );
             // NOTE: .buttons div is a form with onSubmit={handleDelete} because for some odd reason, if I try to call handleDelete
             // from a button onClick and then setModalObject to anything, modalObject immediately gets set to false and then
-            // modalContent.current gets set to null, causing an error message at gracefullyCloseModal(modalContent.current)
-            setModalObject(content());
+            // modalContent.current gets set to null, causing an error message at props.gracefullyCloseModal(modalContent.current)
+            props.updateModalObject(content());
         }
         let content = (
             <ul style={{ top: `${top}px`, right: `${right}px` }} ref={contextMenuRef}>
@@ -425,7 +404,7 @@ function Notes({ user, view, updateView, notes, currentNote, updateCurrentNote, 
                 current={currentNote?._id}
                 temp={false}
                 {...notes[i]}
-                updateCurrentNoteId={(id) => updateCurrentNote(notes[getNoteIndexFromId(id)])}
+                updateCurrentNoteId={(id) => props.updateCurrentNote(notes[getNoteIndexFromId(id)])}
             />)
         }
         return (
@@ -439,7 +418,7 @@ function Notes({ user, view, updateView, notes, currentNote, updateCurrentNote, 
         e.preventDefault();
         const handleSubmit = async (e) => {
             e.preventDefault();
-            setModalObject(content({
+            props.updateModalObject(content({
                 tagNameError: null,
                 loadingIcon: true   
             }));
@@ -454,14 +433,14 @@ function Notes({ user, view, updateView, notes, currentNote, updateCurrentNote, 
             const body = await response.json();
             if (!body) return;
             if (!body.success) {
-                setModalObject(content({
+                props.updateModalObject(content({
                     tagNameError: <span className="formError">{body.tagNameError}</span>,
                     loadingIcon: false
                 }));
                 return;
             }
-            gracefullyCloseModal(modalContent.current);
-            refreshData();
+            props.gracefullyCloseModal(modalContent.current);
+            props.refreshData();
         }
         let content = (breakpoints = {
             tagNameError: null,
@@ -482,13 +461,13 @@ function Notes({ user, view, updateView, notes, currentNote, updateCurrentNote, 
                             ?   <div className="buttons"><Loading /></div>
                             :   <div className="buttons">
                                     <button type="submit">Submit</button>
-                                    <button type="button" className="greyed" onClick={() => gracefullyCloseModal(modalContent.current)}>Cancel</button>
+                                    <button type="button" className="greyed" onClick={() => props.gracefullyCloseModal(modalContent.current)}>Cancel</button>
                                 </div>}
                     </form>
                 </div>
             )
         }
-        setModalObject(content());
+        props.updateModalObject(content());
     }
     const sortByTag = () => {
         let noTagsSelected = view.tags.length === 0;
@@ -508,7 +487,7 @@ function Notes({ user, view, updateView, notes, currentNote, updateCurrentNote, 
                 const editTag = () => {
                     const handleEdit = async (e) => {
                         e.preventDefault();
-                        setModalObject(content({
+                        props.updateModalObject(content({
                             updatedNameError: null,
                             loadingIcon: true
                         }));
@@ -527,15 +506,15 @@ function Notes({ user, view, updateView, notes, currentNote, updateCurrentNote, 
                         const body = await response.json();
                         if (!body) return console.log('no response from server');
                         if (!body.success) {
-                            setModalObject(content({
+                            props.updateModalObject(content({
                                 updatedNameError: <span className="formError">{body.updatedNameError}</span>,
                                 loadingIcon: false
                             }));
                             return;
                         }
-                        refreshData();
-                        gracefullyCloseModal(modalContent.current);
-                        updateView({ type: 'tags', tags: [updatedName] });
+                        props.refreshData();
+                        props.gracefullyCloseModal(modalContent.current);
+                        props.updateView({ type: 'tags', tags: [updatedName] });
                     }
                     const initialBreakpoints = {
                         updatedNameError: null,
@@ -552,23 +531,23 @@ function Notes({ user, view, updateView, notes, currentNote, updateCurrentNote, 
                                         name="updatedName"
                                         defaultValue={tagName}
                                         className={breakpoints.updatedNameError ? 'nope' : ''}
-                                        onInput={() => setModalObject(content())} />
+                                        onInput={() => props.updateModalObject(content())} />
                                     {breakpoints.updatedNameError}
                                     {breakpoints.loadingIcon
                                         ?   <div className="buttons"><Loading /></div>
                                         :   <div className="buttons">
                                                 <button type="submit">Submit</button>
-                                                <button type="button" className="greyed" onClick={() => gracefullyCloseModal(modalContent.current)}>Cancel</button>
+                                                <button type="button" className="greyed" onClick={() => props.gracefullyCloseModal(modalContent.current)}>Cancel</button>
                                             </div>}
                                 </form>
                             </div>
                         );
                     }
-                    setModalObject(content());
+                    props.updateModalObject(content());
                 }
                 const confirmDeleteTag = () => {
                     const deleteTag = async () => {
-                        setModalObject(content({ loadingIcon: true }));
+                        props.updateModalObject(content({ loadingIcon: true }));
                         const response = await fetch('/delete/tag', {
                             method: 'POST',
                             headers: {
@@ -579,8 +558,8 @@ function Notes({ user, view, updateView, notes, currentNote, updateCurrentNote, 
                         const body = await response.json();
                         if (!body) return console.log('no response from server');
                         if (!body.success) return console.log('no success: true response from server');
-                        refreshData();
-                        gracefullyCloseModal(modalContent.current);
+                        props.refreshData();
+                        props.gracefullyCloseModal(modalContent.current);
                     }
                     let content = (breakpoints = {
                         loadingIcon: false
@@ -592,12 +571,12 @@ function Notes({ user, view, updateView, notes, currentNote, updateCurrentNote, 
                                 ?   <Loading />
                                 :   <form onSubmit={deleteTag} className="buttons">
                                         <button type="submit">Yes, I'm sure</button>
-                                        <button type="button" className="greyed" onClick={() => gracefullyCloseModal(modalContent.current)}>Cancel</button>
+                                        <button type="button" className="greyed" onClick={() => props.gracefullyCloseModal(modalContent.current)}>Cancel</button>
                                     </form>
                                 }
                         </div>
                     );
-                    setModalObject(content());
+                    props.updateModalObject(content());
                 }
                 let content = (
                     <ul onClick={() => setContextMenu(false)} className="smol" style={{ top: `${top}px`, right: `${right}px` }} ref={contextMenuRef}>
@@ -618,7 +597,7 @@ function Notes({ user, view, updateView, notes, currentNote, updateCurrentNote, 
                     currentViewTags.splice(index, 1);
                     return currentViewTags;
                 }
-                updateView(prevView => ({
+                props.updateView(prevView => ({
                     type: 'tags',
                     tags: updatedArray(prevView),
                     sortTags
@@ -644,7 +623,7 @@ function Notes({ user, view, updateView, notes, currentNote, updateCurrentNote, 
         }
         const updateSortTags = (value) => {
             setSortTags(value);
-            updateView(prevView => ({ ...prevView, sortTags: value }));
+            props.updateView(prevView => ({ ...prevView, sortTags: value }));
         }
         return (
             <div className="sortByTag">
@@ -665,7 +644,6 @@ function Notes({ user, view, updateView, notes, currentNote, updateCurrentNote, 
     return (
         <div className="Notes">
             {contextMenu && <ContextMenu menu={contextMenu} updateMiniMenu={setContextMenu} />}
-            <Modal exitModal={gracefullyCloseModal} content={modalObject} />
             {generateHeader()}
             {(view.type === 'tags') && sortByTag()}
             {generateNotesList()}
@@ -674,7 +652,7 @@ function Notes({ user, view, updateView, notes, currentNote, updateCurrentNote, 
 }
 
 function NotePreview(props) {
-    let { _id, title, content, starred, createdAt, lastModified, updateCurrentNoteId } = props;
+    let { _id, title, content, starred, createdAt, lastModified } = props;
     const noteExcerpt = (content) => {
         const getExcerpt = (content) => {
             const num = 115;
@@ -709,7 +687,7 @@ function NotePreview(props) {
         );
     }
     const handleClick = () => {
-        updateCurrentNoteId(_id);
+        props.updateCurrentNoteId(_id);
     }
     return (
         <div className="NoteExcerpt" onClick={handleClick}>

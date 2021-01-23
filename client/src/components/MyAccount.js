@@ -1,28 +1,26 @@
 import { useState, useRef } from 'react';
-import Modal from './Modal';
 import Loading from './Loading';
 
 export default function MyAccount(props) {
+    const { user } = props;
     return (
         <div className="Panel">
-            {props.user.username
-                ? <Account user={props.user} refreshData={props.refreshData} updateIsLoaded={props.updateIsLoaded} />
-                : <CreateAccount user={props.user} refreshData={props.refreshData} updateIsLoaded={props.updateIsLoaded} />
+            {user.username
+                ? <Account {...props} />
+                : <CreateAccount {...props} />
             }
         </div>
-    )
+    );
 }
 
 function Account(props) {
     const { user } = props;
     const [formData, updateFormData] = useState({ user });
     const [newPassword, updateNewPassword] = useState({ password: null, confirmPassword: null })
-    const [modalObject, setModalObject] = useState(false);
     const changePasswordForm = useRef(null);
     const modalContent = useRef(null);
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log(formData);
         const response = await fetch('/edit/account', {
             method: 'POST',
             headers: {
@@ -41,12 +39,12 @@ function Account(props) {
             const buttonContinue = () => {
                 if (formData.username === user.username) {
                     props.updateIsLoaded(false);
-                    gracefullyCloseModal(modalContent.current);
+                    props.gracefullyCloseModal(modalContent.current);
                     props.refreshData();
                     return;
                 }
                 props.updateIsLoaded(false);
-                gracefullyCloseModal(modalContent.current);
+                props.gracefullyCloseModal(modalContent.current);
                 setTimeout(window.location.href = '/d/'+formData.username, 300);
             }
             const content = (
@@ -58,7 +56,7 @@ function Account(props) {
                     </div>
                 </div>
             )
-            setModalObject(content);
+            props.updateModalObject(content);
         }
         successModal(); 
     }
@@ -88,12 +86,12 @@ function Account(props) {
                     <h2>Success!</h2>
                     <p>Your password has been changed.</p>
                     <div className="buttons">
-                        <button onClick={() => gracefullyCloseModal(modalContent.current)}>Continue</button>
+                        <button onClick={() => props.gracefullyCloseModal(modalContent.current)}>Continue</button>
                     </div>
                 </div>
             )
             changePasswordForm.current.reset();
-            setModalObject(content);
+            props.updateModalObject(content);
         }
         successModal(); 
     }
@@ -103,7 +101,7 @@ function Account(props) {
     const confirmDeleteAccount = () => {
         const deleteAccount = async (e) => {
             e.preventDefault();
-            setModalObject(content({ loadingIcon: true }));
+            props.updateModalObject(content({ loadingIcon: true }));
             const response = await ('/delete/account', {
                 method: 'POST',
                 headers: {
@@ -126,23 +124,15 @@ function Account(props) {
                     ?   <Loading />
                     :   <form onSubmit={deleteAccount} className="buttons">
                             <button type="submit">Yes, I'm sure</button>
-                            <button type="button" className="greyed" onClick={() => gracefullyCloseModal(modalContent.current)}>Cancel</button>
+                            <button type="button" className="greyed" onClick={() => props.gracefullyCloseModal(modalContent.current)}>Cancel</button>
                         </form>
                     }
             </div>
         );
-        setModalObject(content());
-    }
-    const gracefullyCloseModal = (modal) => {
-        let container = modal.classList.contains('Modal')
-            ? modal
-            : modal.closest('.Modal');
-        container.classList.add('goodbye');
-        setTimeout(() => setModalObject(false), 200);
+        props.updateModalObject(content());
     }
     return (
         <div>
-            <Modal exitModal={gracefullyCloseModal} content={modalObject} />
             <h1>My Account</h1>
             <form onSubmit={handleSubmit} autoComplete="off">
                 <div className="Account">
@@ -191,12 +181,11 @@ function Account(props) {
                 <button className="caution" onClick={confirmDeleteAccount}>Delete my account</button>
             </div>
         </div>
-    )
+    );
 }
 
 function CreateAccount(props) {
     const [formData, updateFormData] = useState({ _id: props.user._id });
-    const [modalObject, setModalObject] = useState(false);
     const modalContent = useRef(null);
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -217,7 +206,7 @@ function CreateAccount(props) {
         const successModal = () => {
             const buttonContinue = () => {
                 props.updateIsLoaded(false);
-                gracefullyCloseModal(modalContent.current);
+                props.gracefullyCloseModal(modalContent.current);
                 props.refreshData();
                 window.history.pushState('', '', `/d/${formData.username}`);
             }
@@ -230,23 +219,15 @@ function CreateAccount(props) {
                     </div>
                 </div>
             )
-            setModalObject(content);
+            props.updateModalObject(content);
         }
         successModal(); 
     }
     const handleChange = (field, value) => {
         updateFormData({ ...formData, [field]: value });
     }
-    const gracefullyCloseModal = (modal) => {
-        let container = modal.classList.contains('Modal')
-            ? modal
-            : modal.closest('.Modal');
-        container.classList.add('goodbye');
-        setTimeout(() => setModalObject(false), 200);
-    }
     return (
         <div>
-            <Modal exitModal={gracefullyCloseModal} content={modalObject} />
             <h1>Create an Account</h1>
             <p>It looks like you haven't registered an account yet. To customize your Dragonfly dashboard URL, password-protect your notes, and personalize your dashboard, create a free account below. Click <a href="/">here</a> to learn more.</p>
             <form onSubmit={handleSubmit} autoComplete="off">
@@ -282,5 +263,5 @@ function CreateAccount(props) {
                 <input type="submit" />
             </form>
         </div>
-    )
+    );
 }
