@@ -21,7 +21,7 @@ export default function Dropdown({ addClass, display, children }) {
     const closeDropdown = (e) => {
         if (elementHasParent(e.target, '.Modal')) return;
         if (!elementHasParent(e.target, '.Dropdown')) return setIsOpen(false);
-        const selectedOption = e.target.closest('.dropdownList button:not(.notOption)')?.innerHTML;
+        const selectedOption = e.target.closest('.dropdownList button:not(.keepOpen)')?.innerHTML;
         if (!selectedOption) return;
         setDisplayedOption(selectedOption);
         setIsOpen(false);

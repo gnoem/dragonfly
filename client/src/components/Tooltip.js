@@ -4,7 +4,7 @@ import Dropdown from './Dropdown';
 import { elementHasParent } from '../utils';
 
 export default function Tooltip(props) {
-    const { open, defaultContent, parent, updateTooltipOpen } = props;
+    const { user, currentNote, open, defaultContent, parent } = props;
     const [tooltipContent, setTooltipContent] = useState(open || defaultContent);
     const tooltip = useRef(null);
     useEffect(() => {
@@ -19,15 +19,16 @@ export default function Tooltip(props) {
         });
         const closeTooltip = (e) => {
             if (parent.contains(e.target)) return;
+            if (!tooltip.current) return;
             if (tooltip.current.contains(e.target)) return;
             if (elementHasParent(e.target, '.Modal')) return;
             setTooltipContent(defaultContent);
-            updateTooltipOpen(false);
+            props.updateTooltipOpen(false);
             if (tooltip.current) tooltip.current.style.maxHeight = '2rem';
         }
         window.addEventListener('click', closeTooltip);
-        return () => {console.log('removing event listener'); window.removeEventListener('click', closeTooltip);}
-    }, [open]);
+        return () => window.removeEventListener('click', closeTooltip);
+    }, [open, user, currentNote]);
     useEffect(() => {
         if (tooltipContent === defaultContent) return;
         const expandTooltip = (tooltip) => {
@@ -45,14 +46,13 @@ export default function Tooltip(props) {
 }
 
 export function MoveNoteToCollection(props) {
-    const { user, currentNote, updateModalObject, gracefullyCloseModal, refreshData } = props;
+    const { user, currentNote } = props;
     const modalContent = useRef(null);
-    const miniMenuRef = useRef(null);
     const moveToCollection = async (e, collectionName) => {
         let clickedButton = e.target;
         const handleMove = async (collectionName) => {
             let removingFromCollection = modalContent.current;
-            if (removingFromCollection) updateModalObject(content({ loadingIcon: true }));
+            if (removingFromCollection) props.updateModalObject(content({ loadingIcon: true }));
             const response = await fetch('/categorize/note', {
                 method: 'POST',
                 headers: {
@@ -63,16 +63,12 @@ export function MoveNoteToCollection(props) {
             const body = await response.json();
             if (!body) return console.log('no response from server');
             if (!body.success) return console.log('no success: true response from server');
-            refreshData();
+            props.refreshData();
             if (removingFromCollection) {
                 clickedButton.classList.remove('hasCollection');
-                gracefullyCloseModal(modalContent.current);
+                props.gracefullyCloseModal(modalContent.current);
             } else {
-                // immediately update button with check mark and remove check mark on old collection
-                if (miniMenuRef.current) {
-                    const prevCollection = miniMenuRef.current.querySelector('.hasCollection');
-                    if (prevCollection) prevCollection.classList.remove('hasCollection');   
-                }
+                clickedButton.closest('.Dropdown').querySelector('.hasCollection').classList.remove('hasCollection');
                 clickedButton.classList.add('hasCollection');
             }
         }
@@ -87,23 +83,23 @@ export function MoveNoteToCollection(props) {
                     {breakpoints.loadingIcon
                         ?   <Loading />
                         :   <div className="buttons">
-                                <button onClick={() => handleMove(false)}>Yes, I'm sure</button>
-                                <button className="greyed" onClick={() => gracefullyCloseModal(modalContent.current)}>Take me back</button>
+                                <button onClick={() => handleMove('')}>Yes, I'm sure</button>
+                                <button className="greyed" onClick={() => props.gracefullyCloseModal(modalContent.current)}>Take me back</button>
                             </div>
                         }
                 </div>
             );
         }
-        updateModalObject(content());
+        props.updateModalObject(content());
     }
     const createCollection = () => {
-        const handleSubmit = async (event) => {
-            event.preventDefault();
-            updateModalObject(content({
+        const handleSubmit = async (e) => {
+            e.preventDefault();
+            props.updateModalObject(content({
                 collectionNameError: null,
                 loadingIcon: true   
             }));
-            const collectionName = event.target[0].value;
+            const collectionName = e.target[0].value;
             const response = await fetch('/create/collection', {
                 method: 'POST',
                 headers: {
@@ -114,14 +110,14 @@ export function MoveNoteToCollection(props) {
             const body = await response.json();
             if (!body) return console.log('no response from server');
             if (!body.success) {
-                updateModalObject(content({
+                props.updateModalObject(content({
                     collectionNameError: <span className="formError">{body.collectionNameError}</span>,
                     loadingIcon: false
                 }));
                 return;
             }
-            gracefullyCloseModal(modalContent.current);
-            refreshData();
+            props.gracefullyCloseModal(modalContent.current);
+            props.refreshData();
         }
         let content = (breakpoints = {
             collectionNameError: null,
@@ -136,38 +132,37 @@ export function MoveNoteToCollection(props) {
                             type="text"
                             name="collectionName"
                             className={breakpoints.collectionNameError ? 'nope' : ''}
-                            onInput={() => updateModalObject(content())} />
+                            onInput={() => props.updateModalObject(content())} />
                         {breakpoints.collectionNameError}
                         {breakpoints.loadingIcon
                             ?   <div className="buttons"><Loading /></div>
                             :   <div className="buttons">
                                     <button type="submit">Submit</button>
-                                    <button type="button" className="greyed" onClick={() => gracefullyCloseModal(modalContent.current)}>Cancel</button>
-                                </div>}
+                                    <button type="button" className="greyed" onClick={() => props.gracefullyCloseModal(modalContent.current)}>Cancel</button>
+                                </div>
+                            }
                     </form>
                 </div>
             );
         }
-        updateModalObject(content());
+        props.updateModalObject(content());
     }
     const collectionsList = (collections) => {
         const createNewCollectionButton = (
             <li key={`createNewCollection-MiniMenu`}>
-                <button onClick={() => createCollection()} className="notOption">
+                <button onClick={() => createCollection()} className="keepOpen">
                     <i className="fas fa-plus-circle" style={{ marginRight: '0.2rem' }}></i> Create new
                 </button>
             </li>
         );
         if (!collections || !collections.length) return <Dropdown>{createNewCollectionButton}</Dropdown>;
         let array = [];
-        let selected;
         for (let i = 0; i < collections.length; i++) {
             let noteIsInCollection = currentNote.collection === collections[i];
-            if (noteIsInCollection) selected = collections[i];
             array.push(
                 <li key={`collectionsMiniMenu-${collections[i]}`}>
                     <button
-                        className={`add${noteIsInCollection ? ' hasCollection' : ''}`}
+                        className={`add${noteIsInCollection ? ' hasCollection keepOpen' : ''}`}
                         onClick={(e) => moveToCollection(e, collections[i])}>
                         {collections[i]}
                     </button>
@@ -175,16 +170,14 @@ export function MoveNoteToCollection(props) {
             );
         }
         array.push(createNewCollectionButton);
-        return (
-            <Dropdown display={selected}>
-                {array}
-            </Dropdown>
-        )
+        return array;
     }
     return (
         <ul>
             <li><strong>Move to collection</strong></li>
-            {collectionsList(user.collections)}
+            <Dropdown display={currentNote.collection !== '' ? currentNote.collection : 'Select one...'}>
+                {collectionsList(user.collections)}
+            </Dropdown>
         </ul>
-    )
+    );
 }
