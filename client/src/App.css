@@ -735,6 +735,46 @@ button.createNew:hover .tooltip {
 }
 
 
+/* TAG BUTTONS */
+.tag {
+    border: 1px solid var(--element-secondary-border);
+    display: inline-block;
+    padding: 0 0.7rem;
+    font-size: 0.7rem;
+    color: #333;
+    line-height: 1.2rem;
+    text-align: center;
+    text-transform: uppercase;
+    width: auto;
+    margin: 0.2rem 0.5rem;
+    border-radius: 999px;
+    border-top-left-radius: 0;
+    transition: 0.2s;
+}
+.tag:hover {
+    color: inherit;
+}
+.tag.hasTag, .tag.hasTag:hover {
+    background: var(--med-theme-color);
+    border-color: var(--med-theme-color);
+    color: #fff;
+}
+.tag::before {
+    content: '\f067';
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    line-height: inherit;
+    margin-right: 0.3rem;
+    font-size: 0.8em;
+    color: inherit;
+    display: inline-block;
+    float: none;
+    transition: transform 0.2s;
+}
+.tag.hasTag::before {
+    transform: rotate(45deg);
+}
+
 
 
 /* CUSTOM DROPDOWN */
@@ -777,7 +817,7 @@ button.createNew:hover .tooltip {
     transition: transform 0.2s;
     position: absolute;
     top: 0;
-    right: 0.5rem;
+    right: 0.6rem;
     line-height: 1.1rem;
     padding: 0.5rem 0;
 }
@@ -1641,50 +1681,7 @@ input.nope + .formError {
     color: inherit;
     margin-right: 0.3rem;
 }
-.tag, .MiniMenu .tag {
-    border: 1px solid var(--element-secondary-border);
-    display: inline-block;
-    padding: 0 0.7rem;
-    font-size: 0.7rem;
-    color: #333;
-    line-height: 1.2rem;
-    text-align: center;
-    text-transform: uppercase;
-    width: auto;
-    margin: 0.2rem 0.5rem;
-    border-radius: 999px;
-    border-top-left-radius: 0;
-    transition: 0.2s;
-}
-.List .tag {
-    background: var(--element-main-bg);
-}
-.MiniMenu .tag {
-    background: var(--element-dimmed-bg);
-}
-.tag:hover, .MiniMenu .tag:hover {
-    color: inherit;
-}
-.tag.hasTag, .MiniMenu .tag.hasTag:hover {
-    background: var(--med-theme-color);
-    border-color: var(--med-theme-color);
-    color: #fff;
-}
-.tag::before, .MiniMenu .tag::before {
-    content: '\f067';
-    font-family: 'Font Awesome 5 Free';
-    font-weight: 900;
-    line-height: inherit;
-    margin-right: 0.3rem;
-    font-size: 0.8em;
-    color: inherit;
-    display: inline-block;
-    float: none;
-    transition: transform 0.2s;
-}
-.tag.hasTag::before {
-    transform: rotate(45deg);
-}
+
 ul.nolines {
     padding: 0 0.3rem 0.6rem;
 }

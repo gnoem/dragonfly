@@ -154,7 +154,7 @@ export function MoveNoteToCollection(props) {
         const createNewCollectionButton = (
             <li key={`createNewCollection-MiniMenu`}>
                 <button onClick={() => createCollection()} className="notOption">
-                    <i className="fas fa-plus-circle"></i> Create new
+                    <i className="fas fa-plus-circle" style={{ marginRight: '0.2rem' }}></i> Create new
                 </button>
             </li>
         );

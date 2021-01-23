@@ -3,6 +3,7 @@ import { elementHasParent } from '../utils';
 
 export default function Dropdown({ addClass, display, children }) {
     const [isOpen, setIsOpen] = useState(false);
+    const [hasScrollbar, setHasScrollbar] = useState(false);
     const [displayedOption, setDisplayedOption] = useState(display ?? 'Select one...');
     const dropdownList = useRef(null);
     const wholeDropdown = useRef(null);
@@ -12,6 +13,7 @@ export default function Dropdown({ addClass, display, children }) {
             const distanceFromTop = dropdown.getBoundingClientRect().top;
             const elementHeight = dropdown.scrollHeight;
             if (distanceFromTop + elementHeight < window.innerHeight) return elementHeight + 1; // to offset 1px bottom border on dropdown element
+            setHasScrollbar(true);
             return (window.innerHeight - distanceFromTop) - 24; // add a bit of padding
         }
         dropdownList.current.style.maxHeight = isOpen ? dropdownMaxHeight(dropdownList.current) + 'px' : '0px';
@@ -29,7 +31,7 @@ export default function Dropdown({ addClass, display, children }) {
         return () => window.removeEventListener('click', closeDropdown);
     }, []);
     return (
-        <div className={`Dropdown${isOpen ? ' expanded' : ''}${addClass ? ' '+addClass : ''}`} ref={wholeDropdown}>
+        <div className={`Dropdown${isOpen ? ' expanded' : ''}${addClass ? ' '+addClass : ''}${hasScrollbar ? '' : ' noscroll'}`} ref={wholeDropdown}>
             <div className="dropdownDisplay" onClick={() => setIsOpen(open => !open)}>{displayedOption}</div>
             <div className="dropdownList" ref={dropdownList} onClick={closeDropdown}>
                 {children}

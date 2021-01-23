@@ -435,11 +435,62 @@ function Notes({ user, view, updateView, notes, currentNote, updateCurrentNote, 
             </div>
         );
     }
-    const createTag = () => {
-
+    const createTag = (e) => {
+        e.preventDefault();
+        const handleSubmit = async (e) => {
+            e.preventDefault();
+            setModalObject(content({
+                tagNameError: null,
+                loadingIcon: true   
+            }));
+            const tagName = e.target[0].value;
+            const response = await fetch('/create/tag', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ _id: user._id, tagName })
+            });
+            const body = await response.json();
+            if (!body) return;
+            if (!body.success) {
+                setModalObject(content({
+                    tagNameError: <span className="formError">{body.tagNameError}</span>,
+                    loadingIcon: false
+                }));
+                return;
+            }
+            gracefullyCloseModal(modalContent.current);
+            refreshData();
+        }
+        let content = (breakpoints = {
+            tagNameError: null,
+            loadingIcon: false
+        }) => {
+            return (
+                <div className="modalContent" ref={modalContent}>
+                    <h2>Create a new tag</h2>
+                    <form onSubmit={handleSubmit} autoComplete="off">
+                        <label htmlFor="collectionName">Enter a name for your tag:</label>
+                        <input
+                            type="text"
+                            name="tagName"
+                            className={breakpoints.tagNameError ? 'nope' : ''}
+                            onInput={(e) => e.target.className = ''} />
+                        {breakpoints.tagNameError}
+                        {breakpoints.loadingIcon
+                            ?   <div className="buttons"><Loading /></div>
+                            :   <div className="buttons">
+                                    <button type="submit">Submit</button>
+                                    <button type="button" className="greyed" onClick={() => gracefullyCloseModal(modalContent.current)}>Cancel</button>
+                                </div>}
+                    </form>
+                </div>
+            )
+        }
+        setModalObject(content());
     }
     const sortByTag = () => {
-        console.log('sorting by tag');
         let noTagsSelected = view.tags.length === 0;
         const tagList = () => {
             const newTagButton = (
@@ -602,7 +653,7 @@ function Notes({ user, view, updateView, notes, currentNote, updateCurrentNote, 
                 <div className="tagsGrid">{tagList()}</div>
                 <div className="sortTagOptions">
                     Find notes with
-                        <Dropdown addClass="noscroll" display={sortTags}>
+                        <Dropdown display={sortTags}>
                             <li><button onClick={() => updateSortTags('all')}>all</button></li>
                             <li><button onClick={() => updateSortTags('any')}>any</button></li>
                         </Dropdown>
@@ -638,10 +689,6 @@ function NotePreview(props) {
         if (!title) return `Note from ${dayjs(createdAt).format('MM/DD/YYYY')}`;
         return title;
     }
-    const isCurrent = (id) => {
-        if (id === props.current) return ' current';
-        else return '';
-    }
     const isStarred = () => {
         if (starred) return <div className="hasStar"><i className="fas fa-star"></i></div>;
     }
@@ -665,7 +712,7 @@ function NotePreview(props) {
         updateCurrentNoteId(_id);
     }
     return (
-        <div className={`NoteExcerpt${isCurrent(_id)}`} onClick={handleClick}>
+        <div className="NoteExcerpt" onClick={handleClick}>
             <div className="title"><h2>{noteTitle()}</h2>{isStarred()}</div>
             {noteExcerpt(content)}
             {dateInfo()}
