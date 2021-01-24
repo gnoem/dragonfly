@@ -8,8 +8,9 @@ import Dropdown from './Dropdown';
 import Tooltip from './Tooltip';
 
 export default function Main(props) {
-    const { view, notes } = props;
+    const { user, view, notes } = props;
     const [currentNote, setCurrentNote] = useState(false);
+    const modalContent = useRef(null);
     const usePrevious = (value) => {
         const ref = useRef();
         useEffect(() => {
@@ -34,15 +35,72 @@ export default function Main(props) {
     // figure out if currentNote + prevNotesCount need to be listed as dependencies
     // eslint-disable-next-line
     }, [notes]);
+    const createTag = (e) => {
+        e.preventDefault();
+        const handleSubmit = async (e) => {
+            e.preventDefault();
+            props.updateModalObject(content({
+                tagNameError: null,
+                loadingIcon: true   
+            }));
+            const tagName = e.target[0].value;
+            const response = await fetch('/create/tag', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ _id: user._id, tagName })
+            });
+            const body = await response.json();
+            if (!body) return;
+            if (!body.success) {
+                props.updateModalObject(content({
+                    tagNameError: <span className="formError">{body.tagNameError}</span>,
+                    loadingIcon: false
+                }));
+                return;
+            }
+            props.gracefullyCloseModal(modalContent.current);
+            props.refreshData();
+        }
+        let content = (breakpoints = {
+            tagNameError: null,
+            loadingIcon: false
+        }) => {
+            return (
+                <div className="modalContent" ref={modalContent}>
+                    <h2>Create a new tag</h2>
+                    <form onSubmit={handleSubmit} autoComplete="off">
+                        <label htmlFor="collectionName">Enter a name for your tag:</label>
+                        <input
+                            type="text"
+                            name="tagName"
+                            className={breakpoints.tagNameError ? 'nope' : ''}
+                            onInput={(e) => e.target.className = ''} />
+                        {breakpoints.tagNameError}
+                        {breakpoints.loadingIcon
+                            ?   <div className="buttons"><Loading /></div>
+                            :   <div className="buttons">
+                                    <button type="submit">Submit</button>
+                                    <button type="button" className="greyed" onClick={() => props.gracefullyCloseModal(modalContent.current)}>Cancel</button>
+                                </div>}
+                    </form>
+                </div>
+            )
+        }
+        props.updateModalObject(content());
+    }
     return (
         <div className="Main" data-editor={currentNote ? true : false}>
             <Notes
                 {...props}
+                createTag={createTag}
                 currentNote={currentNote}
                 updateCurrentNote={setCurrentNote} />
             {currentNote
                 && <Editor
                     {...props}
+                    createTag={createTag}
                     currentNote={currentNote}
                     updateCurrentNote={setCurrentNote} />
                 }
@@ -74,8 +132,10 @@ function Editor(props) {
 function NoteOperations(props) {
     const { currentNote } = props;
     const [collectionsTooltip, setCollectionsTooltip] = useState(false);
+    const [tagsTooltip, setTagsTooltip] = useState(false);
     const modalContent = useRef(null);
     const collectionsRef = useRef(null);
+    const tagsRef = useRef(null);
     const starNote = async (e, id) => {
         // eslint-disable-next-line
         const updateUI = () => {
@@ -141,8 +201,9 @@ function NoteOperations(props) {
             <div className="OptionItem">
                 <button className={currentNote.starred ? 'hasStar' : null} onClick={(e) => starNote(e, currentNote._id)}>
                     <i className="fas fa-star"></i>
-                    <span className="tooltip">{currentNote.starred ? 'Unstar' : 'Add star'}</span>
                 </button>
+                <Tooltip open={false} defaultContent={currentNote.starred ? 'Unstar' : 'Add star'} />
+                <div className="tooltipArrow"></div>
             </div>
             <div className="OptionItem">
                 <button onClick={() => setCollectionsTooltip(true)} ref={collectionsRef}>
@@ -153,21 +214,27 @@ function NoteOperations(props) {
                     open={collectionsTooltip}
                     defaultContent="Move to collection"
                     parent={collectionsRef.current}
-                    updateTooltipOpen={setCollectionsTooltip}
-                    updateModalObject={props.updateModalObject} />
+                    updateTooltipOpen={setCollectionsTooltip} />
                 <div className="tooltipArrow"></div> {/* used to be .tooltip::before but needs to be positioned relative to .optionItem, not .tooltip */}
             </div>
             <div className="OptionItem">
-                <button>
+                <button onClick={() => setTagsTooltip(true)} ref={tagsRef}>
                     <i className="fas fa-tags"></i>
-                    <span className="tooltip">Add tags</span>
                 </button>
+                <Tooltip
+                    {...props}
+                    open={tagsTooltip}
+                    defaultContent="Add tags"
+                    parent={tagsRef.current}
+                    updateTooltipOpen={setTagsTooltip} />
+                <div className="tooltipArrow"></div>
             </div>
             <div className="OptionItem">
                 <button onClick={() => confirmMoveToTrash(currentNote._id)}>
                     <i className="fas fa-trash"></i>
-                    <span className="tooltip">Move to Trash</span>
                 </button>
+                <Tooltip open={false} defaultContent="Move to Trash" />
+                <div className="tooltipArrow"></div>
             </div>
         </div>
     );
@@ -414,66 +481,11 @@ function Notes(props) {
             </div>
         );
     }
-    const createTag = (e) => {
-        e.preventDefault();
-        const handleSubmit = async (e) => {
-            e.preventDefault();
-            props.updateModalObject(content({
-                tagNameError: null,
-                loadingIcon: true   
-            }));
-            const tagName = e.target[0].value;
-            const response = await fetch('/create/tag', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ _id: user._id, tagName })
-            });
-            const body = await response.json();
-            if (!body) return;
-            if (!body.success) {
-                props.updateModalObject(content({
-                    tagNameError: <span className="formError">{body.tagNameError}</span>,
-                    loadingIcon: false
-                }));
-                return;
-            }
-            props.gracefullyCloseModal(modalContent.current);
-            props.refreshData();
-        }
-        let content = (breakpoints = {
-            tagNameError: null,
-            loadingIcon: false
-        }) => {
-            return (
-                <div className="modalContent" ref={modalContent}>
-                    <h2>Create a new tag</h2>
-                    <form onSubmit={handleSubmit} autoComplete="off">
-                        <label htmlFor="collectionName">Enter a name for your tag:</label>
-                        <input
-                            type="text"
-                            name="tagName"
-                            className={breakpoints.tagNameError ? 'nope' : ''}
-                            onInput={(e) => e.target.className = ''} />
-                        {breakpoints.tagNameError}
-                        {breakpoints.loadingIcon
-                            ?   <div className="buttons"><Loading /></div>
-                            :   <div className="buttons">
-                                    <button type="submit">Submit</button>
-                                    <button type="button" className="greyed" onClick={() => props.gracefullyCloseModal(modalContent.current)}>Cancel</button>
-                                </div>}
-                    </form>
-                </div>
-            )
-        }
-        props.updateModalObject(content());
-    }
     const sortByTag = () => {
         let noTagsSelected = view.tags.length === 0;
         const tagList = () => {
             const newTagButton = (
-                <button onClick={createTag} onContextMenu={(e) => e.preventDefault()} key="createTag" className="tag createTag">
+                <button onClick={props.createTag} onContextMenu={(e) => e.preventDefault()} key="createTag" className="tag createTag">
                     Create new tag
                 </button>
             )

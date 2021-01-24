@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Loading from './Loading';
 import Dropdown from './Dropdown';
-import { elementHasParent } from '../utils';
+import { elementHasParent, elementIsInArray } from '../utils';
 
 export default function Tooltip(props) {
     const { user, currentNote, open, defaultContent, parent } = props;
@@ -13,7 +13,7 @@ export default function Tooltip(props) {
         setTooltipContent(() => {
             switch (defaultContent) {
                 case 'Move to collection': return <MoveNoteToCollection {...props} />;
-                case 'Tag note': return null;
+                case 'Add tags': return <TagNote {...props} />;
                 default: return null;
             }
         });
@@ -45,7 +45,7 @@ export default function Tooltip(props) {
     );
 }
 
-export function MoveNoteToCollection(props) {
+function MoveNoteToCollection(props) {
     const { user, currentNote } = props;
     const modalContent = useRef(null);
     const moveToCollection = async (e, collectionName) => {
@@ -180,4 +180,54 @@ export function MoveNoteToCollection(props) {
             </Dropdown>
         </ul>
     );
+}
+
+function TagNote(props) {
+    const { user, currentNote } = props;
+    const handleTagNote = async (e, tagName) => {
+        const response = await fetch('/tag/note', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ _id: currentNote._id, tagName })
+        });
+        const body = await response.json();
+        if (!body) return console.log('no response from server');
+        if (!body.success) return console.log('no success: true response from server');
+        const button = e.target;
+        if (!button.classList.contains('hasTag')) button.classList.add('hasTag');
+        else button.classList.remove('hasTag');
+        props.refreshData();
+    }
+    const tagsList = (tags) => {
+        const createNewTag = (
+            <li key={`minimenu-user.collections-createNewTag`} className="createTag">
+                <button className="tag createTag" onClick={props.createTag}>
+                    Create new
+                </button>
+            </li>
+        );
+        if (!tags) return createNewTag;
+        let userTags = [];
+        for (let i = 0; i < tags.length; i++) {
+            let tagName = tags[i];
+            const hasTag = elementIsInArray(tagName, currentNote.tags) ? ' hasTag' : '';
+            userTags.push(
+                <li key={`minimenu-user.tags-${tagName}`}>
+                    <button key={`minimenu-user.tags-${tagName}`} className={`tag${hasTag}`} onClick={(e) => handleTagNote(e, tagName)}>
+                        {tagName}
+                    </button>
+                </li>
+            );
+        }
+        userTags.push(createNewTag);
+        return userTags;
+    }
+    return (
+        <ul className="tagsList">
+            <li><strong>Tag note</strong></li>
+            {tagsList(user.tags)}
+        </ul>
+    )
 }

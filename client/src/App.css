@@ -627,7 +627,7 @@ button.createNew:hover .tooltip {
 .NoteOperations > .OptionItem + .OptionItem {
     margin-top: 1.5rem;
 }
-.NoteOperations .OptionItem button {
+.NoteOperations .OptionItem > button {
     background: 0;
     border: 0;
     padding: 0;
@@ -724,21 +724,13 @@ button.createNew:hover .tooltip {
     margin: 0.25rem;
     background: var(--element-main-bg);
 }
-.tag.createTag {
-    background: var(--med-gradient);
-    border-width: 0;
-    line-height: calc(1.2rem + 2px);
-    color: #fff;
-}
-.tag.createTag:hover {
-    color: #fff;
-}
 
 
 /* TAG BUTTONS */
 .tag {
     border: 1px solid var(--element-secondary-border);
     display: inline-block;
+    background: var(--element-main-bg);
     padding: 0 0.7rem;
     font-size: 0.7rem;
     color: #333;
@@ -773,6 +765,31 @@ button.createNew:hover .tooltip {
 }
 .tag.hasTag::before {
     transform: rotate(45deg);
+}
+.tag.createTag {
+    background: var(--med-gradient);
+    border-width: 0;
+    line-height: calc(1.2rem + 2px);
+    color: #fff;
+}
+.tag.createTag:hover {
+    color: #fff;
+}
+.tooltip ul.tagsList {
+    text-align: center;
+}
+.tooltip ul.tagsList li.createTag {
+    margin-top: 0.7rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.4);
+    padding-top: 0.7rem;
+}
+.tooltip ul.tagsList .tag {
+    display: inline-block;
+    border-color: transparent;
+    margin: 0.2rem;
+}
+.tooltip ul.tagsList .tag:not(.createTag):not(.hasTag):hover {
+    color: #333;
 }
 
 
@@ -1698,14 +1715,6 @@ input.nope + .formError {
     font-size: inherit;
     color: inherit;
     margin-right: 0.3rem;
-}
-
-ul.nolines {
-    padding: 0 0.3rem 0.6rem;
-}
-ul.nolines li.tagsList {
-    text-align: center;
-    border: 0;
 }
 
 .sortTagOptions {
