@@ -1407,28 +1407,9 @@ button.logout::before {
     border-top: 1px solid var(--element-secondary-border);
 }
 
-.MiniMenu {
-    z-index: 999;
-    position: fixed;
-}
-.MiniMenu ul {
-    position: fixed;
-    background: var(--element-main-bg);
-    border: 1px solid var(--element-secondary-border);
-    border-radius: 0.5rem;
-    list-style: none;
-    margin: 0;
-    padding: 0 0.3rem 0.5rem;
-}
-.MiniMenu li + li, .Dropdown li + li {
+
+.Dropdown li + li {
     border-top: 1px solid var(--element-secondary-border);
-}
-.MiniMenu strong {
-    padding: 0.7rem;
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    display: block;
-    text-align: center;
 }
 .Dropdown button {
     color: #333;
@@ -1437,24 +1418,11 @@ button.logout::before {
     text-align: left;
     transition: color 0.2s;
 }
-.MiniMenu button:hover, .Dropdown button:hover {
+.Dropdown button:hover {
     color: #999;
 }
-.MiniMenu button::before {
-    font-family: 'Font Awesome 5 Free';
-    font-weight: 900;
-    float: right;
-}
-.MiniMenu button.add:hover::before {
-    content: '\f067';
-    color: #999;
-}
-.MiniMenu button.hasCollection::before, .MiniMenu button.add.hasCollection::before {
-    content: '\f00c';
-}
-.MiniMenu button.hasCollection:hover::before, .MiniMenu button.add.hasCollection:hover::before {
-    content: '\f00d';
-}
+
+
 .Modal {
     position: fixed;
     top: 0;
