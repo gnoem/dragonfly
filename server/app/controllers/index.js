@@ -1,4 +1,4 @@
-const { check, validationResult } = require('express-validator');
+const { validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { secret } = require('../config');
@@ -758,9 +758,10 @@ module.exports = {
                         let thisNotesTags = thisNote.tags;
                         let tagIndex = thisNotesTags.indexOf(tagName);
                         let noteHasTag = tagIndex !== -1;
-                        if (!noteHasTag) return;
-                        thisNotesTags.splice(tagIndex, 1);
-                        thisNote.save();
+                        if (noteHasTag) {
+                            thisNotesTags.splice(tagIndex, 1);
+                            thisNote.save();
+                        }
                     }
                 }
                 updateNotes(notes);
