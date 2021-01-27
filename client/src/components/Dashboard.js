@@ -56,6 +56,10 @@ export default function Dashboard(props) {
         container.classList.add('goodbye');
         setTimeout(() => setModalObject(false), 200);
     }
+    const updateView = (view) => {
+        setCurrentNote(false);
+        setView(view);
+    }
     if (!isLoaded) return <Loading />;
     const appContent = () => {
         const allNotes = () => {
@@ -80,9 +84,10 @@ export default function Dashboard(props) {
             return (
                 <Main
                     view={view}
-                    updateView={setView}
+                    updateView={updateView}
                     user={user}
                     notes={getNotes(view)}
+                    currentNote={currentNote}
                     updateCurrentNote={setCurrentNote}
                     isMobile={isMobile}
                     updateModalObject={setModalObject}
@@ -108,9 +113,10 @@ export default function Dashboard(props) {
                 return (
                     <Main
                         view={view}
-                        updateView={setView}
+                        updateView={updateView}
                         user={user}
                         notes={notesInCollection(view.name)}
+                        currentNote={currentNote}
                         updateCurrentNote={setCurrentNote}
                         isMobile={isMobile}
                         updateModalObject={setModalObject}
@@ -155,9 +161,10 @@ export default function Dashboard(props) {
                 return (
                     <Main
                         view={view}
-                        updateView={setView}
+                        updateView={updateView}
                         user={user}
                         notes={notesWithTheseTags(view.tags)}
+                        currentNote={currentNote}
                         updateCurrentNote={setCurrentNote}
                         isMobile={isMobile}
                         updateModalObject={setModalObject}
@@ -180,14 +187,14 @@ export default function Dashboard(props) {
                 ? (!currentNote && <Menu
                     user={user}
                     view={view}
-                    updateView={setView}
+                    updateView={updateView}
                     updateModalObject={setModalObject}
                     gracefullyCloseModal={gracefullyCloseModal}
                     refreshData={() => setTrigger(Date.now())} />)
                 : <Sidebar
                     user={user}
                     view={view}
-                    updateView={setView}
+                    updateView={updateView}
                     updateModalObject={setModalObject}
                     gracefullyCloseModal={gracefullyCloseModal}
                     refreshData={() => setTrigger(Date.now())} />}

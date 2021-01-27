@@ -8,8 +8,7 @@ import Dropdown from './Dropdown';
 import Tooltip from './Tooltip';
 
 export default function Main(props) {
-    const { user, view, notes } = props;
-    const [currentNote, setCurrentNote] = useState(false);
+    const { user, view, notes, currentNote } = props;
     const modalContent = useRef(null);
     const usePrevious = (value) => {
         const ref = useRef();
@@ -20,7 +19,7 @@ export default function Main(props) {
     }
     const prevNotesCount = usePrevious(notes.length);
     useEffect(() => {
-        setCurrentNote(false);
+        props.updateCurrentNote(false);
     }, [view]);
     useEffect(() => {
         // what this does: when refreshData is called, update currentNote with updated note data
@@ -30,8 +29,8 @@ export default function Main(props) {
             return notes.findIndex(note => id === note._id);
         }
         if (!currentNote || !currentNote.content) return;
-        if (prevNotesCount > notes.length) return setCurrentNote(false); // after deleting/removing note and refreshing data, notes[current] is no longer defined
-        setCurrentNote(notes[getNoteIndexFromId(currentNote._id)]);
+        if (prevNotesCount > notes.length) return props.updateCurrentNote(false); // after deleting/removing note and refreshing data, notes[current] is no longer defined
+        props.updateCurrentNote(notes[getNoteIndexFromId(currentNote._id)]);
     // figure out if currentNote + prevNotesCount need to be listed as dependencies
     // eslint-disable-next-line
     }, [notes]);
@@ -94,15 +93,11 @@ export default function Main(props) {
         <div className="Main" data-editor={currentNote ? true : false}>
             <Notes
                 {...props}
-                createTag={createTag}
-                currentNote={currentNote}
-                updateCurrentNote={setCurrentNote} />
+                createTag={createTag} />
             {currentNote
                 && <Editor
                     {...props}
-                    createTag={createTag}
-                    currentNote={currentNote}
-                    updateCurrentNote={setCurrentNote} />
+                    createTag={createTag} />
                 }
         </div>
     );
@@ -656,7 +651,6 @@ function Notes(props) {
     }
     return (
         <div className="Notes">
-            <div id="demo" onClick={() => console.table(view)}></div>
             {contextMenu && <ContextMenu menu={contextMenu} updateMiniMenu={setContextMenu} />}
             {generateHeader()}
             {(view.type === 'tags') && sortByTag()}
