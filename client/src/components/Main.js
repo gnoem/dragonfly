@@ -570,6 +570,7 @@ function Notes(props) {
                         const body = await response.json();
                         if (!body) return console.log('no response from server');
                         if (!body.success) return console.log('no success: true response from server');
+                        toggleTag(tagName);
                         props.refreshData();
                         props.gracefullyCloseModal(modalContent.current);
                     }
@@ -655,6 +656,7 @@ function Notes(props) {
     }
     return (
         <div className="Notes">
+            <div id="demo" onClick={() => console.table(view)}></div>
             {contextMenu && <ContextMenu menu={contextMenu} updateMiniMenu={setContextMenu} />}
             {generateHeader()}
             {(view.type === 'tags') && sortByTag()}
