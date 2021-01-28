@@ -91,6 +91,7 @@ export default function Main(props) {
     }
     return (
         <div className="Main" data-editor={currentNote ? true : false}>
+            <div id="demo" onClick={() => console.dir(currentNote)}></div>
             <Notes
                 {...props}
                 createTag={createTag} />
@@ -108,18 +109,74 @@ const isMobile = false;
 function Editor(props) {
     const { currentNote } = props;
     const [unsavedChanges, setUnsavedChanges] = useState(false);
+    const modalContent = useRef(null);
+    useEffect(() => {
+        if (!currentNote) setUnsavedChanges(false);
+        console.log('set unsaved changes to false');
+    }, [currentNote]);
     const handleExit = () => {
         if (unsavedChanges) console.log('warning');
         props.updateCurrentNote(false);
+    }
+    const untrashNote = async (id) => {
+        const response = await fetch('/trash/note', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ _id: id })
+        });
+        const body = await response.json();
+        if (!body) return console.log('no response from server');
+        if (!body.success) return console.log('no success: true response from server');
+        props.refreshData();
+        // props.updateCurrentNote(false); // this happens automatically i guess
+    }
+    const confirmPermanentDeletion = (id) => {
+        const deleteNote = async (e, id) => {
+            e.preventDefault();
+            props.updateModalObject(content({ loadingIcon: true }));
+            const response = await fetch('/delete/note', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ id })
+            });
+            const body = await response.json();
+            if (!body) return console.log('no response from server');
+            if (!body.success) return console.log('no success: true response from server');
+            props.refreshData();
+            // props.updateCurrentNote(false);
+            props.gracefullyCloseModal(modalContent.current);
+        }
+        let content = (breakpoints = {
+            loadingIcon: false
+        }) => (
+            <div className="modalContent" ref={modalContent}>
+                <h2>Are you sure?</h2>
+                You are about to permanently delete this note.
+                {breakpoints.loadingIcon
+                    ?   <Loading />
+                    :   <form onSubmit={(e) => deleteNote(e, id)} className="buttons">
+                            <button type="submit">Yes, I'm sure</button>
+                            <button type="button" className="greyed" onClick={() => props.gracefullyCloseModal(modalContent.current)}>Cancel</button>
+                        </form>
+                    }
+            </div>
+        );
+        props.updateModalObject(content());
     }
     return (
         <div className="Editor">
             <button className="stealth exit" onClick={handleExit}></button>
             <NoteEditor
                 {...props}
+                untrashNote={untrashNote}
+                deleteNotePermanently={confirmPermanentDeletion}
                 unsavedChanges={unsavedChanges}
                 updateUnsavedChanges={setUnsavedChanges} />
-            {!currentNote.trash && <NoteOperations {...props} updateUnsavedChanges={setUnsavedChanges} />}
+            {!currentNote.trash && <NoteOperations {...props} />}
         </div>
     );
 }
@@ -169,7 +226,6 @@ function NoteOperations(props) {
             const body = await response.json();
             if (!body) return console.log('no response from server');
             if (!body.success) return console.log('no success: true response from server');
-            // todo: find NotePreview with id and shrink it down, with 200ms delay on refreshData()
             props.refreshData();
             props.gracefullyCloseModal(modalContent.current);
             props.updateCurrentNote(false); // needs to come AFTER close modal
