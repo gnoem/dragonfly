@@ -247,8 +247,54 @@ function Notes(props) {
     const createNewNote = () => {
         props.updateCurrentNote(true);
     }
-    const trashOptions = () => {
-
+    const trashOptions = (e) => {
+        if (view !== 'trash') return;
+        const { top, right } = {
+            top: e.clientY - 16,
+            right: (window.innerWidth - e.clientX) + 16
+        }
+        const confirmEmptyTrash = () => {
+            setContextMenu(false);
+            const emptyTrash = async () => {
+                props.updateModalObject(content({ loadingIcon: true }));
+                const response = await fetch('/empty/trash', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ _id: user._id })
+                });
+                const body = await response.json();
+                if (!body) return console.log('no response from server');
+                if (!body.success) return console.log('no success: true response from server');
+                props.refreshData();
+                props.gracefullyCloseModal(modalContent.current);
+            }
+            let content = (breakpoints = {
+                loadingIcon: false
+            }) => {
+                return (
+                    <div className="modalContent" ref={modalContent}>
+                        <h2>Are you sure?</h2>
+                        If you proceed, all the notes in your Trash will be permanently erased. This action cannot be undone.
+                        {breakpoints.loadingIcon
+                            ?   <Loading />
+                            :   <form onSubmit={emptyTrash} className="buttons">
+                                    <button type="submit">Yes, I'm sure</button>
+                                    <button type="button" className="greyed" onClick={() => props.gracefullyCloseModal(modalContent.current)}>Cancel</button>
+                                </form>
+                        }
+                    </div>
+                );
+            }
+            props.updateModalObject(content());
+        }
+        let content = (
+            <ul style={{ top: `${top}px`, right: `${right}px` }} ref={contextMenuRef}>
+                <li><button onClick={confirmEmptyTrash}>Empty Trash</button></li>
+            </ul>
+        );
+        setContextMenu({ name: 'presentChildren', content });
     }
     const editOrDeleteCollection = (e, collectionName) => {
         const { top, right } = {
