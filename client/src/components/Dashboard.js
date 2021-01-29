@@ -66,15 +66,15 @@ export default function Dashboard(props) {
         container.classList.add('goodbye');
         setTimeout(() => setModalObject(false), 200);
     }
-    const warnUnsavedChanges = (view) => {
+    const warnUnsavedChanges = (targetView = view) => {
         const closeEditor = () => {
-            setView(view);
+            setView(targetView);
             setCurrentNote(false);
             setUnsavedChanges(false);
             gracefullyCloseModal(modalContent.current);
         }
         const saveChanges = () => {
-            setView(view);
+            setView(targetView);
             setShouldSubmit(true); // once this gets reset to false down in editor component, above useEffect takes care of the rest
             setModalObject(content({ loadingIcon: true }));
         }
