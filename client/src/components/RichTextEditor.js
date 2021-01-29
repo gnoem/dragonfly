@@ -8,7 +8,7 @@ import 'draft-js/dist/Draft.css';
 export default function NoteEditor(props) {
     const { user, currentNote, unsavedChanges, shouldSubmit } = props;
     const newNote = !currentNote.content;
-    const [editorTitle, setEditorTitle] = useState('');
+    const [editorTitle, setEditorTitle] = useState(newNote ? '' : currentNote.title);
     const [editorState, setEditorState] = useState(
         newNote ? () => EditorState.createEmpty() : EditorState.createWithContent(convertFromRaw(currentNote.content))
     );
@@ -60,7 +60,7 @@ export default function NoteEditor(props) {
         props.updateUnsavedChanges(true); // tell parent component there are unsaved changes
     }
     const handleSubmit = async () => {
-        console.log('submitting changes');
+        console.log(editorTitle);
         const contentState = editorState.getCurrentContent();
         let ROUTE = newNote ? '/add/note' : '/edit/note';
         const response = await fetch(ROUTE, {
@@ -78,7 +78,7 @@ export default function NoteEditor(props) {
         if (!body) return console.log('no response from server');
         if (!body.success) return console.log('no success: true response from server');
         props.updateUnsavedChanges(false);
-        props.refreshData();
+        props.refreshData(); // */
     }
     const noteIsInTrash = () => {
         const untrashNote = async (id) => {

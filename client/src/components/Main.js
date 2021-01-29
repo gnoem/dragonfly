@@ -91,7 +91,6 @@ export default function Main(props) {
     }
     return (
         <div className="Main" data-editor={currentNote ? true : false}>
-            <div id="demo" onClick={() => console.dir(props.shouldSubmit)}></div>
             <Notes
                 {...props}
                 createTag={createTag} />
