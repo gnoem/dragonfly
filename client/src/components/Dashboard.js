@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Loading from './Loading';
 import Menu from './Menu';
 import Sidebar from './Sidebar';
@@ -12,12 +12,15 @@ export default function Dashboard(props) {
     const isMobile = window.innerWidth < 900;
     const [accessToken, setAccessToken] = useState(false);
     const [currentNote, setCurrentNote] = useState(false);
+    const [unsavedChanges, setUnsavedChanges] = useState(false);
+    const [shouldSubmit, setShouldSubmit] = useState(null);
     const [user, setUser] = useState(null);
     const [notes, setNotes] = useState([]);
     const [view, setView] = useState('all-notes');
     const [isLoaded, setIsLoaded] = useState(false);
     const [modalObject, setModalObject] = useState(false);
     const [triggerGetData, setTrigger] = useState(null);
+    const modalContent = useRef(null);
     useEffect(() => {
         if (!user) return;
         if (accessToken) return;
@@ -49,14 +52,51 @@ export default function Dashboard(props) {
         }
         getData();
     }, [id, triggerGetData]);
-    const gracefullyCloseModal = (modal) => {
+    useEffect(() => {
+        if (shouldSubmit === false) {
+            setCurrentNote(false); // and unsavedChanges gets reset to false in handleSubmit()
+            gracefullyCloseModal();
+        }
+    }, [shouldSubmit]);
+    const gracefullyCloseModal = (modal = document.querySelector('.modalContent')) => {
+        if (!modal) return;
         let container = modal.classList.contains('Modal')
             ? modal
             : modal.closest('.Modal');
         container.classList.add('goodbye');
         setTimeout(() => setModalObject(false), 200);
     }
+    const warnUnsavedChanges = (view) => {
+        const closeEditor = () => {
+            setView(view);
+            setCurrentNote(false);
+            setUnsavedChanges(false);
+            gracefullyCloseModal(modalContent.current);
+        }
+        const saveChanges = () => {
+            setView(view);
+            setShouldSubmit(true); // once this gets reset to false down in editor component, above useEffect takes care of the rest
+            setModalObject(content({ loadingIcon: true }));
+        }
+        let content = (breakpoints = {
+            loadingIcon: false
+        }) => (
+            <div className="modalContent" ref={modalContent}>
+                <h2>Save changes?</h2>
+                It looks like you have unsaved changes. Would you like to save changes or discard?
+                {breakpoints.loadingIcon
+                    ?   <Loading />
+                    :   <div className="buttons">
+                            <button onClick={saveChanges}>Save changes</button>
+                            <button className="greyed" onClick={closeEditor}>Discard changes</button>
+                        </div>
+                    }
+            </div>
+        );
+        setModalObject(content());
+    }
     const updateView = (view) => {
+        if (unsavedChanges) return warnUnsavedChanges(view);
         setCurrentNote(false);
         setView(view);
     }
@@ -89,6 +129,11 @@ export default function Dashboard(props) {
                     notes={getNotes(view)}
                     currentNote={currentNote}
                     updateCurrentNote={setCurrentNote}
+                    unsavedChanges={unsavedChanges}
+                    updateUnsavedChanges={setUnsavedChanges}
+                    warnUnsavedChanges={warnUnsavedChanges}
+                    shouldSubmit={shouldSubmit}
+                    updateShouldSubmit={setShouldSubmit}
                     isMobile={isMobile}
                     updateModalObject={setModalObject}
                     gracefullyCloseModal={gracefullyCloseModal}
@@ -118,6 +163,11 @@ export default function Dashboard(props) {
                         notes={notesInCollection(view.name)}
                         currentNote={currentNote}
                         updateCurrentNote={setCurrentNote}
+                        unsavedChanges={unsavedChanges}
+                        updateUnsavedChanges={setUnsavedChanges}
+                        warnUnsavedChanges={warnUnsavedChanges}
+                        shouldSubmit={shouldSubmit}
+                        updateShouldSubmit={setShouldSubmit}
                         isMobile={isMobile}
                         updateModalObject={setModalObject}
                         gracefullyCloseModal={gracefullyCloseModal}
@@ -166,6 +216,11 @@ export default function Dashboard(props) {
                         notes={notesWithTheseTags(view.tags)}
                         currentNote={currentNote}
                         updateCurrentNote={setCurrentNote}
+                        unsavedChanges={unsavedChanges}
+                        updateUnsavedChanges={setUnsavedChanges}
+                        warnUnsavedChanges={warnUnsavedChanges}
+                        shouldSubmit={shouldSubmit}
+                        updateShouldSubmit={setShouldSubmit}
                         isMobile={isMobile}
                         updateModalObject={setModalObject}
                         gracefullyCloseModal={gracefullyCloseModal}

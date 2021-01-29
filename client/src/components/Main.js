@@ -91,7 +91,7 @@ export default function Main(props) {
     }
     return (
         <div className="Main" data-editor={currentNote ? true : false}>
-            <div id="demo" onClick={() => console.dir(currentNote)}></div>
+            <div id="demo" onClick={() => console.dir(props.shouldSubmit)}></div>
             <Notes
                 {...props}
                 createTag={createTag} />
@@ -107,15 +107,13 @@ export default function Main(props) {
 const isMobile = false;
 
 function Editor(props) {
-    const { currentNote } = props;
-    const [unsavedChanges, setUnsavedChanges] = useState(false);
+    const { currentNote, unsavedChanges } = props;
     const modalContent = useRef(null);
     useEffect(() => {
-        if (!currentNote) setUnsavedChanges(false);
-        console.log('set unsaved changes to false');
+        if (!currentNote) props.updateUnsavedChanges(false);
     }, [currentNote]);
     const handleExit = () => {
-        if (unsavedChanges) console.log('warning');
+        if (unsavedChanges) return props.warnUnsavedChanges();
         props.updateCurrentNote(false);
     }
     const untrashNote = async (id) => {
@@ -130,7 +128,6 @@ function Editor(props) {
         if (!body) return console.log('no response from server');
         if (!body.success) return console.log('no success: true response from server');
         props.refreshData();
-        // props.updateCurrentNote(false); // this happens automatically i guess
     }
     const confirmPermanentDeletion = (id) => {
         const deleteNote = async (e, id) => {
@@ -147,7 +144,6 @@ function Editor(props) {
             if (!body) return console.log('no response from server');
             if (!body.success) return console.log('no success: true response from server');
             props.refreshData();
-            // props.updateCurrentNote(false);
             props.gracefullyCloseModal(modalContent.current);
         }
         let content = (breakpoints = {
@@ -173,9 +169,7 @@ function Editor(props) {
             <NoteEditor
                 {...props}
                 untrashNote={untrashNote}
-                deleteNotePermanently={confirmPermanentDeletion}
-                unsavedChanges={unsavedChanges}
-                updateUnsavedChanges={setUnsavedChanges} />
+                deleteNotePermanently={confirmPermanentDeletion} />
             {!currentNote.trash && <NoteOperations {...props} />}
         </div>
     );
@@ -198,7 +192,7 @@ function NoteOperations(props) {
                 e.currentTarget.classList.add('hasStar');
                 e.currentTarget.querySelector('.tooltip').innerHTML = 'Unstar';
             }
-        }
+        } // keeping this just in case
         // todo: if unsavedChanges, star note gets rid of save changes button? fix this
         const response = await fetch('/star/note', {
             method: 'POST',
@@ -228,7 +222,6 @@ function NoteOperations(props) {
             if (!body.success) return console.log('no success: true response from server');
             props.refreshData();
             props.gracefullyCloseModal(modalContent.current);
-            props.updateCurrentNote(false); // needs to come AFTER close modal
         }
         let content = (breakpoints = {
             loadingIcon: false

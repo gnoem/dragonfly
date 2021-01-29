@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from 'react';
-import Modal from './Modal';
 import Loading from './Loading';
 
 export default function Nav(props) {

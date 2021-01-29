@@ -6,7 +6,7 @@ import { Editor, EditorState, RichUtils, convertToRaw, convertFromRaw, DefaultDr
 import 'draft-js/dist/Draft.css';
 
 export default function NoteEditor(props) {
-    const { user, currentNote, updateCurrentNote, unsavedChanges, updateUnsavedChanges, refreshData } = props;
+    const { user, currentNote, unsavedChanges, shouldSubmit } = props;
     const newNote = !currentNote.content;
     const [editorTitle, setEditorTitle] = useState('');
     const [editorState, setEditorState] = useState(
@@ -17,12 +17,17 @@ export default function NoteEditor(props) {
     useEffect(() => {
         if (newNote) titleInput.current.focus();
     }, [newNote]);
+    useEffect(() => {
+        if (!shouldSubmit) return;
+        handleSubmit();
+        props.updateShouldSubmit(false);
+    }, [shouldSubmit]);
     // todo useeffect for Ctrl + S
     const handleKeyCommand = (command, editorState) => {
         const newState = RichUtils.handleKeyCommand(editorState, command);
         if (newState) {
             setEditorState(newState);
-            updateUnsavedChanges(true);
+            props.updateUnsavedChanges(true);
             return 'handled';
         }
         return 'not-handled';
@@ -41,7 +46,7 @@ export default function NoteEditor(props) {
         const title = newNote ? '' : currentNote.title;
         const handleInput = (e) => {
             setEditorTitle(e.target.value);
-            updateUnsavedChanges(true);
+            props.updateUnsavedChanges(true);
         }
         return (
             <input type="text" readOnly={currentNote.trash} ref={titleInput} key={title} defaultValue={title} placeholder="Add a title" onInput={handleInput} />
@@ -52,9 +57,10 @@ export default function NoteEditor(props) {
         if (unsavedChanges) return;
         const inputTypes = ['insert-characters', 'backspace-character', 'insert-fragment', 'remove-range'];
         if (!inputTypes.includes(state.getLastChangeType())) return;
-        updateUnsavedChanges(true); // tell parent component there are unsaved changes
+        props.updateUnsavedChanges(true); // tell parent component there are unsaved changes
     }
     const handleSubmit = async () => {
+        console.log('submitting changes');
         const contentState = editorState.getCurrentContent();
         let ROUTE = newNote ? '/add/note' : '/edit/note';
         const response = await fetch(ROUTE, {
@@ -71,8 +77,8 @@ export default function NoteEditor(props) {
         const body = await response.json();
         if (!body) return console.log('no response from server');
         if (!body.success) return console.log('no success: true response from server');
-        updateUnsavedChanges(false);
-        refreshData();
+        props.updateUnsavedChanges(false);
+        props.refreshData();
     }
     const noteIsInTrash = () => {
         const untrashNote = async (id) => {
@@ -86,8 +92,8 @@ export default function NoteEditor(props) {
             const body = await response.json();
             if (!body) return console.log('no response from server');
             if (!body.success) return console.log('no success: true response from server');
-            refreshData();
-            updateCurrentNote(false);
+            props.refreshData();
+            props.updateCurrentNote(false);
         }
         return (
             <div className="noteIsInTrash">
