@@ -78,7 +78,8 @@ export default function NoteEditor(props) {
         if (!body) return console.log('no response from server');
         if (!body.success) return console.log('no success: true response from server');
         props.updateUnsavedChanges(false);
-        props.refreshData(); // */
+        props.refreshData();
+        if (body.id) props.updateCurrentNote(false); // only get id from server when creating new note
     }
     const noteIsInTrash = () => {
         const untrashNote = async (id) => {

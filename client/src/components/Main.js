@@ -3,7 +3,7 @@ import dayjs from 'dayjs'; // NotePreview
 import NoteEditor from './RichTextEditor';
 import Loading from './Loading';
 import ContextMenu from './ContextMenu';
-import { elementIsInArray } from '../utils';
+import { elementIsInArray, getArrayIndexFromKeyValue } from '../utils';
 import Dropdown from './Dropdown';
 import Tooltip from './Tooltip';
 
@@ -25,12 +25,9 @@ export default function Main(props) {
         // what this does: when refreshData is called, update currentNote with updated note data
         // a thought for later: maybe makes sense to set currentNote to just the note _id, or call it currentNoteId, and skip having to do this
         // const currentNote = notes[getIndexFromNoteId(props.currentNoteId)] at the top of every component that would ordinarily use currentNote
-        const getNoteIndexFromId = (id) => {
-            return notes.findIndex(note => id === note._id);
-        }
         if (!currentNote || !currentNote.content) return;
         if (prevNotesCount > notes.length) return props.updateCurrentNote(false); // after deleting/removing note and refreshing data, notes[current] is no longer defined
-        props.updateCurrentNote(notes[getNoteIndexFromId(currentNote._id)]);
+        props.updateCurrentNote(notes[getArrayIndexFromKeyValue('_id', currentNote._id, notes)]);
     // figure out if currentNote + prevNotesCount need to be listed as dependencies
     // eslint-disable-next-line
     }, [notes]);
@@ -91,6 +88,7 @@ export default function Main(props) {
     }
     return (
         <div className="Main" data-editor={currentNote ? true : false}>
+            <div id="demo" onClick={() => console.table(currentNote)}></div>
             <Notes
                 {...props}
                 createTag={createTag} />
@@ -106,7 +104,8 @@ export default function Main(props) {
 const isMobile = false;
 
 function Editor(props) {
-    const { currentNote, unsavedChanges } = props;
+    const { notes, currentNote, unsavedChanges } = props;
+    const newNote = !currentNote.content;
     const modalContent = useRef(null);
     useEffect(() => {
         if (!currentNote) props.updateUnsavedChanges(false);
@@ -169,7 +168,7 @@ function Editor(props) {
                 {...props}
                 untrashNote={untrashNote}
                 deleteNotePermanently={confirmPermanentDeletion} />
-            {!currentNote.trash && <NoteOperations {...props} />}
+            {(!currentNote.trash && !newNote) && <NoteOperations {...props} />}
         </div>
     );
 }
@@ -289,9 +288,6 @@ function Notes(props) {
     const [sortTags, setSortTags] = useState('all');
     const contextMenuRef = useRef(null);
     const modalContent = useRef(null);
-    const getNoteIndexFromId = (id) => {
-        return notes.findIndex(note => id === note._id);
-    }
     const createNewNote = () => {
         props.updateCurrentNote(true);
     }
@@ -560,7 +556,7 @@ function Notes(props) {
                 current={currentNote?._id}
                 temp={false}
                 {...notes[i]}
-                updateCurrentNoteId={(id) => props.updateCurrentNote(notes[getNoteIndexFromId(id)])}
+                updateCurrentNoteId={(id) => props.updateCurrentNote(notes[getArrayIndexFromKeyValue('_id', id, notes)])}
             />)
         }
         return (
