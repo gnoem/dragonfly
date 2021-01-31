@@ -62,33 +62,30 @@ export default function Main(props) {
         let content = (breakpoints = {
             tagNameError: null,
             loadingIcon: false
-        }) => {
-            return (
-                <div className="modalContent" ref={modalContent}>
-                    <h2>Create a new tag</h2>
-                    <form onSubmit={handleSubmit} autoComplete="off">
-                        <label htmlFor="collectionName">Enter a name for your tag:</label>
-                        <input
-                            type="text"
-                            name="tagName"
-                            className={breakpoints.tagNameError ? 'nope' : ''}
-                            onInput={(e) => e.target.className = ''} />
-                        {breakpoints.tagNameError}
-                        {breakpoints.loadingIcon
-                            ?   <div className="buttons"><Loading /></div>
-                            :   <div className="buttons">
-                                    <button type="submit">Submit</button>
-                                    <button type="button" className="greyed" onClick={() => props.gracefullyCloseModal(modalContent.current)}>Cancel</button>
-                                </div>}
-                    </form>
-                </div>
-            )
-        }
+        }) => (
+            <div className="modalContent" ref={modalContent}>
+                <h2>Create a new tag</h2>
+                <form onSubmit={handleSubmit} autoComplete="off">
+                    <label htmlFor="collectionName">Enter a name for your tag:</label>
+                    <input
+                        type="text"
+                        name="tagName"
+                        className={breakpoints.tagNameError ? 'nope' : ''}
+                        onInput={(e) => e.target.className = ''} />
+                    {breakpoints.tagNameError}
+                    {breakpoints.loadingIcon
+                        ?   <div className="buttons"><Loading /></div>
+                        :   <div className="buttons">
+                                <button type="submit">Submit</button>
+                                <button type="button" className="greyed" onClick={() => props.gracefullyCloseModal(modalContent.current)}>Cancel</button>
+                            </div>}
+                </form>
+            </div>
+        );
         props.updateModalObject(content());
     }
     return (
         <div className="Main" data-editor={currentNote ? true : false}>
-            <div id="demo" onClick={() => console.table(currentNote)}></div>
             <Notes
                 {...props}
                 createTag={createTag} />
@@ -104,7 +101,7 @@ export default function Main(props) {
 const isMobile = false;
 
 function Editor(props) {
-    const { notes, currentNote, unsavedChanges } = props;
+    const { currentNote, unsavedChanges } = props;
     const newNote = !currentNote.content;
     const modalContent = useRef(null);
     useEffect(() => {

@@ -12,17 +12,43 @@ export default function NoteEditor(props) {
     const [editorState, setEditorState] = useState(
         newNote ? () => EditorState.createEmpty() : EditorState.createWithContent(convertFromRaw(currentNote.content))
     );
+    const [saveChangesButtonClick, setSaveChangesButtonClick] = useState(false); // prop for button, to simulate click event after Ctrl + S
     const titleInput = useRef(null);
     const editorRef = useRef(null);
     useEffect(() => {
         if (newNote) titleInput.current.focus();
     }, [newNote]);
     useEffect(() => {
+        console.log('unsavedChanges is', unsavedChanges);
+    }, [unsavedChanges]);
+    useEffect(() => {
         if (!shouldSubmit) return;
         handleSubmit();
         props.updateShouldSubmit(false);
     }, [shouldSubmit]);
     // todo useeffect for Ctrl + S
+    useEffect(() => {
+        const keys = [];
+        const keydown = (e) => {
+            console.log('keydown');
+            keys[e.key] = true;
+            if (keys['Meta'] && keys['s']) {
+                e.preventDefault(); // hides automatic dialog but also prevents keyup event listener, hence the next 2 lines
+                keys['Meta'] = false;
+                keys['s'] = false;
+                setSaveChangesButtonClick(true);
+            }
+        }
+        const keyup = (e) => {
+            keys[e.key] = false;
+        }
+        window.addEventListener('keydown', keydown);
+        window.addEventListener('keyup', keyup);
+        return () => {
+            window.removeEventListener('keydown', keydown);
+            window.removeEventListener('keyup', keyup);
+        }
+    }, []);
     const handleKeyCommand = (command, editorState) => {
         const newState = RichUtils.handleKeyCommand(editorState, command);
         if (newState) {
@@ -60,8 +86,11 @@ export default function NoteEditor(props) {
         props.updateUnsavedChanges(true); // tell parent component there are unsaved changes
     }
     const handleSubmit = async () => {
-        console.log(editorTitle);
+        console.log('handling submit');
+        if (!unsavedChanges) return;
         const contentState = editorState.getCurrentContent();
+        console.log(editorTitle);
+        console.log(contentState);
         let ROUTE = newNote ? '/add/note' : '/edit/note';
         const response = await fetch(ROUTE, {
             method: 'POST',
@@ -78,6 +107,7 @@ export default function NoteEditor(props) {
         if (!body) return console.log('no response from server');
         if (!body.success) return console.log('no success: true response from server');
         props.updateUnsavedChanges(false);
+        if (saveChangesButtonClick) setSaveChangesButtonClick(false);
         props.refreshData();
         if (body.id) props.updateCurrentNote(false); // only get id from server when creating new note
     }
@@ -128,6 +158,7 @@ export default function NoteEditor(props) {
     const extendedBlockRenderMap = DefaultDraftBlockRenderMap.merge(blockRenderMap);
     return (
         <div className="NoteEditor">
+            <div id="demo" onClick={() => console.log(unsavedChanges)}></div>
             {currentNote.trash
                 ? noteIsInTrash()
                 : <EditorToolbar controlStyle={controlStyle} editorState={editorState} />}
@@ -144,7 +175,7 @@ export default function NoteEditor(props) {
                 />
             </div>
             {unsavedChanges && <div className="saveChanges">
-                <Button onClick={handleSubmit} loadingIconSize="2.5rem">Save Changes</Button>
+                <Button onClick={handleSubmit} isClicked={saveChangesButtonClick} loadingIconSize="2.5rem">Save Changes</Button>
             </div>}
         </div>
     )
