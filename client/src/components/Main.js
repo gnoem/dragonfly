@@ -59,7 +59,7 @@ export default function Main(props) {
             props.gracefullyCloseModal(modalContent.current);
             props.refreshData();
         }
-        let content = (breakpoints = {
+        let content = (options = {
             tagNameError: null,
             loadingIcon: false
         }) => (
@@ -70,10 +70,10 @@ export default function Main(props) {
                     <input
                         type="text"
                         name="tagName"
-                        className={breakpoints.tagNameError ? 'nope' : ''}
+                        className={options.tagNameError ? 'nope' : ''}
                         onInput={(e) => e.target.className = ''} />
-                    {breakpoints.tagNameError}
-                    {breakpoints.loadingIcon
+                    {options.tagNameError}
+                    {options.loadingIcon
                         ?   <div className="buttons"><Loading /></div>
                         :   <div className="buttons">
                                 <button type="submit">Submit</button>
@@ -86,14 +86,8 @@ export default function Main(props) {
     }
     return (
         <div className="Main" data-editor={currentNote ? true : false}>
-            <Notes
-                {...props}
-                createTag={createTag} />
-            {currentNote
-                && <Editor
-                    {...props}
-                    createTag={createTag} />
-                }
+            <Notes {...props} createTag={createTag} />
+            {currentNote && <Editor {...props} createTag={createTag} />}
         </div>
     );
 }
@@ -141,13 +135,13 @@ function Editor(props) {
             props.refreshData();
             props.gracefullyCloseModal(modalContent.current);
         }
-        let content = (breakpoints = {
+        let content = (options = {
             loadingIcon: false
         }) => (
             <div className="modalContent" ref={modalContent}>
                 <h2>Are you sure?</h2>
                 You are about to permanently delete this note.
-                {breakpoints.loadingIcon
+                {options.loadingIcon
                     ?   <Loading />
                     :   <form onSubmit={(e) => deleteNote(e, id)} className="buttons">
                             <button type="submit">Yes, I'm sure</button>
@@ -218,13 +212,13 @@ function NoteOperations(props) {
             props.refreshData();
             props.gracefullyCloseModal(modalContent.current);
         }
-        let content = (breakpoints = {
+        let content = (options = {
             loadingIcon: false
         }) => (
             <div className="modalContent" ref={modalContent}>
                 <h2>Move to Trash</h2>
                 Notes moved to the Trash folder will remain there for 30 days before being automatically deleted. You can customize this option in Settings.
-                {breakpoints.loadingIcon
+                {options.loadingIcon
                     ?   <Loading />
                     :   <form onSubmit={(e) => moveToTrash(e, id)} className="buttons">
                             <button type="submit">Got it</button>
@@ -311,14 +305,14 @@ function Notes(props) {
                 props.refreshData();
                 props.gracefullyCloseModal(modalContent.current);
             }
-            let content = (breakpoints = {
+            let content = (options = {
                 loadingIcon: false
             }) => {
                 return (
                     <div className="modalContent" ref={modalContent}>
                         <h2>Are you sure?</h2>
                         If you proceed, all the notes in your Trash will be permanently erased. This action cannot be undone.
-                        {breakpoints.loadingIcon
+                        {options.loadingIcon
                             ?   <Loading />
                             :   <form onSubmit={emptyTrash} className="buttons">
                                     <button type="submit">Yes, I'm sure</button>
@@ -379,7 +373,7 @@ function Notes(props) {
                 updatedNameError: null,
                 loadingIcon: false
             }
-            let content = (breakpoints = initialBreakpoints) => {
+            let content = (options = initialBreakpoints) => {
                 return (
                     <div className="modalContent" ref={modalContent}>
                         <h2>Edit collection</h2>
@@ -388,10 +382,10 @@ function Notes(props) {
                             <input
                                 type="text"
                                 name="updatedName"
-                                className={breakpoints.updatedNameError ? 'nope' : ''}
+                                className={options.updatedNameError ? 'nope' : ''}
                                 onInput={() => props.updateModalObject(content())} />
-                            {breakpoints.updatedNameError}
-                            {breakpoints.loadingIcon
+                            {options.updatedNameError}
+                            {options.loadingIcon
                                 ?   <div className="buttons"><Loading /></div>
                                 :   <div className="buttons">
                                         <button type="submit">Submit</button>
@@ -435,13 +429,13 @@ function Notes(props) {
                 }
                 props.updateView(nextInLine); // */
             }
-            let content = (breakpoints = {
+            let content = (options = {
                 loadingIcon: false
             }) => (
                 <div className="modalContent" ref={modalContent}>
                     <h2>Are you sure?</h2>
                     Deleting the collection "{collectionName}" won't delete any notes, only the collection itself. This action cannot be undone.
-                    {breakpoints.loadingIcon
+                    {options.loadingIcon
                         ?   <Loading />
                         :   <form onSubmit={handleDelete} className="buttons">
                                 <button type="submit">Yes, I'm sure</button>
@@ -614,7 +608,7 @@ function Notes(props) {
                         updatedNameError: null,
                         loadingIcon: false
                     }
-                    let content = (breakpoints = initialBreakpoints) => {
+                    let content = (options = initialBreakpoints) => {
                         return (
                             <div className="modalContent" ref={modalContent}>
                                 <h2>Edit tag</h2>
@@ -624,10 +618,10 @@ function Notes(props) {
                                         type="text"
                                         name="updatedName"
                                         defaultValue={tagName}
-                                        className={breakpoints.updatedNameError ? 'nope' : ''}
+                                        className={options.updatedNameError ? 'nope' : ''}
                                         onInput={() => props.updateModalObject(content())} />
-                                    {breakpoints.updatedNameError}
-                                    {breakpoints.loadingIcon
+                                    {options.updatedNameError}
+                                    {options.loadingIcon
                                         ?   <div className="buttons"><Loading /></div>
                                         :   <div className="buttons">
                                                 <button type="submit">Submit</button>
@@ -656,13 +650,13 @@ function Notes(props) {
                         props.refreshData();
                         props.gracefullyCloseModal(modalContent.current);
                     }
-                    let content = (breakpoints = {
+                    let content = (options = {
                         loadingIcon: false
                     }) => (
                         <div className="modalContent" ref={modalContent}>
                             <h2>Are you sure?</h2>
                             Deleting the tag "{tagName}" won't delete any notes, only the tag itself. This action cannot be undone.
-                            {breakpoints.loadingIcon
+                            {options.loadingIcon
                                 ?   <Loading />
                                 :   <form onSubmit={deleteTag} className="buttons">
                                         <button type="submit">Yes, I'm sure</button>
