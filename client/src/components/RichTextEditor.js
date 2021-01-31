@@ -33,7 +33,7 @@ export default function NoteEditor(props) {
             console.log('keydown');
             keys[e.key] = true;
             if (keys['Meta'] && keys['s']) {
-                e.preventDefault(); // hides automatic dialog but also prevents keyup event listener, hence the next 2 lines
+                e.preventDefault(); // hides automatic dialog but also prevents keyup event listener(?), hence the next 2 lines
                 keys['Meta'] = false;
                 keys['s'] = false;
                 setSaveChangesButtonClick(true);
