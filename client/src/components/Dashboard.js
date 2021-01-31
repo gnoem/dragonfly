@@ -78,13 +78,13 @@ export default function Dashboard(props) {
             setShouldSubmit(true); // once this gets reset to false down in editor component, above useEffect takes care of the rest
             setModalObject(content({ loadingIcon: true }));
         }
-        let content = (breakpoints = {
+        let content = (options = {
             loadingIcon: false
         }) => (
             <div className="modalContent" ref={modalContent}>
                 <h2>Save changes?</h2>
                 It looks like you have unsaved changes. Would you like to save changes or discard?
-                {breakpoints.loadingIcon
+                {options.loadingIcon
                     ?   <Loading />
                     :   <div className="buttons">
                             <button onClick={saveChanges}>Save changes</button>
