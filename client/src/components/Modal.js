@@ -11,13 +11,14 @@ export default function Modal({ exitModal, content }) {
                 window.removeEventListener('click', closeModal);
             }
             if (elementHasParent(e.target, '#demo')) return;
-            if (modalContainer.current.contains(e.target)) return;
-            exitModal(dim.current);
+            if (e.key === 'Esc' || !modalContainer.current.contains(e.target)) exitModal(dim.current);
         }
         window.addEventListener('click', closeModal);
+        window.addEventListener('keydown', closeModal);
         // todo add escape keydown event listener
         return () => {
             window.removeEventListener('click', closeModal);
+            window.removeEventListener('keydown', closeModal);
         }
     }, [exitModal, content]);
     if (!content) return null;

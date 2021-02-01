@@ -30,7 +30,6 @@ export default function NoteEditor(props) {
     useEffect(() => {
         const keys = [];
         const keydown = (e) => {
-            console.log('keydown');
             keys[e.key] = true;
             if (keys['Meta'] && keys['s']) {
                 e.preventDefault(); // hides automatic dialog but also prevents keyup event listener(?), hence the next 2 lines
