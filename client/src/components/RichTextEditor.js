@@ -26,7 +26,6 @@ export default function NoteEditor(props) {
         handleSubmit();
         props.updateShouldSubmit(false);
     }, [shouldSubmit]);
-    // todo useeffect for Ctrl + S
     useEffect(() => {
         const keys = [];
         const keydown = (e) => {
@@ -82,7 +81,7 @@ export default function NoteEditor(props) {
         if (unsavedChanges) return;
         const inputTypes = ['insert-characters', 'backspace-character', 'insert-fragment', 'remove-range'];
         if (!inputTypes.includes(state.getLastChangeType())) return;
-        props.updateUnsavedChanges(true); // tell parent component there are unsaved changes
+        props.updateUnsavedChanges(true);
     }
     const handleSubmit = async () => {
         console.log('handling submit');
@@ -180,7 +179,8 @@ export default function NoteEditor(props) {
     )
 }
 
-function CustomBlock({ type, children }) {
+function CustomBlock(props) {
+    const { type, children } = props;
     return (
         <div className={type}>
             {children}
