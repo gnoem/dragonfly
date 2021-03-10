@@ -2,14 +2,15 @@
   "name": "server",
   "version": "1.0.0",
   "description": "",
-  "main": "server.js",
+  "main": "./server/server.js",
+  "type": "module",
   "proxy": "http://localhost:6000",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js",
-    "client": "npm start --prefix ../client",
-    "server": "nodemon server.js",
-    "dev": "concurrently --kill-others-on-fail \"npm run server\" \"npm run client\""
+    "server": "node ./server/server.js",
+    "client": "npm start --prefix ./client",
+    "devserver": "nodemon ./server/server.js",
+    "dev": "concurrently --kill-others-on-fail \"npm run devserver\" \"npm run client\""
   },
   "author": "",
   "license": "ISC",
@@ -17,6 +18,7 @@
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.0",
     "cookie-parser": "^1.4.5",
+    "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "express-validator": "^6.9.0",
     "jsonwebtoken": "^8.5.1",

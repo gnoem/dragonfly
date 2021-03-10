@@ -1,12 +1,12 @@
-const { validationResult } = require('express-validator');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const { secret } = require('../config');
-const User = require('../models/user');
-const Note = require('../models/note');
+import { validationResult } from 'express-validator';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import { User, Note } from '../models/index.js';
 
-module.exports = {
-    auth: (req, res) => {
+const secretKey = process.env.SECRET_KEY;
+
+class Controller {
+    auth = (req, res) => {
         const { id } = req.params;
         const token = req.cookies.auth;
         if (!token) {
@@ -16,7 +16,7 @@ module.exports = {
             });
             return;
         }
-        const decoded = jwt.verify(token, secret);
+        const decoded = jwt.verify(token, secretKey);
         if (id !== decoded.id) {
             res.status(401).send({
                 success: false,
@@ -28,12 +28,12 @@ module.exports = {
             success: true,
             accessToken: token
         });
-    },
-    logoutUser: (req, res) => {
+    }
+    logoutUser = (req, res) => {
         res.clearCookie('auth');
         res.status(200).send({ success: true });
-    },
-    loginUser: (req, res) => {
+    }
+    loginUser = (req, res) => {
         const { username, password } = req.body;
         User.findOne({ username }, (err, user) => {
             if (err) {
@@ -60,7 +60,7 @@ module.exports = {
                 });
                 return;
             }
-            let token = jwt.sign({ id: user.id }, secret, {
+            let token = jwt.sign({ id: user.id }, secretKey, {
                 expiresIn: 86400 // 24 hours
             });
             res.cookie('auth', token, { httpOnly: true, secure: false, maxAge: 3600000 });
@@ -69,8 +69,8 @@ module.exports = {
                 accessToken: token
             });
         });
-    },
-    createUser: (req, res) => {
+    }
+    createUser = (req, res) => {
         const newUser = new User();
         newUser.save(err => {
             if (err) {
@@ -85,8 +85,8 @@ module.exports = {
                 user: newUser
             });
         });
-    },
-    getData: (req, res) => {
+    }
+    getData = (req, res) => {
         let { id } = req.body;
         const searchingById = id.length === 24;
         let userParams;
@@ -130,8 +130,8 @@ module.exports = {
                 });
             });
         });
-    },
-    createNote: (req, res) => {
+    }
+    createNote = (req, res) => {
         console.log('well its working');
         const { id, title, content } = req.body;
         const newNote = new Note({
@@ -155,8 +155,8 @@ module.exports = {
                 id: newNote._id
             });
         });
-    },
-    editNote: (req, res) => {
+    }
+    editNote = (req, res) => {
         const { id, title, content } = req.body;
         Note.findOne({ _id: id }, (err, note) => {
             if (err) {
@@ -188,8 +188,8 @@ module.exports = {
                 res.status(200).send({ success: true });
             });
         });
-    },
-    starNote: (req, res) => {
+    }
+    starNote = (req, res) => {
         const { _id } = req.body;
         console.log('starring note');
         Note.findOne({ _id }, (err, note) => {
@@ -220,8 +220,8 @@ module.exports = {
                 res.status(200).send({ success: true });
             });
         });
-    },
-    moveNoteToCollection: (req, res) => {
+    }
+    moveNoteToCollection = (req, res) => {
         const { _id, collectionName } = req.body;
         Note.findOne({ _id }, (err, note) => {
             if (err) {
@@ -250,8 +250,8 @@ module.exports = {
                 res.status(200).send({ success: true });
             });
         });
-    },
-    tagNote: (req, res) => {
+    }
+    tagNote = (req, res) => {
         const { _id, tagName } = req.body;
         Note.findOne({ _id }, (err, note) => {
             if (err) {
@@ -287,8 +287,8 @@ module.exports = {
                 res.status(200).send({ success: true });
             });
         });
-    },
-    trashNote: (req, res) => { // or untrash; note.trash = !note.trash
+    }
+    trashNote = (req, res) => { // or untrash; note.trash = !note.trash
         const { _id } = req.body;
         Note.findOne({ _id }, (err, note) => {
             if (err) {
@@ -317,8 +317,8 @@ module.exports = {
                 res.status(200).send({ success: true });
             });
         });
-    },
-    deleteNote: (req, res) => {
+    }
+    deleteNote = (req, res) => {
         const { id } = req.body;
         Note.findOneAndDelete({ _id: id }, (err, note) => {
             if (err) {
@@ -337,8 +337,8 @@ module.exports = {
             }
             res.status(200).send({ success: true });
         })
-    },
-    emptyTrash: (req, res) => {
+    }
+    emptyTrash = (req, res) => {
         const { _id } = req.body;
         Note.deleteMany({ userId: _id, trash: true }, (err) => {
             if (err) {
@@ -350,8 +350,8 @@ module.exports = {
             }
             res.status(200).send({ success: true });
         });
-    },
-    createCollection: (req, res) => {
+    }
+    createCollection = (req, res) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             const generateError = (type) => {
@@ -407,8 +407,8 @@ module.exports = {
                 res.status(200).send({ success: true });
             });
         });
-    },
-    editCollection: (req, res) => {
+    }
+    editCollection = (req, res) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             const generateError = (type) => {
@@ -492,8 +492,8 @@ module.exports = {
                 });
             });
         });
-    },
-    deleteCollection: (req, res) => {
+    }
+    deleteCollection = (req, res) => {
         const { _id, collectionName } = req.body;
         User.findOne({ _id }, (err, user) => {
             if (err) {
@@ -562,8 +562,8 @@ module.exports = {
                 });
             });
         });
-    },
-    createTag: (req, res) => {
+    }
+    createTag = (req, res) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             const generateError = (type) => {
@@ -619,8 +619,8 @@ module.exports = {
                 res.status(200).send({ success: true });
             });
         });
-    },
-    editTag: (req, res) => {
+    }
+    editTag = (req, res) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             const generateError = (type) => {
@@ -710,8 +710,8 @@ module.exports = {
                 });
             });
         });
-    },
-    deleteTag: (req, res) => {
+    }
+    deleteTag = (req, res) => {
         const { _id, tagName } = req.body;
         User.findOne({ _id }, (err, user) => {
             if (err) {
@@ -777,8 +777,8 @@ module.exports = {
                 });
             });
         });
-    },
-    createAccount: (req, res) => {
+    }
+    createAccount = (req, res) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             const generateError = (type) => {
@@ -825,15 +825,15 @@ module.exports = {
                     });
                     return console.error('error saving user', err);
                 }
-                let token = jwt.sign({ id: user.id }, secret, {
+                let token = jwt.sign({ id: user.id }, secretKey, {
                     expiresIn: 86400 // 24 hours
                 });
                 res.cookie('auth', token, { httpOnly: true, secure: false, maxAge: 3600000 });
                 res.status(200).send({ success: true });
             });
         });
-    },
-    editAccount: (req, res) => {
+    }
+    editAccount = (req, res) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             const generateError = (type) => {
@@ -883,8 +883,8 @@ module.exports = {
                 res.status(200).send({ success: true });
             });
         });
-    },
-    editPassword: (req, res) => {
+    }
+    editPassword = (req, res) => {
         const { _id, password } = req.body;
         User.findOne({ _id }, (err, user) => {
             if (err) {
@@ -913,8 +913,8 @@ module.exports = {
                 res.status(200).send({ success: true });
             });
         });
-    },
-    deleteAccount: (req, res) => {
+    }
+    deleteAccount = (req, res) => {
         const { _id } = req.body;
         User.findOneAndDelete({ _id }, (err, user) => {
             if (err) {
@@ -944,3 +944,5 @@ module.exports = {
         });
     }
 }
+
+export default new Controller();

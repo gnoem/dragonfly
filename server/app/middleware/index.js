@@ -1,7 +1,7 @@
-const { check } = require('express-validator');
-const User = require('../models/user');
+import { check } from 'express-validator';
+import { User } from '../models/index.js';
 
-module.exports = {
+export const validate = {
     createCollection: [
         check('collectionName')
             .isLength({ min: 1, max: 25 }).withMessage('Collection name must be between 1 and 25 characters')
