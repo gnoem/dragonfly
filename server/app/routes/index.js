@@ -2,6 +2,30 @@ import Controller from '../controllers/index.js';
 import { validate } from '../middleware/index.js';
 
 export default (app) => {
+    app.route('/user/:_id/data')
+        .get(Controller.getUserData);
+    /* app.route('/user')
+        .post(Controller.createUser);
+    app.route('/account')
+        .post(Controller.createAccount);
+    app.route('/account/:id')
+        .put(Controller.editAccount)
+        .delete(Controller.deleteAccount);
+    app.route('/note')
+        .post(Controller.createNote);
+    app.route('/note/:id/:action')
+        .put(Controller.editNote)
+        .delete(Controller.deleteNote);
+    app.route('/tag')
+        .post(Controller.createTag);
+    app.route('/tag/:name')
+        .put(Controller.editTag)
+        .delete(Controller.deleteTag);
+    app.route('/collection')
+        .post(Controller.createCollection);
+    app.route('/collection/:name')
+        .put(Controller.editCollection)
+        .delete(Controller.deleteCollection); */
     app.get('/auth/:id', Controller.auth);
     app.post('/logout/user', Controller.logoutUser);
     app.post('/login/user', Controller.loginUser);

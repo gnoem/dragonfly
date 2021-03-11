@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import Loading from './Loading';
+import Loading from '../Loading';
 
 export default function Button(props) {
     const { className, onClick: functionToCall, loadingIconSize, isClicked, children } = props;

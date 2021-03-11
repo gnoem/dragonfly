@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { elementHasParent } from '../utils';
+import { elementHasParent } from '../../utils';
 
 export default function Modal({ exitModal, content }) {
     const dim = useRef(null);

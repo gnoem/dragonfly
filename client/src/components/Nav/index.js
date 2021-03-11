@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import Loading from './Loading';
+import Loading from '../Loading';
 
 export default function Nav(props) {
     const { user, exitMenu } = props;
@@ -107,14 +107,14 @@ export default function Nav(props) {
         <div className="Nav">
             <nav>
                 <ul>
-                    <li><button className="notes" onClick={() => switchView('all-notes')}>All Notes</button></li>
-                    <li><button className="starred" onClick={() => switchView('starred-notes')}>Starred</button></li>
+                    <li><button className="notes" onClick={() => switchView({ type: 'all-notes' })}>All Notes</button></li>
+                    <li><button className="starred" onClick={() => switchView({ type: 'starred-notes' })}>Starred</button></li>
                     <li>
                         <button className="collections" onClick={() => setShowingCollections(show => !show)}>Collections</button>
                         {subList(showingCollections, 'collections')}
                     </li>
                     <li><button className="tags" onClick={() => switchView({ type: 'tags', tags: [] })}>Tags</button></li>
-                    <li><button className="trash" onClick={() => switchView('trash')}>Trash</button></li>
+                    <li><button className="trash" onClick={() => switchView({ type: 'trash' })}>Trash</button></li>
                 </ul>
             </nav>
             <nav>

@@ -1,6 +1,3 @@
-/* const express = require('express');
-const bodyParser = require('body-parser');
-const cookieParser = require('cookie-parser'); */
 import './app/config/index.js';
 import express from 'express';
 import bodyParser from 'body-parser';

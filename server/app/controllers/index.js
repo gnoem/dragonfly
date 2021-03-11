@@ -5,7 +5,28 @@ import { User, Note } from '../models/index.js';
 
 const secretKey = process.env.SECRET_KEY;
 
+const handle = (promise) => {
+    return promise
+        .then(data => ([data, undefined]))
+        .catch(err => Promise.resolve([undefined, err]));
+}
+
 class Controller {
+    getUserData = (req, res) => {
+        const { _id } = req.params;
+        const searchingById = _id.length === 24;
+        const params = searchingById ? { _id } : { username: _id } ;
+        const run = async () => {
+            const [foundUser, findUserError] = await handle(User.findOne(params));
+            if (findUserError) throw new Error(`Error finding user ${params}`);
+            if (!foundUser) throw new Error(`User ${params} not found`);
+            const [foundNotes, findNotesError] = await handle(Note.find({ userId: foundUser._id }).lean().sort({ lastModified: 'desc' }));
+            if (findNotesError) throw new Error(`Error finding notes from user ${_id}`);
+            const notes = foundNotes.map(note => Object.assign(note, { content: JSON.parse(note.content) }));
+            res.send({ success: true, data: { user: foundUser, notes } });
+        }
+        run().catch(err => res.send({ success: false, error: err.message }));
+    }
     auth = (req, res) => {
         const { id } = req.params;
         const token = req.cookies.auth;

@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import Loading from './Loading';
-import Checkbox from './Checkbox';
+import Loading from '../Loading';
+import Checkbox from '../Checkbox';
 
 export default function Login(props) {
     const [password, setPassword] = useState('');

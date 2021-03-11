@@ -1,52 +1,58 @@
-import { useEffect, useRef } from 'react';
-import { elementHasParent, elementIsInArray } from '../utils';
-import Dropdown from './Dropdown';
-import Loading from './Loading';
+import { useState, useEffect, useRef } from 'react';
+import Loading from '../Loading';
+import Dropdown from '../Dropdown';
+import { elementHasParent, elementIsInArray } from '../../utils';
 
-export default function ContextMenu(props) {
-    const { menu, updateMiniMenu } = props;
-    switch (menu.name) {
-        case 'moveNoteToCollection': return <MoveNoteToCollection {...props} />;
-        case 'tagNote': return <TagNote {...props} />;
-        case 'presentChildren': return <PresentChildren content={menu.content} updateMiniMenu={updateMiniMenu} />;
-        default: return null;
-    }
-}
-
-export function MiniMenu({ exitMenu, children }) {
-    const menuBox = useRef(null);
+export default function Tooltip(props) {
+    const { user, currentNote, open, defaultContent, parent } = props;
+    const [tooltipContent, setTooltipContent] = useState(open || defaultContent);
+    const tooltip = useRef(null);
     useEffect(() => {
-        if (!children) return;
-        const closeMenu = (e) => {
-            if (elementHasParent(e.target, '#demo')) return; // todo dev only
-            if (elementHasParent(e.target, '.ContextMenu ul')) return;
-            if (elementHasParent(e.target, '.Modal')) return; // specifically so that collections minimenu doesn't disappear when creating new collection
-            exitMenu();
+        if (!tooltip || !tooltip.current) return;
+        if (!open || !parent) return; // button hasn't been clicked
+        setTooltipContent(() => {
+            switch (defaultContent) {
+                case 'Move to collection': return <MoveNoteToCollection {...props} />;
+                case 'Add tags': return <TagNote {...props} />;
+                default: return null;
+            }
+        });
+        const closeTooltip = (e) => {
+            if (parent.contains(e.target)) return;
+            if (!tooltip.current) return;
+            if (tooltip.current.contains(e.target)) return;
+            if (elementHasParent(e.target, '.Modal')) return;
+            setTooltipContent(defaultContent);
+            props.updateTooltipOpen(false);
+            if (tooltip.current) tooltip.current.style.maxHeight = '2rem';
         }
-        console.log('added event listener');
-        window.addEventListener('click', closeMenu);
-        return () => {
-            console.log('rmoved listener');
-            window.removeEventListener('click', closeMenu);
+        window.addEventListener('click', closeTooltip);
+        return () => window.removeEventListener('click', closeTooltip);
+    }, [open, user, currentNote]);
+    useEffect(() => {
+        if (tooltipContent === defaultContent) return;
+        const expandTooltip = (tooltip) => {
+            tooltip.style.maxHeight = (tooltip.scrollHeight < 300)
+                ? tooltip.scrollHeight+'px'
+                : '300px';
         }
-    }, [exitMenu, children]);
-    if (!children) return null;
+        expandTooltip(tooltip.current);
+    }, [tooltipContent])
     return (
-        <div className="ContextMenu" ref={menuBox}>
-            {children}
+        <div className={`tooltip${open ? ' menu' : ''}${defaultContent === 'Move to collection' ? ' hasDropdown' : ''}`} ref={tooltip}>
+            {tooltipContent}
         </div>
-    )
+    );
 }
 
-export function MoveNoteToCollection({ menu, user, currentNote, updateMiniMenu, updateModalObject, gracefullyCloseModal, refreshData }) {
+function MoveNoteToCollection(props) {
+    const { user, currentNote } = props;
     const modalContent = useRef(null);
-    const miniMenuRef = useRef(null);
-    if (!menu || !menu.position) return null;
     const moveToCollection = async (e, collectionName) => {
         let clickedButton = e.target;
         const handleMove = async (collectionName) => {
             let removingFromCollection = modalContent.current;
-            if (removingFromCollection) updateModalObject(content({ loadingIcon: true }));
+            if (removingFromCollection) props.updateModalObject(content({ loadingIcon: true }));
             const response = await fetch('/categorize/note', {
                 method: 'POST',
                 headers: {
@@ -57,16 +63,12 @@ export function MoveNoteToCollection({ menu, user, currentNote, updateMiniMenu, 
             const body = await response.json();
             if (!body) return console.log('no response from server');
             if (!body.success) return console.log('no success: true response from server');
-            refreshData();
+            props.refreshData();
             if (removingFromCollection) {
                 clickedButton.classList.remove('hasCollection');
-                gracefullyCloseModal(modalContent.current);
+                props.gracefullyCloseModal(modalContent.current);
             } else {
-                // immediately update button with check mark and remove check mark on old collection
-                if (miniMenuRef.current) {
-                    const prevCollection = miniMenuRef.current.querySelector('.hasCollection');
-                    if (prevCollection) prevCollection.classList.remove('hasCollection');   
-                }
+                clickedButton.closest('.Dropdown').querySelector('.hasCollection').classList.remove('hasCollection');
                 clickedButton.classList.add('hasCollection');
             }
         }
@@ -81,23 +83,23 @@ export function MoveNoteToCollection({ menu, user, currentNote, updateMiniMenu, 
                     {breakpoints.loadingIcon
                         ?   <Loading />
                         :   <div className="buttons">
-                                <button onClick={() => handleMove(false)}>Yes, I'm sure</button>
-                                <button className="greyed" onClick={() => gracefullyCloseModal(modalContent.current)}>Take me back</button>
+                                <button onClick={() => handleMove('')}>Yes, I'm sure</button>
+                                <button className="greyed" onClick={() => props.gracefullyCloseModal(modalContent.current)}>Take me back</button>
                             </div>
                         }
                 </div>
             );
         }
-        updateModalObject(content());
+        props.updateModalObject(content());
     }
     const createCollection = () => {
-        const handleSubmit = async (event) => {
-            event.preventDefault();
-            updateModalObject(content({
+        const handleSubmit = async (e) => {
+            e.preventDefault();
+            props.updateModalObject(content({
                 collectionNameError: null,
                 loadingIcon: true   
             }));
-            const collectionName = event.target[0].value;
+            const collectionName = e.target[0].value;
             const response = await fetch('/create/collection', {
                 method: 'POST',
                 headers: {
@@ -108,14 +110,14 @@ export function MoveNoteToCollection({ menu, user, currentNote, updateMiniMenu, 
             const body = await response.json();
             if (!body) return console.log('no response from server');
             if (!body.success) {
-                updateModalObject(content({
+                props.updateModalObject(content({
                     collectionNameError: <span className="formError">{body.collectionNameError}</span>,
                     loadingIcon: false
                 }));
                 return;
             }
-            gracefullyCloseModal(modalContent.current);
-            refreshData();
+            props.gracefullyCloseModal(modalContent.current);
+            props.refreshData();
         }
         let content = (breakpoints = {
             collectionNameError: null,
@@ -130,38 +132,37 @@ export function MoveNoteToCollection({ menu, user, currentNote, updateMiniMenu, 
                             type="text"
                             name="collectionName"
                             className={breakpoints.collectionNameError ? 'nope' : ''}
-                            onInput={() => updateModalObject(content())} />
+                            onInput={() => props.updateModalObject(content())} />
                         {breakpoints.collectionNameError}
                         {breakpoints.loadingIcon
                             ?   <div className="buttons"><Loading /></div>
                             :   <div className="buttons">
                                     <button type="submit">Submit</button>
-                                    <button type="button" className="greyed" onClick={() => gracefullyCloseModal(modalContent.current)}>Cancel</button>
-                                </div>}
+                                    <button type="button" className="greyed" onClick={() => props.gracefullyCloseModal(modalContent.current)}>Cancel</button>
+                                </div>
+                            }
                     </form>
                 </div>
             );
         }
-        updateModalObject(content());
+        props.updateModalObject(content());
     }
     const collectionsList = (collections) => {
         const createNewCollectionButton = (
             <li key={`createNewCollection-MiniMenu`}>
-                <button onClick={() => createCollection()} className="notOption">
-                    <i className="fas fa-plus-circle"></i> Create new
+                <button onClick={() => createCollection()} className="keepOpen">
+                    <i className="fas fa-plus-circle" style={{ marginRight: '0.2rem' }}></i> Create new
                 </button>
             </li>
         );
         if (!collections || !collections.length) return <Dropdown>{createNewCollectionButton}</Dropdown>;
         let array = [];
-        let selected;
         for (let i = 0; i < collections.length; i++) {
             let noteIsInCollection = currentNote.collection === collections[i];
-            if (noteIsInCollection) selected = collections[i];
             array.push(
                 <li key={`collectionsMiniMenu-${collections[i]}`}>
                     <button
-                        className={`add${noteIsInCollection ? ' hasCollection' : ''}`}
+                        className={`add${noteIsInCollection ? ' hasCollection keepOpen' : ''}`}
                         onClick={(e) => moveToCollection(e, collections[i])}>
                         {collections[i]}
                     </button>
@@ -169,25 +170,20 @@ export function MoveNoteToCollection({ menu, user, currentNote, updateMiniMenu, 
             );
         }
         array.push(createNewCollectionButton);
-        return (
-            <Dropdown display={selected}>
-                {array}
-            </Dropdown>
-        )
+        return array;
     }
     return (
-        <MiniMenu exitMenu={() => updateMiniMenu(false)}>
-            <ul style={{ top: `${menu.position.top}px`, right: `${menu.position.right}px` }} ref={miniMenuRef}>
-                <li><strong>Move to collection</strong></li>
+        <ul>
+            <li><strong>Move to collection</strong></li>
+            <Dropdown display={currentNote.collection !== '' ? currentNote.collection : 'Select one...'}>
                 {collectionsList(user.collections)}
-            </ul>
-        </MiniMenu>
-    )
+            </Dropdown>
+        </ul>
+    );
 }
 
-export function TagNote({ menu, user, currentNote, createTag, updateMiniMenu, updateModalObject, gracefullyCloseModal, refreshData }) {
-    const miniMenuRef = useRef(null);
-    if (!menu || !menu.position) return null;
+function TagNote(props) {
+    const { user, currentNote } = props;
     const handleTagNote = async (e, tagName) => {
         const response = await fetch('/tag/note', {
             method: 'POST',
@@ -202,12 +198,12 @@ export function TagNote({ menu, user, currentNote, createTag, updateMiniMenu, up
         const button = e.target;
         if (!button.classList.contains('hasTag')) button.classList.add('hasTag');
         else button.classList.remove('hasTag');
-        refreshData();
+        props.refreshData();
     }
     const tagsList = (tags) => {
         const createNewTag = (
-            <li key={`minimenu-user.collections-createNewTag`} className="tagsList">
-                <button className="tag createTag" onClick={(e) => createTag(e, true)}>
+            <li key={`minimenu-user.collections-createNewTag`} className="createTag">
+                <button className="tag createTag" onClick={props.createTag}>
                     Create new
                 </button>
             </li>
@@ -216,10 +212,10 @@ export function TagNote({ menu, user, currentNote, createTag, updateMiniMenu, up
         let userTags = [];
         for (let i = 0; i < tags.length; i++) {
             let tagName = tags[i];
-            const hasTag = (elementIsInArray(tagName, currentNote.tags)) ? ' hasTag' : '';
+            const hasTag = elementIsInArray(tagName, currentNote.tags) ? ' hasTag' : '';
             userTags.push(
-                <li key={`minimenu-user.tags-${tagName}`} className="tagsList">
-                    <button className={`tag${hasTag}`} onClick={(e) => handleTagNote(e, tagName)}>
+                <li key={`minimenu-user.tags-${tagName}`}>
+                    <button key={`minimenu-user.tags-${tagName}`} className={`tag${hasTag}`} onClick={(e) => handleTagNote(e, tagName)}>
                         {tagName}
                     </button>
                 </li>
@@ -229,19 +225,9 @@ export function TagNote({ menu, user, currentNote, createTag, updateMiniMenu, up
         return userTags;
     }
     return (
-        <MiniMenu exitMenu={() => updateMiniMenu(false)}>
-            <ul className="nolines" style={{ top: `${menu.position.top}px`, right: `${menu.position.right}px` }} ref={miniMenuRef}>
-                <li><strong>Add tags</strong></li>
-                {tagsList(user.tags)}
-            </ul>
-        </MiniMenu>
-    )
-}
-
-export function PresentChildren({ content, updateMiniMenu }) {
-    return (
-        <MiniMenu exitMenu={() => updateMiniMenu(false)}>
-            {content}
-        </MiniMenu>
+        <ul className="tagsList">
+            <li><strong>Tag note</strong></li>
+            {tagsList(user.tags)}
+        </ul>
     )
 }

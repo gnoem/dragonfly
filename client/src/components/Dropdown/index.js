@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { elementHasParent } from '../utils';
+import { elementHasParent } from '../../utils';
 
 export default function Dropdown({ addClass, display, children }) {
     const [isOpen, setIsOpen] = useState(false);

@@ -1118,6 +1118,11 @@ button.help::before {
 button.logout::before {
     content: '\f2f5';
 }
+.Options {
+    position: fixed;
+    right: 3rem;
+    bottom: 12rem;
+}
 .Options .OptionItem > button {
     background: none;
     font-size: 1.2rem;

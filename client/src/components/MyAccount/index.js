@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import Loading from './Loading';
+import Loading from '../Loading';
 
 export default function MyAccount(props) {
     const { user } = props;
