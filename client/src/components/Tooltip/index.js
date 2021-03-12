@@ -2,8 +2,49 @@ import { useState, useEffect, useRef } from 'react';
 import Loading from '../Loading';
 import Dropdown from '../Dropdown';
 import { elementHasParent, elementIsInArray } from '../../utils';
+import { CollectionsList } from '../Collections/components/CollectionsList';
+import { createCollection, moveNoteToCollection} from '../../helpers';
 
-export default function Tooltip(props) {
+export const Tooltip = (props) => {
+    const { name, parent, tooltipWillOpen, defaultContent, overflow } = props;
+    const tooltipRef = useRef(null);
+    useEffect(() => {
+        if (!tooltipWillOpen) return;
+        if (!tooltipRef || !tooltipRef.current) return () => window.removeEventListener('click', closeTooltip);
+        const { tooltipOpen, updateTooltipOpen } = tooltipWillOpen;
+        if (tooltipOpen) {
+            // adjust maxheight for smooth transition
+            tooltipRef.current.style.maxHeight = tooltipRef.current.scrollHeight + 'px';
+        }
+        const closeTooltip = (e) => {
+            if (!tooltipRef.current || !parent.current) return () => window.removeEventListener('click', closeTooltip);
+            if (tooltipRef.current.contains(e.target)) return;
+            if (parent.current.contains(e.target)) return;
+            tooltipRef.current.classList.add('closing');
+            tooltipRef.current.style.maxHeight = '0';
+            setTimeout(() => {
+                updateTooltipOpen(false);
+                tooltipRef.current.classList.remove('closing');
+                tooltipRef.current.style = '';
+            }, 200);
+        }
+        window.addEventListener('click', closeTooltip);
+        return () => window.removeEventListener('click', closeTooltip);
+    }, [tooltipWillOpen?.tooltipOpen, tooltipRef]);
+    const tooltipContent = () => {
+        if (!tooltipWillOpen) return defaultContent;
+        const { tooltipOpen } = tooltipWillOpen;
+        if (tooltipOpen) return tooltipStore[name](props);
+        else return defaultContent;
+    }
+    return (
+        <div className={`Tooltip${tooltipWillOpen?.tooltipOpen ? ' open' : ''}${overflow ? ' hasDropdown' : ''}`} ref={tooltipRef}>
+            {tooltipContent()}
+        </div>
+    );
+}
+
+export function TooltipOLD(props) {
     const { user, currentNote, open, defaultContent, parent } = props;
     const [tooltipContent, setTooltipContent] = useState(open || defaultContent);
     const tooltip = useRef(null);
@@ -45,7 +86,43 @@ export default function Tooltip(props) {
     );
 }
 
-function MoveNoteToCollection(props) {
+const tooltipStore = {
+    collection: (props) => <MoveNoteToCollection {...props} />
+}
+
+const MoveNoteToCollection = (props) => {
+    const { user, currentNote, collections } = props;
+    console.dir(currentNote._id);
+    const handleChange = (collectionId) => moveNoteToCollection(props, currentNote, collectionId);
+    const handleAddNew = (name) => {
+        createCollection(props, { userId: user._id, name }).then(collection => handleChange(collection._id));
+    };
+    const dropdown = {
+        listItems: () => {
+            return collections.map(collection => ({
+                value: collection._id,
+                display: collection.name
+            }));
+        },
+        defaultValue: () => {
+            return dropdown.listItems().find(item => item.value === currentNote.collectionId);
+            // if it's undefined then Dropdown component will just set it to 'Select one'
+        }
+    }
+    return (
+        <div>
+            <strong>Move to collection</strong>
+            <Dropdown
+                style={{ minWidth: '9rem' }}
+                defaultValue={dropdown.defaultValue()}
+                listItems={dropdown.listItems()}
+                onChange={handleChange}
+                addNew={handleAddNew} />
+        </div>
+    )
+}
+
+/* function MoveNoteToCollection(props) {
     const { user, currentNote } = props;
     const modalContent = useRef(null);
     const moveToCollection = async (e, collectionName) => {
@@ -180,7 +257,7 @@ function MoveNoteToCollection(props) {
             </Dropdown>
         </ul>
     );
-}
+} */
 
 function TagNote(props) {
     const { user, currentNote } = props;

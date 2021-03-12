@@ -14,6 +14,16 @@
         transform: scale(1);
     }
 }
+@keyframes fadeAndScaleOut {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: scale(0.5);
+    }
+}
 @keyframes fadeOut {
     from { opacity: 1; }
     to { opacity: 0; }
@@ -522,7 +532,7 @@ button.createNew:hover .tooltip {
     margin-top: 0.5rem;
     opacity: 0.7;
 }
-.NoteOperations .OptionItem .hasStar {
+.NoteOperations .OptionItem.hasStar > button {
     color: #2f9e72;
 }
 .ListItem .hasStar {
@@ -661,7 +671,7 @@ button.giantCornerButton.back::before {
     color: #222;
     display: inline-block;
 }
-.NoteOperations .OptionItem .tooltip {
+.NoteOperations .OptionItem .Tooltip {
     position: absolute;
     bottom: 50%;
     right: 100%;
@@ -690,36 +700,60 @@ button.giantCornerButton.back::before {
     width: 0.5rem;
     height: 0.5rem;
     background: #222;
+    transition: opacity 0.2s;
 }
-.NoteOperations .OptionItem:hover .tooltip,
+.NoteOperations .OptionItem:hover .Tooltip,
 .NoteOperations .OptionItem:hover .tooltipArrow,
-.NoteOperations .OptionItem .tooltip.menu + .tooltipArrow {
+.NoteOperations .OptionItem .Tooltip.open,
+.NoteOperations .OptionItem .Tooltip.open + .tooltipArrow {
     display: inline-block;
 }
-.NoteOperations .OptionItem .tooltip.menu {
+.NoteOperations .OptionItem .Tooltip.open {
     display: inline-block;
     overflow: auto;
     padding: 1rem;
     box-sizing: content-box;
+    line-height: 1.2;
 }
-.NoteOperations .OptionItem .tooltip.menu .Dropdown {
+.NoteOperations .OptionItem .Tooltip.open .Dropdown {
     animation: fadeAndScaleIn 0.2s 1;
+    transform-origin: top center;
 }
-.NoteOperations .OptionItem .tooltip.menu.hasDropdown {
+.NoteOperations .OptionItem .Tooltip.open.hasDropdown {
     overflow: visible;
 }
-.tooltip.menu ul, .tooltip.menu li {
-    list-style: none;
-    margin: 0;
+.NoteOperations .OptionItem .Tooltip.open.closing {
+    max-height: 0;
+    overflow: hidden;
     padding: 0;
-    line-height: normal;
 }
-.tooltip.menu li strong {
+.NoteOperations .OptionItem .Tooltip.open.closing > div:first-of-type {
+    animation: fadeAndScaleOut 0.2s 1;
+}
+.NoteOperations .OptionItem .Tooltip.open.closing + .tooltipArrow {
+    opacity: 0;
+}
+.NoteOperations .OptionItem button::before {
+    font: 900 1em 'Font Awesome 5 Free';
+}
+.NoteOperations .OptionItem button.star::before {
+    content: '\f005';
+}
+.NoteOperations .OptionItem button.collection::before {
+    content: '\f02d';
+}
+.NoteOperations .OptionItem button.tag::before {
+    content: '\f02c';
+}
+.NoteOperations .OptionItem button.trash::before {
+    content: '\f1f8';
+}
+.Tooltip.open strong {
     display: block;
     text-transform: uppercase;
     margin-bottom: 1rem;
 }
-.tooltip.menu .Dropdown {
+.Tooltip.open .Dropdown {
     width: 100%;
     color: #333;
 }
@@ -800,27 +834,130 @@ button.giantCornerButton.back::before {
 .tag.createTag:hover {
     color: #fff;
 }
-.tooltip ul.tagsList {
+.Tooltip ul.tagsList {
     text-align: center;
 }
-.tooltip ul.tagsList li.createTag {
+.Tooltip ul.tagsList li.createTag {
     margin-top: 0.7rem;
     border-top: 1px solid rgba(255, 255, 255, 0.4);
     padding-top: 0.7rem;
 }
-.tooltip ul.tagsList .tag {
+.Tooltip ul.tagsList .tag {
     display: inline-block;
     border-color: transparent;
     margin: 0.2rem;
 }
-.tooltip ul.tagsList .tag:not(.createTag):not(.hasTag):hover {
+.Tooltip ul.tagsList .tag:not(.createTag):not(.hasTag):hover {
     color: #333;
 }
 
-
-
-/* CUSTOM DROPDOWN */
+/* DROPDOWN */
 .Dropdown {
+    position: relative;
+    display: inline-block;
+    text-align: left;
+}
+.dropdownDisplay {
+    border: 1px solid #ddd;
+    border-radius: 0.5rem;
+    display: inline-block;
+    padding: 0.3rem 0.6rem;
+    padding-right: 3rem;
+    transition: 0.2s;
+    position: relative;
+    z-index: 200;
+    background: #fff;
+    width: 100%;
+}
+.dropdownDisplay::after {
+    font: 900 1em 'Font Awesome 5 Free';
+    content: '\f0d9';
+    position: absolute;
+    top: 50%;
+    right: 0.7rem;
+    transform: translate3d(0, -50%, 0);
+    transition: 0.2s;
+}
+.Dropdown.expanded .dropdownDisplay {
+    border-radius: 0.5rem 0.5rem 0 0;
+}
+.Dropdown.expanded .dropdownDisplay::after {
+    transform: translate3d(0, -50%, 0) rotate(-90deg);
+}
+.dropdownDisplay, .dropdownList button {
+    color: #333;
+    font-weight: 400;
+    font-size: 0.8rem;
+    cursor: pointer;
+    line-height: 1.5;
+}
+.dropdownList, .dropdownList li {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.dropdownList {
+    background: #fff;
+    transition: 0.2s;
+    overflow: hidden;
+    position: absolute;
+    z-index: 150;
+    top: calc(100% - 0.5rem);
+    left: 0;
+    width: 100%;
+    border-radius: 0 0 0.5rem 0.5rem;
+    border: 1px solid #ddd;
+    border-top: 0;
+}
+.Dropdown.expanded .dropdownList {
+    margin-top: 0.5rem;
+}
+.dropdownList li + li {
+    border-top: 1px solid #ddd;
+}
+.dropdownList button {
+    background: #fff;
+    padding: 0.3rem 0.6rem;
+    margin: 0;
+    display: block;
+    width: 100%;
+    text-align: left;
+    border-radius: 0;
+}
+.dropdownList button:hover {
+    background: #f7f7f7;
+}
+.addNew.active {
+    cursor: default;
+    position: relative;
+}
+.addNew.active:hover {
+    background: #fff;
+}
+.addNew input {
+    border: 0;
+    padding: 0;
+    line-height: 1.5;
+    margin-top: 0.2rem;
+    width: 100%;
+    height: auto;
+}
+.addNew .inputHint {
+    top: 100%;
+    left: 0;
+    width: 100%;
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: #666;
+    line-height: normal;
+    display: block;
+    margin: 0.2rem 0;
+    white-space: normal;
+}
+
+
+/* OLD DROPDOWN */
+/* .Dropdown {
     position: relative;
     display: inline-block;
 }
@@ -833,7 +970,7 @@ button.giantCornerButton.back::before {
     margin: 0;
     padding: 0;
 }
-.Dropdown button, .tooltip.menu .Dropdown button {
+.Dropdown button, .Tooltip.open .Dropdown button {
     font-size: 0.8rem;
     padding: calc(0.5rem + 1.5px) 0.5rem;
     width: 100%;
@@ -919,7 +1056,7 @@ button.giantCornerButton.back::before {
 }
 .sortByTag .Dropdown .dropdownList {
     padding-top: calc(0.8rem + 1px);
-}
+} */
 
 button.hasCollection {
     position: relative;
@@ -1119,31 +1256,31 @@ button.hasCollection:hover::before {
     height: 100%;
     overflow: auto;
 }
-button.all-notes::before {
+.Nav button.all-notes::before {
     content: '\f01c';
 }
-button.starred-notes::before {
+.Nav button.starred-notes::before {
     content: '\f005';
 }
-button.collections::before {
+.Nav button.collections::before {
     content: '\f02d';
 }
-button.tags::before {
+.Nav button.tags::before {
     content: '\f02c';
 }
-button.trash::before {
+.Nav button.trash::before {
     content: '\f2ed';
 }
-button.my-account::before {
+.Nav button.my-account::before {
     content: '\f007';
 }
-button.settings::before {
+.Nav button.settings::before {
     content: '\f013';
 }
-button.help::before {
+.Nav button.help::before {
     content: '\f059';
 }
-button.logout::before {
+.Nav button.logout::before {
     content: '\f2f5';
 }
 .Options {
@@ -1162,7 +1299,7 @@ button.logout::before {
 .Options .OptionItem + .OptionItem {
     margin-top: 1rem;
 }
-.Options .OptionItem > button .tooltip {
+.Options .OptionItem > button .Tooltip {
     position: absolute;
     top: 50%;
     right: 100%;
@@ -1177,7 +1314,7 @@ button.logout::before {
     border-radius: 0.5rem;
     display: none;
 }
-.Options .OptionItem > button .tooltip::before {
+.Options .OptionItem > button .Tooltip::before {
     position: absolute;
     top: 50%;
     left: 100%;
@@ -1189,7 +1326,7 @@ button.logout::before {
     height: 0.5rem;
     background: #333;
 }
-.Options .OptionItem > button:hover .tooltip {
+.Options .OptionItem > button:hover .Tooltip {
     display: block;
 }
 .NoteEditor {
@@ -1376,21 +1513,6 @@ button.logout::before {
 }
 .ContextMenu li + li {
     border-top: 1px solid var(--element-secondary-border);
-}
-
-
-.Dropdown li + li {
-    border-top: 1px solid var(--element-secondary-border);
-}
-.Dropdown button {
-    color: #333;
-    padding: 0.7rem;
-    width: 100%;
-    text-align: left;
-    transition: color 0.2s;
-}
-.Dropdown button:hover {
-    color: #999;
 }
 
 .Modal {

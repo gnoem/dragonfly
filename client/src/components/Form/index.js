@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createCollection } from '../../helpers';
 import Loading from '../Loading';
 
 const Form = ({ title, children, submit, formData, onSubmit }) => {
@@ -33,18 +34,8 @@ export const CreateCollection = (props) => {
     const updateFormData = (e) => {
         setFormData(prevState => ({ ...prevState, [e.target.name]: e.target.value }));
     }
-    const handleSubmit = async (formData) => {
-        const response = await fetch('/collection', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(formData)
-        });
-        const body = await response.json();
-        if (!body.success) return console.log(body.error);
-        console.log('success!!');
-        console.dir(body);
-        props.refreshData();
-        props.gracefullyCloseModal();
+    const handleSubmit = (formData) => {
+        createCollection(props, formData, props.gracefullyCloseModal());
     }
     return (
         <Form onSubmit={handleSubmit} formData={formData} title="Create a new collection">
