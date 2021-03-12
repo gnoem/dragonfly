@@ -2,35 +2,41 @@ import Controller from '../controllers/index.js';
 import { validate } from '../middleware/index.js';
 
 export default (app) => {
-    app.route('/user/:_id/data')
-        .get(Controller.getUserData);
-    /* app.route('/user')
+    app.route('/auth/:identifier')
+        .get(Controller.auth);
+    app.route('/login/:username')
+        .post(Controller.login);
+    app.route('/logout')
+        .get(Controller.logout);
+    app.route('/user/:identifier/data')
+        .get(Controller.getUser);
+    app.route('/user')
         .post(Controller.createUser);
-    app.route('/account')
-        .post(Controller.createAccount);
-    app.route('/account/:id')
+    app.route('/account/:_id')
+        .post(Controller.createAccount)
         .put(Controller.editAccount)
         .delete(Controller.deleteAccount);
+    app.route('/account/:_id/password')
+        .post(Controller.editPassword);
     app.route('/note')
         .post(Controller.createNote);
-    app.route('/note/:id/:action')
+    app.route('/note/:_id/:action')
         .put(Controller.editNote)
         .delete(Controller.deleteNote);
     app.route('/tag')
         .post(Controller.createTag);
-    app.route('/tag/:name')
+    app.route('/tag/:_id')
         .put(Controller.editTag)
         .delete(Controller.deleteTag);
     app.route('/collection')
         .post(Controller.createCollection);
-    app.route('/collection/:name')
+    app.route('/collection/:_id')
         .put(Controller.editCollection)
-        .delete(Controller.deleteCollection); */
-    app.get('/auth/:id', Controller.auth);
-    app.post('/logout/user', Controller.logoutUser);
-    app.post('/login/user', Controller.loginUser);
-    app.post('/create/user', Controller.createUser);
-    app.post('/get/data', Controller.getData);
+        .delete(Controller.deleteCollection); /*
+    //app.post('/logout/user', Controller.logoutUser);
+    //app.post('/login/user', Controller.loginUser);
+    //app.post('/create/user', Controller.createUser);
+    //app.post('/get/data', Controller.getData);
     app.post('/add/note', Controller.createNote);
     app.post('/edit/note', Controller.editNote);
     app.post('/star/note', Controller.starNote);
@@ -48,5 +54,5 @@ export default (app) => {
     app.post('/create/account', validate.createAccount, Controller.createAccount);
     app.post('/edit/account', validate.editAccount, Controller.editAccount);
     app.post('/edit/password', Controller.editPassword);
-    app.post('/delete/account', Controller.deleteAccount);
+    app.post('/delete/account', Controller.deleteAccount); */
 }

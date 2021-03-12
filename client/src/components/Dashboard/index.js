@@ -1,37 +1,67 @@
 import { useState, useEffect, useCallback } from 'react';
-import Modal from '../Modal';
+import { Login } from '../Login';
+import { Modal } from '../Modal';
 import Menu from '../Menu';
 import Sidebar from '../Sidebar';
 import Loading from '../Loading';
-import { Notes } from '../Notes';
+import { Main } from '../Main';
 
 export const Dashboard = (props) => {
-    const { id } = props.match.params;
+    const { id: identifier } = props.match.params;
+    const [accessToken, setAccessToken] = useState(null);
     const [view, setView] = useState({ type: 'all-notes' });
     const [data, setData] = useState(null);
-    const [modal, setModal] = useState(false);
+    const [modal, setModal] = useState(null);
     const [isLoaded, setIsLoaded] = useState(false);
-    const viewingNotes = ['all-notes', 'starred-notes', 'trash', 'collection', 'tags'].includes(view?.type);
+    const contentType = (() => {
+        const notesTypes = ['all-notes', 'starred-notes', 'trash', 'collection', 'tags'];
+        if (notesTypes.includes(view?.type)) return 'notes';
+        return view?.type;
+    })();
     const isMobile = window.innerWidth < 900;
+    useEffect(() => {
+        const auth = async () => {
+            const response = await fetch(`/auth/${identifier}`);
+            const body = await response.json();
+            if (body.redirect) return window.location.assign(`/d/${body.username}`); // todo without reload
+            setAccessToken(body.success);
+        }
+        auth();
+    }, []);
     const refreshData = useCallback(async () => {
-        const response = await fetch(`/user/${id}/data`);
+        if (!accessToken) return null;
+        const response = await fetch(`/user/${identifier}/data`);
         const body = await response.json();
-        if (!body) return console.log('no response from server');
         if (!body.success) return console.dir(body.error);
         setData(body.data);
         setIsLoaded(true);
         return body.data;
-    }, [id]);
+    }, [identifier, accessToken]);
     useEffect(() => {
-        refreshData().then(result => console.dir(result));
+        if (accessToken) refreshData().then(/* body => console.dir(body) */);
     }, [refreshData]);
+    useEffect(() => {
+        if (!data?.notes) return;
+        const refreshCurrentNote = (notes) => {
+            if (!view.currentNote) return;
+            const currentNoteId = view.currentNote._id;
+            const replaceCurrentNote = notes.find(note => note._id === currentNoteId);
+            setView(prevView => ({ ...prevView, currentNote: replaceCurrentNote }));
+        }
+        refreshCurrentNote(data.notes);
+    }, [data?.notes]);
     const utils = {
+        updateModal: (content, type, options) => {
+            setModal({
+                content,
+                type: type ?? 'normal',
+                options
+            });
+        },
         gracefullyCloseModal: () => {
-            console.log('gracefully closing modal');
-            setModal(false);
+            setModal(prevState => ({ ...prevState, selfDestruct: true }));
         },
         updateCurrentNote: (note) => {
-            console.dir(note);
             setView(prevView => ({
                 ...prevView,
                 currentNote: note
@@ -45,61 +75,35 @@ export const Dashboard = (props) => {
         },
         warnUnsavedChanges: () => {
             console.log('unsaved changes!');
+        },
+        logout: async () => {
+            await fetch(`/logout`);
+            setIsLoaded(false);
+            setTimeout(() => {
+                window.location.assign(window.location.href);
+            }, 500);
         }
     }
-    const state = {
+    const inherit = {
         view, updateView: setView,
         user: data?.user,
-        unfilteredNotes: data?.notes,
+        allNotes: data?.notes,
+        collections: data?.collections,
+        tags: data?.tags,
         currentNote: view?.currentNote,
         unsavedChanges: view?.unsavedChanges,
         data, refreshData,
-        modal, updateModal: setModal,
         ...utils
     }
-    if (!isLoaded) return <Loading />
+    if (accessToken === false) return <Login username={identifier} updateAccessToken={setAccessToken} />;
+    if (!isLoaded) return <Loading />;
     return (
         <div className="Dashboard" data-mobile={isMobile}>
-            <Modal {...props} {...state} content={modal.content} />
+            {modal && <Modal {...inherit} {...modal} setModal={setModal} exit={utils.gracefullyCloseModal} />}
             {isMobile
-                ? ((view.type !== 'note') && <Menu {...props} {...state} />)
-                : <Sidebar {...props} {...state} />}
-            <Content {...props} {...state} contentType={viewingNotes ? 'notes' : 'misc'} />
+                ? ((view.type !== 'note') && <Menu {...inherit} />)
+                : <Sidebar {...inherit} />}
+            <Main {...inherit} contentType={contentType} />
         </div>
-    );
-}
-
-const Content = (props) => {
-    const { view, contentType, unfilteredNotes } = props;
-    const getNotes = (view) => {
-        const notesTaggedWith = (tagsArray) => {
-            // if note has these tags
-            if (!tagsArray || !tagsArray.length) return [];
-            unfilteredNotes.forEach(note => {
-                // create test object by which to compare
-                let testObject = {};
-                note.tags.forEach((tag, index) => testObject[tag] = index);
-                const tagIsHad = (tag) => testObject[tag] !== undefined;
-                const noteHasTheseTags = view.sortTags === 'all'
-                    ? tagsArray.every(tagIsHad)
-                    : tagsArray.some(tagIsHad);
-                if (!noteHasTheseTags) return null;
-                return note;
-            });
-        }
-        switch (view.type) {
-            case 'all-notes': return unfilteredNotes.filter(note => !note.trash);
-            case 'starred-notes': return unfilteredNotes.filter(note => note.starred);
-            case 'trash': return unfilteredNotes.filter(note => note.trash);
-            case 'collection': return unfilteredNotes.filter(note => note.collection === view.name);
-            case 'tags': return notesTaggedWith(view.tags);
-            default: return <div>(default) all notes</div>;
-        }
-    }
-    if (contentType !== 'notes') return (
-        <div>something else</div>
-    );
-    return (
-        <Notes {...props} notes={getNotes(view)} />
     );
 }

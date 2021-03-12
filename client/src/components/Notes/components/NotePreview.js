@@ -1,23 +1,25 @@
 import dayjs from 'dayjs';
+import { ListItem, ListItemTitle, ListItemContent } from '../../List/components/ListItem';
 
 export const NotePreview = (props) => {
     let { onClick } = props;
     return (
-        <div className="NoteExcerpt" onClick={onClick}>
-            <Title {...props} />
-            <Excerpt {...props} />
-            <Meta {...props} />
-        </div>
+        <ListItem title={<Title {...props} />} onClick={onClick}>
+            <ListItemContent>
+                <Excerpt {...props} />
+                <Meta {...props} />
+            </ListItemContent>
+        </ListItem>
     );
 }
 
 const Title = ({ title, starred, createdAt }) => {
     const autoTitle = `Note from ${dayjs(createdAt).format('MM/DD/YYYY')}`;
     return (
-        <div className="title">
-            <h2>{title || autoTitle}</h2>
+        <ListItemTitle>
+            {title || autoTitle}
             {starred && <div className="hasStar"><i className="fas fa-star"></i></div>}
-        </div>
+        </ListItemTitle>
     );
 }
 

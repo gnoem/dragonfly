@@ -9,7 +9,7 @@ export const Editor = (props) => {
     }
     return (
         <div className="Editor">
-            <button className="stealth exit" onClick={handleExit}></button>
+            <button className="giantCornerButton exit" onClick={handleExit}></button>
             <EditorSpace {...props} />
             {(!currentNote.trash/*  && !newNote */) && <NoteOperations {...props} />}
         </div>

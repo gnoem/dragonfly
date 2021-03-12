@@ -118,6 +118,19 @@
         transform: scale(1);
     }
 }
+@keyframes shrinkDown {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: scale(0.6);
+    }
+}
+.shrinkit {
+    animation: 0.2s shrinkdown 1;
+}
 #demo {
     position: fixed;
     bottom: 1rem;
@@ -338,7 +351,7 @@ button.caution {
     grid-area: main;
     height: 100%;
 }
-.Main .Notes {
+.Main .List {
     padding: 2rem 5rem;
     width: 100%;
     min-width: 400px;
@@ -350,21 +363,24 @@ button.caution {
     height: 100%;
     position: relative;
 }
-.Main[data-editor='true'] .Notes {
+.Main[data-editor='true'] .List {
     display: none;
 }
-.Main[data-editor='false'] .Notes {
-    animation: slideright 0.2s 1;
+.slideright {
+    animation: slideright 0.2s 1; 
 }
-.Notes h1 {
+ /* .Main[data-editor='false'] .List {
+   animation: slideright 0.2s 1; // todo figure out how to put this back
+} */
+.List h1 {
     font-family: var(--display-font);
     font-size: 10vh;
-    margin-bottom: 0.7rem;
+    margin-bottom: 1rem;
 }
-.Notes .Header {
+.ListHeader {
     margin: 1rem 0 2rem;
 }
-.Notes .Header.grid {
+.ListHeader.grid {
     width: 400px;
     display: grid;
     grid-template-rows: 1fr auto;
@@ -372,15 +388,15 @@ button.caution {
     grid-template-areas:
         'dragonfly dragonfly'
         'header button';
-    grid-gap: 0.5rem;
+    column-gap: 0.5rem;
 }
-.Notes .Header h2 {
+.ListHeader h2 {
     grid-area: header;
     font-size: 2rem;
     font-weight: 300;
     margin: 0;
 }
-.Notes .Header button.createNew {
+.ListHeader button.createNew {
     margin: 0;
     margin-top: 1rem;
     padding: 0;
@@ -392,7 +408,7 @@ button.caution {
     border-radius: 999px;
     position: relative;
 }
-.Notes .Header button.createNew::before {
+.ListHeader button.createNew::before {
     content: '\f067';
     font-family: 'Font Awesome 5 Free';
     font-weight: 900;
@@ -427,21 +443,21 @@ button.createNew .tooltip::before {
 button.createNew:hover .tooltip {
     display: block;
 }
-.Notes .Header span.collectionHeader {
+.ListHeader span.collectionHeader {
     grid-area: header;
 }
-.Notes .Header span.collectionHeader > span {
+.ListHeader span.collectionHeader > span {
     display: block;
 }
-.Notes .Header span.collectionHeader > span:first-of-type {
+.ListHeader span.collectionHeader > span:first-of-type {
     font-size: 0.7rem;
     margin-bottom: 0.1rem;
     font-weight: 400;
 }
-.Notes .Header span.collectionHeader > span + span {
+.ListHeader span.collectionHeader > span + span {
     font-size: 1.5rem;
 }
-.Notes .Header button.viewOptions {
+.ListHeader button.viewOptions {
     grid-area: button;
     margin: 0;
     padding: 0;
@@ -455,64 +471,65 @@ button.createNew:hover .tooltip {
     color: #666;
     transition: 0.2s;
 }
-.Notes .Header button.viewOptions:hover {
+.ListHeader button.viewOptions:hover {
     background: rgba(0, 0, 0, 0.1);
     color: #333;
 }
-.NoteExcerpts {
+.ListContent {
     height: 50vh;
     overflow: scroll;
 }
-.NoteExcerpts::-webkit-scrollbar {
+.ListContent::-webkit-scrollbar {
 	width: 0.5rem;
 	height: 0;
 	background-color: inherit;
 }
-.NoteExcerpts::-webkit-scrollbar-track {
+.ListContent::-webkit-scrollbar-track {
 	background-color: inherit;
 }
-.NoteExcerpts::-webkit-scrollbar-thumb {
+.ListContent::-webkit-scrollbar-thumb {
 	background-color: rgba(0, 0, 0, 0.2);
 }
-.NoteExcerpt {
+.ListItem {
     width: 400px;
     padding-bottom: 1rem;
     padding-left: 2rem;
     border-left: 2px solid #C6CBC9;
     transition: 0.2s;
 }
-.NoteExcerpt + .NoteExcerpt {
+.ListItem.collectionPreview:first-of-type:last-of-type {
+    padding: 1rem 0 1rem 2rem;
+}
+.ListItem + .ListItem {
     padding-top: 1rem;
 }
-.NoteExcerpt:hover {
+.ListItem:hover {
     cursor: pointer;
     border-left-color: #666;
 }
-.NoteExcerpt h2 {
+.ListItem h2 {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.5rem;
     font-size: 1rem;
     text-transform: uppercase;
-    margin: 0;
+    margin-bottom: 0.5rem;
 }
-.NoteExcerpt span.meta {
+.ListItem span.meta {
     display: block;
     font-size: 0.8rem;
     margin-top: 0.5rem;
     opacity: 0.7;
 }
-.NoteExcerpt .title {
-    display: flex;
-    place-items: center;
-    margin-bottom: 0.5rem;
-}
 .NoteOperations .OptionItem .hasStar {
     color: #2f9e72;
 }
-.NoteExcerpt .hasStar {
+.ListItem .hasStar {
     color: #52d19e;
     font-size: 0.8rem;
-    margin-left: 0.5rem;
 }
-.endofnotes {
+.ListFooter {
     padding: 2rem 0;
     font-weight: 300;
     font-size: 1.5rem;
@@ -535,22 +552,30 @@ button.createNew:hover .tooltip {
 .Editor .noteInfo .group + .group {
     margin-top: 1rem;
 }
-.Editor button.exit {
+button.giantCornerButton {
     position: absolute;
     top: 2.5rem;
     right: 3rem;
     color: #ccc;
     font-size: 2.5rem;
     transition: 0.2s;
+    background: 0;
+    border: 0;
+    padding: 0;
+    margin: 0;
     animation: slideleft 0.2s 1;
 }
-.Editor button.exit::before {
-    content: '\f00d';
-    font-family: 'Font Awesome 5 Free';
-    font-weight: 900;
+button.giantCornerButton::before {
+    font: 900 1em 'Font Awesome 5 Free';
 }
-.Editor button.exit:hover {
+button.giantCornerButton:hover {
     color: #aaa;
+}
+button.giantCornerButton.exit::before {
+    content: '\f00d';
+}
+button.giantCornerButton.back::before {
+    content: '\f060';
 }
 .EditorToolbar {
     display: flex;
@@ -973,10 +998,13 @@ button.hasCollection:hover::before {
     margin-bottom: 1rem;
     text-shadow: 2px 2px 0.5rem var(--deep-theme-color);
 }
-.Nav nav + nav {
-    margin-top: 2rem;
-    border-top: 1px solid #333;
-    padding-top: 0.5rem;
+.Nav hr {
+    margin: 2rem auto;
+    border: 0;
+    padding: 0;
+    height: 1px;
+    background: #333;
+    width: 90%;
 }
 .Nav nav ul {
     margin: 0;
@@ -1091,8 +1119,11 @@ button.hasCollection:hover::before {
     height: 100%;
     overflow: auto;
 }
-button.notes::before {
+button.all-notes::before {
     content: '\f01c';
+}
+button.starred-notes::before {
+    content: '\f005';
 }
 button.collections::before {
     content: '\f02d';
@@ -1100,13 +1131,10 @@ button.collections::before {
 button.tags::before {
     content: '\f02c';
 }
-button.starred::before {
-    content: '\f005';
-}
 button.trash::before {
     content: '\f2ed';
 }
-button.user::before {
+button.my-account::before {
     content: '\f007';
 }
 button.settings::before {
@@ -1227,69 +1255,7 @@ button.logout::before {
 .EditorControls button + button {
     margin-left: 0.5rem;
 }
-.List .Header {
-    padding: 1rem;
-    padding-left: 1.5rem;
-    background: var(--element-main-bg);
-    border-bottom: 1px solid var(--element-main-border);
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: center;
-    height: 5rem;
-}
-.List .Header div.title {
-    font-family: var(--display-font);
-    font-size: 3.5rem;
-    margin-bottom: 0.5rem;
-}
-.List .Header div.h1 {
-    grid-column: 1 / 2;
-}
-.List .Header h1 {
-    margin: 0;
-}
-.List .Header div.button {
-    grid-column: 2 / -1;
-}
-.List .Header button.newNote, .List .Header button.menu {
-    margin: 0;
-    padding: 0;
-    width: 2.5rem;
-    height: 2.5rem;
-    font-size: 1.4rem;
-    display: grid;
-    place-items: center;
-    border-radius: 50%;
-}
-.List .Header button.menu {
-    background: none;
-    color: #aaa;
-    transition: 0.2s;
-}
-.List .Header button.menu:hover {
-    color: #666;
-}
-.List .Header h1 span.collectionHeader > span {
-    display: block;
-}
-.List .Header h1 span.collectionHeader > span:first-of-type {
-    font-size: 0.7rem;
-    margin-bottom: 0.1rem;
-}
-.List .Header h1 span.collectionHeader > span + span {
-    font-size: 1.5rem;
-}
-.List .NotePreviews {
-    height: calc(100vh - 5rem);
-    overflow: auto;
-}
-.List .Header[hidden] {
-    display: none;
-}
-.List .Header[hidden] + .NotePreviews {
-    height: 100vh;
-    overflow: auto;
-}
+
 @media screen and (max-width: 900px) {
     .OldNotes .List {
         height: 100%;
@@ -1427,7 +1393,6 @@ button.logout::before {
     color: #999;
 }
 
-
 .Modal {
     position: fixed;
     top: 0;
@@ -1435,60 +1400,49 @@ button.logout::before {
     width: 100%;
     height: 100%;
     background: rgba(0, 0, 0, 0.5);
+    z-index: 9999999;
+    color: #000;
+    opacity: 0;
+    transition: 0.2s;
+}
+.modalContainer {
     display: grid;
-    place-items: center;
-    z-index: 999999;
-    animation: 0.2s fadeIn 1;
-}
-.Modal.goodbye {
-    animation: 0.2s fadeOut 1;
-}
-.Modal.goodbye .modalContainer {
-    transform: scale(0.9);
-}
-.modalSpacer {
-    display: grid;
-    place-items: center;
-    width: 100%;
     height: 100%;
     padding: 2rem 0;
 }
-.modalContainer {
-    width: 29rem;
-    margin: auto;
-    background: var(--element-main-bg);
+.modalContent {
+    width: 55%;
+    min-width: 300px;
+    background: #fff;
+    padding: 2.5rem;
     border-radius: 1rem;
-    padding: 2rem;
     position: relative;
-    transition: transform 0.2s;
+    margin: auto;
+    opacity: 0;
+    transform: scale(0.8);
+    transition: 0.2s;
+}
+.Modal.active {
+    opacity: 1;
+}
+.Modal.active .modalContent {
+    transform: scale(1);
+    opacity: 1;
 }
 .Modal button.exit {
     position: absolute;
-    top: 1rem;
-    right: 1.3rem;
+    top: 1.5rem;
+    right: 1.5rem;
     font-size: 1.5rem;
-    color: #aaa;
-    transition: color 0.2s;
-}
-.Modal button.exit::before {
-    content: '\f00d';
-    font-family: 'Font Awesome 5 Free';
-    font-weight: 900;
-}
-.Modal button.exit::before:hover {
     color: #666;
-}
-.Modal .buttons {
-    margin-top: 1rem;
-}
-.Modal .buttons button {
-    margin-top: 1rem;
+    background: 0;
 }
 @media screen and (max-width: 600px) {
     .modalContainer {
         width: 90%;
     }
 }
+
 .Loading {
     width: 100%;
     height: 100%;

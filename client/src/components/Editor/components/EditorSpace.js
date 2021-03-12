@@ -13,9 +13,6 @@ export const EditorSpace = (props) => {
     );
     const [saveChangesButtonClick, setSaveChangesButtonClick] = useState(false); // prop for button, to simulate click event after Ctrl + S
     useEffect(() => {
-        console.log('unsavedChanges is', unsavedChanges);
-    }, [unsavedChanges]);
-    useEffect(() => {
         const keys = [];
         const keydown = (e) => {
             keys[e.key] = true;

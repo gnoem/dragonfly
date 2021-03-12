@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import Nav from '../Nav';
+import { Nav } from '../Nav';
 
 export default function Menu(props) {
     const [showingMenu, setShowingMenu] = useState(false);

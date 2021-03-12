@@ -7,12 +7,17 @@ export const NoteOperations = (props) => {
     const [tagsTooltip, setTagsTooltip] = useState(false);
     const collectionsRef = useRef(null);
     const tagsRef = useRef(null);
-    const starNote = () => {}
+    const starNote = async () => {
+        const response = await fetch(`/note/${currentNote._id}/star`, { method: 'PUT' });
+        const body = await response.json();
+        if (!body.success) return console.log(body.error);
+        props.refreshData();
+    }
     const confirmMoveToTrash = () => {};
     return (
         <div className="NoteOperations">
             <div className="OptionItem">
-                <button className={currentNote.starred ? 'hasStar' : null} onClick={(e) => starNote(e, currentNote._id)}>
+                <button className={currentNote.starred ? 'hasStar' : null} onClick={starNote}>
                     <i className="fas fa-star"></i>
                 </button>
                 <Tooltip open={false} defaultContent={currentNote.starred ? 'Unstar' : 'Add star'} />
