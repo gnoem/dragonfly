@@ -3,7 +3,7 @@ import Loading from '../Loading';
 import Dropdown from '../Dropdown';
 import { elementHasParent, elementIsInArray } from '../../utils';
 import { CollectionsList } from '../Collections/components/CollectionsList';
-import { createCollection, moveNoteToCollection} from '../../helpers';
+import { Collection, Note } from '../../helpers';
 
 export const Tooltip = (props) => {
     const { name, parent, tooltipWillOpen, defaultContent, overflow } = props;
@@ -92,12 +92,12 @@ const tooltipStore = {
 
 const MoveNoteToCollection = (props) => {
     const { user, currentNote, collections } = props;
-    console.dir(currentNote._id);
-    const handleChange = (collectionId) => moveNoteToCollection(props, currentNote, collectionId);
+    const handleChange = (collectionId) => Note.moveNoteToCollection(props, currentNote, collectionId);
     const handleAddNew = (name) => {
-        createCollection(props, { userId: user._id, name }).then(collection => handleChange(collection._id));
+        Collection.createCollection(props, { userId: user._id, name }).then(collection => handleChange(collection._id));
     };
     const dropdown = {
+        style: { minWidth: '9rem' },
         listItems: () => {
             return collections.map(collection => ({
                 value: collection._id,
@@ -113,7 +113,7 @@ const MoveNoteToCollection = (props) => {
         <div>
             <strong>Move to collection</strong>
             <Dropdown
-                style={{ minWidth: '9rem' }}
+                style={dropdown.style}
                 defaultValue={dropdown.defaultValue()}
                 listItems={dropdown.listItems()}
                 onChange={handleChange}

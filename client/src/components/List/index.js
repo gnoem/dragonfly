@@ -20,7 +20,9 @@ export const ListHeader = ({ title, button, grid, children }) => {
 export const ListContent = ({ footer, children }) => {
     return (
         <div className="ListContent">
-            {children}
+            <div className="ListItems">
+                {children}
+            </div>
             {footer}
         </div>
     );

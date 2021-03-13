@@ -1,8 +1,10 @@
 export const ListItem = ({ title, children, button, className, onClick }) => {
     return (
-        <div className={`ListItem${button ? ' grid' : ''} ${className || ''}`} onClick={onClick}>
-            {title}
-            {children}
+        <div className={`ListItem${button ? ' grid' : ''} ${className || ''}`}>
+            <div onClick={onClick}>
+                {title}
+                {children}
+            </div>
             {button}
         </div>
     );

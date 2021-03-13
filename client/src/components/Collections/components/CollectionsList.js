@@ -1,5 +1,4 @@
 import { List, ListHeader, ListContent, ListFooter } from "../../List"
-import Loading from "../../Loading";
 import { CollectionPreview } from './CollectionPreview';
 
 export const CollectionsList = (props) => {

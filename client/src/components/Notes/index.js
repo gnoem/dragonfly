@@ -13,8 +13,10 @@ export const Notes = (props) => {
 }
 
 const GiantBackButton = (props) => {
+    const { currentNote } = props;
     const back = () => {
         props.updateView({ type: 'collections' });
     }
+    if (currentNote) return null;
     return <button className="giantCornerButton back" onClick={back}></button>;
 }

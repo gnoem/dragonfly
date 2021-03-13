@@ -50,10 +50,7 @@ export default function Dropdown(props) {
                 updateIsOpen={setIsOpen}
                 updateDisplay={setDisplay}
             />;
-        if ((!listItems || !listItems.length) && props.addNew) {
-            console.table(listItems);
-            return buttonForAddNew;
-        }
+        if ((!listItems || !listItems.length) && props.addNew) return buttonForAddNew;
         const array = [];
         for (let item of listItems) {
             array.push(

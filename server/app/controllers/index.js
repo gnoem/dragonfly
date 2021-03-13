@@ -333,7 +333,7 @@ class Controller {
         const { _id } = req.params;
         const { name } = req.body;
         const run = async () => {
-            const [foundCollection, findCollectionError] = await handle(Collection.findOne({ _id }));
+            let [foundCollection, findCollectionError] = await handle(Collection.findOne({ _id }));
             if (findCollectionError) throw new Error(`Error finding collection ${_id}`);
             if (!foundCollection) throw new Error(`Collection ${_id} not found`);
             foundCollection = Object.assign(foundCollection, { name });
@@ -344,74 +344,25 @@ class Controller {
         run().catch(err => res.send({ success: false, error: err.message }));
     }
     deleteCollection = (req, res) => {
-        const { _id, collectionName } = req.body;
-        User.findOne({ _id }, (err, user) => {
-            if (err) {
-                res.status(500).send({
-                    success: false,
-                    err
-                });
-                return console.error('error finding user', err);
-            }
-            if (!user) {
-                res.status(404).send({
-                    success: false,
-                    error: `User "${_id}" not found`
-                });
-                return;
-            }
-            if (!user.collections) {
-                res.status(404).send({
-                    success: false,
-                    error: `No collections for user "${_id}" found`
-                });
-                return;
-            }
-            let index = user.collections.indexOf(collectionName);
-            if (index === -1) {
-                res.status(404).send({
-                    success: false,
-                    error: `Collection "${collectionName}" not found`
-                });
-                return;
-            }
-            user.collections.splice(index, 1);
-            Note.find({ userId: user._id }, (err, notes) => {
-                if (err) {
-                    res.status(500).send({
-                        success: false,
-                        err
-                    });
-                    return console.error('error finding notes', err);
-                }
-                if (!notes.length) {
-                    res.status(404).send({
-                        success: false,
-                        error: `Notes from user "${user._id}" not found`
-                    });
-                    return;
-                }
-                const updateNotes = (array) => {
-                    for (let i = 0; i < array.length; i++) {
-                        // find all that belong to this collection and change to false
-                        // todo: option to migrate these notes to a different collection?
-                        if (array[i].category === collectionName) array[i].category = '';
-                        array[i].save();
-                    }
-                }
-                updateNotes(notes);
-                user.save(err => {
-                    if (err) {
-                        res.status(500).send({
-                            success: false,
-                            err
-                        });
-                        return console.error('error saving user', err);
-                    }
-                    res.status(200).send({ success: true });
-                });
+        const { _id } = req.params;
+        const run = async () => {
+            const [collection, findCollectionError] = await handle(Collection.findOne({ _id }));
+            if (findCollectionError) throw new Error(`Error finding collection ${_id}`);
+            if (!collection) throw new Error(`Collection ${_id} not found`);
+            const [notesInCollection, findNotesError] = await handle(Note.find({ collectionId: _id }));
+            if (findNotesError) throw new Error(`Error finding notes in this collection`);
+            const removeCollectionFromNotes = notesInCollection.map(note => {
+                note.collectionId = null;
+                return note.save();
             });
-        });
+            const [success, error] = await handle(Promise.all([
+                collection.deleteOne(),
+                ...removeCollectionFromNotes
+            ]));
+            if (error) throw new Error(`Error deleting this collection`);
+            res.send({ success });
+        }
+        run().catch(err => res.send({ success: false, error: err.message }));
     }
     createTag = (req, res) => {
         const errors = validationResult(req);

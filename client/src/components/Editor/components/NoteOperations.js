@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { Tooltip } from '../../Tooltip';
-import { starNote } from '../../../helpers';
+import { Note } from '../../../helpers';
 
 export const NoteOperations = (props) => {
     const { currentNote } = props;
@@ -14,7 +14,7 @@ export const NoteOperations = (props) => {
             <OptionItem {...props}
                 name="star"
                 className={currentNote.starred ? 'hasStar' : null}
-                onClick={() => starNote(props, currentNote)}
+                onClick={() => Note.starNote(props, currentNote)}
                 tooltipWillOpen={false}
                 defaultContent={currentNote.starred ? 'Unstar' : 'Add star'} />
             <OptionItem {...props}

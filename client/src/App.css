@@ -297,6 +297,32 @@ button.greyed {
 button.caution {
     background: var(--caution);
 }
+button.round-basic {
+    margin: 0;
+    padding: 0;
+    background: 0;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 999px;
+    font-size: 1.4rem;
+    display: grid;
+    place-items: center;
+    color: #666;
+    transition: 0.2s;
+}
+button.round-basic:hover {
+    background: rgba(0, 0, 0, 0.1);
+    color: #333;
+}
+button.icon::before {
+    font: 900 1em 'Font Awesome 5 Free';
+}
+button.bar-menu::before {
+    content: '\f0c9';
+}
+button.ellipsis::before {
+    content: '\f142'
+}
 .buttons {
     text-align: center;
     margin-top: 1rem;
@@ -467,23 +493,8 @@ button.createNew:hover .tooltip {
 .ListHeader span.collectionHeader > span + span {
     font-size: 1.5rem;
 }
-.ListHeader button.viewOptions {
+.ListHeader.grid > button {
     grid-area: button;
-    margin: 0;
-    padding: 0;
-    background: 0;
-    width: 2.5rem;
-    height: 2.5rem;
-    border-radius: 999px;
-    font-size: 1.4rem;
-    display: grid;
-    place-items: center;
-    color: #666;
-    transition: 0.2s;
-}
-.ListHeader button.viewOptions:hover {
-    background: rgba(0, 0, 0, 0.1);
-    color: #333;
 }
 .ListContent {
     height: 50vh;
@@ -502,15 +513,36 @@ button.createNew:hover .tooltip {
 }
 .ListItem {
     width: 400px;
-    padding-bottom: 1rem;
-    padding-left: 2rem;
     border-left: 2px solid #C6CBC9;
     transition: 0.2s;
 }
-.ListItem.collectionPreview:first-of-type:last-of-type {
+.ListItem > div:first-of-type {
+    padding-bottom: 1rem;
+    padding-left: 2rem;
+}
+.ListItem > div.previewButton {
+    position: relative;
+}
+.ListItem > div.previewButton .MiniMenu {
+    right: calc(100% + 0.5rem);
+    top: 0;
+    z-index: 200;
+}
+.ListItem.grid {
+    display: grid;
+    align-items: center;
+    grid-template: auto auto / 1fr auto;
+    grid-template-areas:
+        'content button'
+        'content button';
+}
+.ListItem.grid > button {
+    grid-area: button;
+}
+.ListItem:only-of-type > div {
     padding: 1rem 0 1rem 2rem;
 }
-.ListItem + .ListItem {
+.ListItem + .ListItem > div:first-of-type {
     padding-top: 1rem;
 }
 .ListItem:hover {
@@ -1484,6 +1516,36 @@ button.hasCollection:hover::before {
     text-align: justify;
 }
 
+.MiniMenu {
+    position: absolute;
+    background: #323741;
+    padding: 0.4rem;
+    border-radius: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    animation: 0.2s fadeAndScaleIn 1;
+    transform-origin: top right;
+    cursor: default;
+}
+.MiniMenu.goodbye {
+    animation: 0.2s fadeAndScaleOut 1;
+}
+.MiniMenu button {
+    background: 0;
+    border: 0;
+    margin: 0;
+    padding: 0.4rem 0.6rem;
+    padding-right: 2rem;
+    border-radius: 0.5rem;
+    color: #939aaa;
+    transition: 0.2s;
+    text-align: left;
+}
+.MiniMenu button:hover {
+    background: #171a1f;
+    color: #fff;
+}
 
 .ContextMenu {
     z-index: 999;
@@ -1770,10 +1832,7 @@ input.nope + .formError {
     margin-top: 0.7rem;
     font-size: 0.9rem;
 }
-.MiniMenu ul.smol button {
-    font-size: 0.75rem;
-    padding: 0.5rem;
-}
+
 .hint {
     font-size: 0.8rem;
 }
@@ -1783,9 +1842,7 @@ input.nope + .formError {
     font-weight: 900;
     margin-right: 0.3rem;
 }
-.MiniMenu .tag.createTag:hover {
-    color: #fff;
-}
+
 
 /* CUSTOM CHECKBOX */
 .Checkbox {

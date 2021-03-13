@@ -62,16 +62,12 @@ const HeaderButton = (props) => {
         }
         case 'trash': {
             return (
-                <button className="menu viewOptions">
-                    <i className="fas fa-bars"></i>
-                </button>
+                <button className="icon bar-menu round-basic"></button>
             );
         }
         case 'collection': {
             return (
-                <button className="menu viewOptions">
-                    <i className="fas fa-bars"></i>
-                </button>
+                <button className="icon bar-menu round-basic"></button>
             );
         }
         default: return null;
@@ -113,7 +109,7 @@ const NoteListContent = (props) => {
 
 const NoteListFooter = ({ view, notes }) => {
     const endOfNotes = () => {
-        if (view.type === 'trash') return null;
+        if (['trash', 'collection'].includes(view.type)) return null;
         return (
             <>
                 <span className="nowrap">You've reached the</span>
