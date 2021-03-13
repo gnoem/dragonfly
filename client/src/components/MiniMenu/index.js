@@ -11,7 +11,11 @@ export const MiniMenu = ({ show, updateShow, menuItems, className }) => {
             setTimeout(() => updateShow(false), 200);
         }
         window.addEventListener('click', closeMiniMenu);
-        return () => window.removeEventListener('click', closeMiniMenu);
+        window.addEventListener('contextmenu', closeMiniMenu);
+        return () => {
+            window.removeEventListener('click', closeMiniMenu);
+            window.removeEventListener('contextmenu', closeMiniMenu);
+        }
     }, [show, miniMenuRef]);
     const content = () => {
         return menuItems.map((menuItem) => {

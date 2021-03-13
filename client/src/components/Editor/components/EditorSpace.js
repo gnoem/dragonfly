@@ -3,6 +3,7 @@ import Button from '../../Button';
 import Immutable from 'immutable';
 import { Editor, EditorState, RichUtils, convertToRaw, convertFromRaw, DefaultDraftBlockRenderMap } from 'draft-js';
 import 'draft-js/dist/Draft.css';
+import { Note } from '../../../helpers';
 
 export const EditorSpace = (props) => {
     const { user, currentNote, unsavedChanges } = props;
@@ -77,14 +78,23 @@ export const EditorSpace = (props) => {
     );
 }
 
-const TrashOptions = () => {
+const TrashOptions = (props) => {
+    const { currentNote } = props;
+    const restoreNote = () => {
+        Note.trashNote(props, currentNote._id); // todo keep an eye on this
+        // choosing not to include updateCurrentNote(null) as callback in case user wants to start editing immediately
+    }
+    const deletePermanently = () => {
+        console.log('deleting note permanently');
+        // props.updateModal('deleteNotePermanently', 'form', { _id: currentNote._id });
+    }
     return (
         <div className="noteIsInTrash">
             <i className="giantIcon fas fa-exclamation-triangle"></i>
-            <p>This note can't be edited while still in the Trash.</p>
+            <p>This note can't be edited while it is in the Trash.</p>
             <div className="smaller buttons">
-                <Button onClick={() => console.dir('todo restore note')} loadingIconSize="2rem">Restore note</Button>
-                <button className="caution" onClick={() => console.dir('todo confirm delete')}>Delete permanently</button>
+                <Button onClick={restoreNote} loadingIconSize="2rem">Restore note</Button>
+                <button className="caution" onClick={deletePermanently}>Delete permanently</button>
             </div>
         </div>
     );

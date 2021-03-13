@@ -1,18 +1,10 @@
 import { validationResult } from 'express-validator';
-import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { User, Note, Collection, Tag } from '../models/index.js';
+import { handle, isObjectId } from './utils.js';
 
 const secretKey = process.env.SECRET_KEY;
-
-// utils
-const handle = (promise) => {
-    return promise
-        .then(data => ([data, undefined]))
-        .catch(err => Promise.resolve([undefined, err]));
-}
-const isObjectId = (id) => mongoose.Types.ObjectId.isValid(id) && (new mongoose.Types.ObjectId(id)).toString() === id;
 
 class Controller {
     auth = (req, res) => {
@@ -359,7 +351,7 @@ class Controller {
                 collection.deleteOne(),
                 ...removeCollectionFromNotes
             ]));
-            if (error) throw new Error(`Error deleting this collection`);
+            if (error) throw new Error(`Error deleting this collection and associated notes`);
             res.send({ success });
         }
         run().catch(err => res.send({ success: false, error: err.message }));
@@ -401,7 +393,7 @@ class Controller {
         const { _id } = req.params;
         const { name } = req.body;
         const run = async () => {
-            const [foundTag, findTagError] = await handle(Tag.findOne({ _id }));
+            let [foundTag, findTagError] = await handle(Tag.findOne({ _id }));
             if (findTagError) throw new Error(`Error finding tag ${_id}`);
             if (!foundTag) throw new Error(`Tag ${_id} not found`);
             foundTag = Object.assign(foundTag, { name });
@@ -412,71 +404,29 @@ class Controller {
         run().catch(err => res.send({ success: false, error: err.message }));
     }
     deleteTag = (req, res) => {
-        const { _id, tagName } = req.body;
-        User.findOne({ _id }, (err, user) => {
-            if (err) {
-                res.status(500).send({
-                    success: false,
-                    err
-                });
-                return console.error('error finding user', err);
-            }
-            if (!user) {
-                res.status(404).send({
-                    success: false,
-                    error: `User "${_id}" not found`
-                });
-                return;
-            }
-            let index = user.tags.indexOf(tagName);
-            if (index === -1) {
-                res.status(404).send({
-                    success: false,
-                    error: `Tag "${tagName}" not found`
-                });
-                return;
-            }
-            user.tags.splice(index, 1);
-            Note.find({ userId: _id }, (err, notes) => {
-                if (err) {
-                    res.status(500).send({
-                        success: false,
-                        err
-                    });
-                    return console.error('error finding notes', err);
+        const { _id } = req.params;
+        const run = async () => {
+            const [tag, findTagError] = await handle(Tag.findOne({ _id }));
+            if (findTagError) throw new Error(`Error finding tag ${_id}`);
+            if (!tag) throw new Error(`Tag ${_id} not found`);
+            const [allUsersNotes, findNotesError] = await handle(Note.find({ userId: tag.userId }));
+            if (findNotesError) throw new Error(`Error finding notes from user ${userId}`);
+            // loop through notes and see which ones have this tag
+            const updateNotesWithThisTag = allUsersNotes.map(note => {
+                const index = note.tags.indexOf(_id);
+                if (index !== -1) {
+                    note.tags.splice(index, 1);
+                    return note.save();
                 }
-                if (!notes.length) {
-                    res.status(404).send({
-                        success: false,
-                        error: `Notes from user "${_id}" not found`
-                    });
-                    return;
-                }
-                const updateNotes = (array) => {
-                    for (let i = 0; i < array.length; i++) {
-                        let thisNote = array[i];
-                        let thisNotesTags = thisNote.tags;
-                        let tagIndex = thisNotesTags.indexOf(tagName);
-                        let noteHasTag = tagIndex !== -1;
-                        if (noteHasTag) {
-                            thisNotesTags.splice(tagIndex, 1);
-                            thisNote.save();
-                        }
-                    }
-                }
-                updateNotes(notes);
-                user.save(err => {
-                    if (err) {
-                        res.status(500).send({
-                            success: false,
-                            err
-                        });
-                        return console.error('error saving user', err);
-                    }
-                    res.status(200).send({ success: true });
-                });
-            });
-        });
+            })
+            const [success, error] = await handle(Promise.all([
+                tag.deleteOne(),
+                ...updateNotesWithThisTag
+            ]));
+            if (error) throw new Error(`Error deleting this tag and associated notes`);
+            res.send({ success });
+        }
+        run().catch(err => res.send({ success: false, error: err.message }));
     }
 }
 

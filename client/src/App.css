@@ -813,6 +813,9 @@ button.giantCornerButton.back::before {
 .SortByTag h2 {
     margin: 1rem 0;
 }
+.SortByTag .TagList {
+    margin: 1.5rem 0;
+}
 .SortTagOptions {
     margin-top: 1rem;
     font-size: 0.9rem;
@@ -825,14 +828,25 @@ button.giantCornerButton.back::before {
 /* TAG LIST */
 .TagList {
     display: flex;
+    flex-wrap: wrap;
     gap: 0.5rem;
 }
 .Tooltip .TagList {
-    flex-direction: column;
+    width: 300px;
+    margin-bottom: 0.2rem;
+}
+.Tooltip .Tag {
+    flex: 1 0 auto;
+}
+.Tooltip .Tag > button {
+    width: 100%;
 }
 
 /* TAG BUTTONS */
-.Tag button {
+.Tag {
+    position: relative;
+}
+.Tag > button {
     margin: 0;
     border: 0;
     background: #323741;
@@ -847,10 +861,10 @@ button.giantCornerButton.back::before {
     border-top-left-radius: 0;
     transition: 0.2s;
 }
-.Tag button:hover {
+.Tag > button:hover {
     background: #5a6172;
 }
-.Tag button::before {
+.Tag > button::before {
     content: '\f067';
     font-family: 'Font Awesome 5 Free';
     font-weight: 900;
@@ -868,19 +882,28 @@ button.giantCornerButton.back::before {
 .Tag.selected button::before {
     transform: rotate(45deg);
 }
-.Tag button.hasTag, .Tag button.hasTag:hover {
-    background: var(--med-theme-color);
-    border-color: var(--med-theme-color);
-    color: #fff;
-}
-.Tag button.createTag {
+.Tag > button.createTag {
     background: var(--med-gradient);
     border-width: 0;
     line-height: calc(1.2rem + 2px);
     color: #fff;
 }
-.Tag button.createTag:hover {
+.Tag > button.createTag:hover {
     color: #fff;
+}
+.Tag > .MiniMenu {
+    top: calc(100% + 0.2rem);
+    left: 0;
+    z-index: 200;
+    box-shadow: 0.2rem 0.2rem 0.5rem rgba(0, 0, 0, 0.3);
+    background: #464b58;
+    transform-origin: top left;
+}
+.Tag > .MiniMenu button {
+    color: #c1c7d4;
+}
+.Tag > .MiniMenu button:hover {
+    background: #323741;
 }
 
 /* DROPDOWN */
@@ -888,6 +911,7 @@ button.giantCornerButton.back::before {
     position: relative;
     display: inline-block;
     text-align: left;
+    z-index: 0; /* todo test more */
 }
 .dropdownDisplay {
     border: 1px solid #ddd;

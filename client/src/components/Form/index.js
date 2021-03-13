@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Collection, Tag } from '../../helpers';
+import { Note, Collection, Tag } from '../../helpers';
 import Loading from '../Loading';
 
 export const Form = (props) => {
@@ -28,6 +28,22 @@ export const Submit = (props) => {
             <button type="button" className="greyed" onClick={handleCancel}>{nvm || 'Cancel'}</button>
         </div>
     )
+}
+
+const TrashNote = (props) => {
+    const { options } = props;
+    const callback = () => {
+        if (options.callback) options.callback();
+        props.gracefullyCloseModal();
+    }
+    const handleSubmit = () => Note.trashNote(props, options._id, callback);
+    return (
+        <Form {...props} onSubmit={handleSubmit}
+              title="Move to Trash?"
+              submit={<Submit {...props} value="Yes, I'm sure" />}>
+            Are you sure you want to move this note to the Trash?
+        </Form>
+    );
 }
 
 const CreateCollection = (props) => {
@@ -84,13 +100,17 @@ const DeleteCollection = (props) => {
 }
 
 const CreateTag = (props) => {
-    const { user } = props;
+    const { user, options } = props;
     const [formData, setFormData] = useState({ userId: user._id });
     const [formError, setFormError] = useState({});
     const updateFormData = (e) => {
         setFormData(prevState => ({ ...prevState, [e.target.name]: e.target.value }));
     }
-    const handleSubmit = (formData) => Tag.createTag(props, formData, props.gracefullyCloseModal);
+    const callback = () => {
+        if (options.callback) options.callback();
+        props.gracefullyCloseModal();
+    }
+    const handleSubmit = (formData) => Tag.createTag(props, formData, callback);
     return (
         <Form {...props} onSubmit={handleSubmit} formData={formData} title="Create a new tag">
             <label htmlFor="name">Enter a name for your tag:</label>
@@ -103,9 +123,45 @@ const CreateTag = (props) => {
     );
 }
 
+const EditTag = (props) => {
+    const { options } = props;
+    const [formData, setFormData] = useState({ name: options.name });
+    const [formError, setFormError] = useState({});
+    const updateFormData = (e) => {
+        setFormData(prevState => ({ ...prevState, [e.target.name]: e.target.value }));
+    }
+    const handleSubmit = (formData) => Tag.editTag(props, options._id, formData, props.gracefullyCloseModal);
+    return (
+        <Form {...props} onSubmit={handleSubmit} formData={formData} title="Edit this tag">
+            <label htmlFor="name">Tag name:</label>
+            <input
+                name="name"
+                defaultValue={options.name}
+                type="text"
+                className={formError?.name ? 'nope' : ''}
+                onChange={updateFormData} />
+        </Form>
+    );
+}
+
+const DeleteTag = (props) => {
+    const { options } = props;
+    const handleSubmit = () => Tag.deleteTag(props, options._id, props.gracefullyCloseModal);
+    return (
+        <Form {...props} onSubmit={handleSubmit}
+              title="Delete this tag"
+              submit={<Submit {...props} value="Yes, I'm sure" />}>
+            Are you sure you want to delete the tag <b>{options.name}</b>? Doing so will not delete any notes with this tag, only the tag itself.
+        </Form>
+    );
+}
+
 export const formStore = {
+    trashNote: (props) => <TrashNote {...props} />,
     createCollection: (props) => <CreateCollection {...props} />,
     editCollection: (props) => <EditCollection {...props} />,
     deleteCollection: (props) => <DeleteCollection {...props} />,
-    createTag: (props) => <CreateTag {...props} />
+    createTag: (props) => <CreateTag {...props} />,
+    editTag: (props) => <EditTag {...props} />,
+    deleteTag: (props) => <DeleteTag {...props} />,
 }

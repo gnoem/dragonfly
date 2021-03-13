@@ -41,11 +41,9 @@ export const Dashboard = (props) => {
         if (accessToken) refreshData().then(/* body => console.dir(body) */);
     }, [refreshData]);
     useEffect(() => {
-        if (!data?.notes) return;
+        if (!data?.notes || !view.currentNote) return;
         const refreshCurrentNote = (notes) => {
-            if (!view.currentNote) return;
-            const currentNoteId = view.currentNote._id;
-            const replaceCurrentNote = notes.find(note => note._id === currentNoteId);
+            const replaceCurrentNote = notes.find(note => note._id === view.currentNote._id);
             setView(prevView => ({ ...prevView, currentNote: replaceCurrentNote }));
         }
         refreshCurrentNote(data.notes);

@@ -34,7 +34,10 @@ const NavItem = ({ name, children, updateView, onClick }) => {
         if (onClick) return onClick();
         updateView(() => {
             const obj = { type: name };
-            if (name === 'tags') obj.tags = [];
+            if (name === 'tags') {
+                obj.tags = [];
+                obj.sortMethod = 'all';
+            }
             return obj;
         });
     }

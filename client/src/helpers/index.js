@@ -24,6 +24,13 @@ export const Note = {
         const body = await response.json();
         if (!body.success) return console.log(body.error);
         props.refreshData().then(callback);
+    },
+    trashNote: async (props, _id, callback) => {
+        const response = await fetch(`/note/${_id}/trash`, { method: 'PUT' });
+        const body = await response.json();
+        if (!body.success) return console.log(body.error);
+        props.refreshData().then(callback);
+        return body.note;
     }
 }
 
@@ -66,6 +73,24 @@ export const Tag = {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(formData)
         });
+        const body = await response.json();
+        if (!body.success) return console.log(body.error);
+        props.refreshData().then(callback);
+        return body.tag;
+    },
+    editTag: async (props, _id, formData, callback) => {
+        const response = await fetch(`/tag/${_id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+        });
+        const body = await response.json();
+        if (!body.success) return console.log(body.error);
+        props.refreshData().then(callback);
+        return body.tag;
+    },
+    deleteTag: async (props, _id, callback) => {
+        const response = await fetch(`/tag/${_id}`, { method: 'DELETE' });
         const body = await response.json();
         if (!body.success) return console.log(body.error);
         props.refreshData().then(callback);
