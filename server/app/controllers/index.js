@@ -377,7 +377,7 @@ class Controller {
             });
             return;
         }
-        const { _id: userId, name } = req.body;
+        const { userId, name } = req.body;
         const run = async () => {
             const [tag, createTagError] = await handle(Tag.create({ userId, name }));
             if (createTagError) throw new Error(`Error creating tag`);

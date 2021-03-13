@@ -367,6 +367,7 @@ button.ellipsis::before {
     grid-template-rows: auto;
     grid-template-columns: 250px 1fr;
     grid-template-areas: 'sidebar main';
+    overflow: hidden;
 }
 .Dashboard .Sidebar {
     grid-area: sidebar;
@@ -386,9 +387,10 @@ button.ellipsis::before {
 .Dashboard .Main {
     grid-area: main;
     height: 100%;
+    overflow: hidden;
 }
 .Main .List {
-    padding: 2rem 5rem;
+    padding: 2rem 5rem 5rem;
     width: 100%;
     min-width: 400px;
     height: 100%;
@@ -408,6 +410,12 @@ button.ellipsis::before {
  /* .Main[data-editor='false'] .List {
    animation: slideright 0.2s 1; // todo figure out how to put this back
 } */
+
+.List {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    overflow: hidden;
+}
 .List h1 {
     font-family: var(--display-font);
     font-size: 10vh;
@@ -493,12 +501,9 @@ button.createNew:hover .tooltip {
 .ListHeader span.collectionHeader > span + span {
     font-size: 1.5rem;
 }
-.ListHeader.grid > button {
-    grid-area: button;
-}
 .ListContent {
-    height: 50vh;
-    overflow: scroll;
+    overflow: auto;
+    /* animation: 0.2s slideup 1; // todo */
 }
 .ListContent::-webkit-scrollbar {
 	width: 0.5rem;
@@ -516,18 +521,6 @@ button.createNew:hover .tooltip {
     border-left: 2px solid #C6CBC9;
     transition: 0.2s;
 }
-.ListItem > div:first-of-type {
-    padding-bottom: 1rem;
-    padding-left: 2rem;
-}
-.ListItem > div.previewButton {
-    position: relative;
-}
-.ListItem > div.previewButton .MiniMenu {
-    right: calc(100% + 0.5rem);
-    top: 0;
-    z-index: 200;
-}
 .ListItem.grid {
     display: grid;
     align-items: center;
@@ -536,10 +529,22 @@ button.createNew:hover .tooltip {
         'content button'
         'content button';
 }
-.ListItem.grid > button {
-    grid-area: button;
+.ListItem > div:first-of-type {
+    padding-bottom: 1rem;
+    padding-left: 2rem;
 }
-.ListItem:only-of-type > div {
+.ListHeaderButton,
+.ListItem > div.previewButton {
+    grid-area: button;
+    position: relative;
+}
+.ListHeaderButton .MiniMenu,
+.ListItem > div.previewButton .MiniMenu {
+    right: calc(100% + 0.5rem);
+    top: 0;
+    z-index: 200;
+}
+.ListItem:only-of-type > div:first-of-type {
     padding: 1rem 0 1rem 2rem;
 }
 .ListItem + .ListItem > div:first-of-type {
@@ -572,7 +577,7 @@ button.createNew:hover .tooltip {
     font-size: 0.8rem;
 }
 .ListFooter {
-    padding: 2rem 0;
+    padding: 2rem 0 1rem;
     font-weight: 300;
     font-size: 1.5rem;
     color: #444;
@@ -774,7 +779,7 @@ button.giantCornerButton.back::before {
 .NoteOperations .OptionItem button.collection::before {
     content: '\f02d';
 }
-.NoteOperations .OptionItem button.tag::before {
+.NoteOperations .OptionItem button.tags::before {
     content: '\f02c';
 }
 .NoteOperations .OptionItem button.trash::before {
@@ -802,47 +807,50 @@ button.giantCornerButton.back::before {
 .noteIsInTrash .buttons {
     text-align: left;
 }
-.sortByTag {
-    margin: -1rem 0 2rem;
-}
-.sortByTag h2 {
-    font-size: 0.9rem;
-    text-transform: uppercase;
+.SortByTag {
     margin-top: 1rem;
-    margin-bottom: 0.5rem;
 }
-.sortByTag .tag {
-    margin: 0.25rem;
-    background: var(--element-main-bg);
+.SortByTag h2 {
+    margin: 1rem 0;
+}
+.SortTagOptions {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+}
+.SortTagOptions .Dropdown {
+    width: 4rem;
+    margin: 0 0.5rem;
 }
 
+/* TAG LIST */
+.TagList {
+    display: flex;
+    gap: 0.5rem;
+}
+.Tooltip .TagList {
+    flex-direction: column;
+}
 
 /* TAG BUTTONS */
-.tag {
-    border: 1px solid var(--element-secondary-border);
-    display: inline-block;
-    background: var(--element-main-bg);
-    padding: 0 0.7rem;
+.Tag button {
+    margin: 0;
+    border: 0;
+    background: #323741;
+    padding: 0 1rem;
     font-size: 0.7rem;
-    color: #333;
-    line-height: 1.2rem;
+    color: #fff;
+    line-height: 1.5rem;
     text-align: center;
     text-transform: uppercase;
     width: auto;
-    margin: 0.2rem 0.5rem;
     border-radius: 999px;
     border-top-left-radius: 0;
     transition: 0.2s;
 }
-.tag:hover {
-    color: inherit;
+.Tag button:hover {
+    background: #5a6172;
 }
-.tag.hasTag, .tag.hasTag:hover {
-    background: var(--med-theme-color);
-    border-color: var(--med-theme-color);
-    color: #fff;
-}
-.tag::before {
+.Tag button::before {
     content: '\f067';
     font-family: 'Font Awesome 5 Free';
     font-weight: 900;
@@ -854,33 +862,25 @@ button.giantCornerButton.back::before {
     float: none;
     transition: transform 0.2s;
 }
-.tag.hasTag::before {
+.Tag.selected button {
+    background: var(--deep-theme-color);
+}
+.Tag.selected button::before {
     transform: rotate(45deg);
 }
-.tag.createTag {
+.Tag button.hasTag, .Tag button.hasTag:hover {
+    background: var(--med-theme-color);
+    border-color: var(--med-theme-color);
+    color: #fff;
+}
+.Tag button.createTag {
     background: var(--med-gradient);
     border-width: 0;
     line-height: calc(1.2rem + 2px);
     color: #fff;
 }
-.tag.createTag:hover {
+.Tag button.createTag:hover {
     color: #fff;
-}
-.Tooltip ul.tagsList {
-    text-align: center;
-}
-.Tooltip ul.tagsList li.createTag {
-    margin-top: 0.7rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.4);
-    padding-top: 0.7rem;
-}
-.Tooltip ul.tagsList .tag {
-    display: inline-block;
-    border-color: transparent;
-    margin: 0.2rem;
-}
-.Tooltip ul.tagsList .tag:not(.createTag):not(.hasTag):hover {
-    color: #333;
 }
 
 /* DROPDOWN */
@@ -1828,19 +1828,15 @@ input.nope + .formError {
     margin-right: 0.3rem;
 }
 
-.sortTagOptions {
-    margin-top: 0.7rem;
+.Hint {
     font-size: 0.9rem;
 }
-
-.hint {
-    font-size: 0.8rem;
-}
-.hint::before {
-    content: '\f05a';
-    font-family: 'Font Awesome 5 Free';
-    font-weight: 900;
+.Hint::before {
+    font: 900 1rem 'Font Awesome 5 Free';
     margin-right: 0.3rem;
+}
+.Hint.qmark::before {
+    content: '\f05a';
 }
 
 

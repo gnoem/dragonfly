@@ -4,11 +4,11 @@ import { NoteList } from './components/NoteList';
 export const Notes = (props) => {
     const { view, currentNote } = props;
     return (
-        <div>
+        <>
             {view.type === 'collection' && <GiantBackButton {...props} />}
             <NoteList {...props} />
             {currentNote && <Editor {...props} />}
-        </div>
+        </>
     );
 }
 

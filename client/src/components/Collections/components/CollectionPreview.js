@@ -18,13 +18,14 @@ const CollectionPreviewTitle = ({ name }) => <h2>{name}</h2>;
 
 const CollectionPreviewContent = (props) => {
     const { allNotes, _id } = props;
-    const howMany = (() => {
+    const howManyNotes = (() => {
         const notesInCollection = allNotes.filter(note => note.collectionId === _id);
-        return notesInCollection.length;
+        if (notesInCollection.length === 1) return '1 note';
+        return `${notesInCollection.length} notes`;
     })();
     return (
         <ListItemContent>
-            {howMany} notes
+            {howManyNotes}
         </ListItemContent>
     );
 }
@@ -38,7 +39,7 @@ const CollectionPreviewButton = (props) => {
     const deleteCollection = () => {
         props.updateModal('deleteCollection', 'form', { _id, name });
     };
-    const menuItems = [{ label: 'Edit', onClick: () => editCollection() }, { label: 'Delete', onClick: () => deleteCollection() }]
+    const menuItems = [{ label: 'Edit', onClick: editCollection }, { label: 'Delete', onClick: deleteCollection }];
     return (
         <div className="previewButton">
             <button onClick={() => setShowMiniMenu(true)} className="icon ellipsis round-basic"></button>

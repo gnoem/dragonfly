@@ -17,6 +17,14 @@ export const ListHeader = ({ title, button, grid, children }) => {
     );
 }
 
+export const ListHeaderButton = ({ children }) => {
+    return (
+        <div className="ListHeaderButton">
+            {children}
+        </div>
+    );
+}
+
 export const ListContent = ({ footer, children }) => {
     return (
         <div className="ListContent">

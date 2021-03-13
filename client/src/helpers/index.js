@@ -14,6 +14,16 @@ export const Note = {
         const body = await response.json();
         if (!body.success) return console.log(body.error);
         props.refreshData().then(callback);
+    },
+    tagNote: async (props, currentNote, tagId, callback) => {
+        const response = await fetch(`/note/${currentNote._id}/tag`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tagId })
+        });
+        const body = await response.json();
+        if (!body.success) return console.log(body.error);
+        props.refreshData().then(callback);
     }
 }
 
@@ -46,5 +56,19 @@ export const Collection = {
         if (!body.success) return console.log(body.error);
         props.refreshData().then(callback);
         return body.collection;
+    }
+}
+
+export const Tag = {
+    createTag: async (props, formData, callback) => {
+        const response = await fetch('/tag', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+        });
+        const body = await response.json();
+        if (!body.success) return console.log(body.error);
+        props.refreshData().then(callback);
+        return body.tag;
     }
 }

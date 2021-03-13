@@ -11,10 +11,7 @@ export const CollectionsList = (props) => {
 }
 
 const CollectionsListHeader = (props) => {
-    const createNewCollection = () => {
-        console.dir(props);
-        props.updateModal('createCollection', 'form');
-    }
+    const createNewCollection = () => props.updateModal('createCollection', 'form');
     return (
         <ListHeader title="Collections">
             <button className="createNew" onClick={createNewCollection}>

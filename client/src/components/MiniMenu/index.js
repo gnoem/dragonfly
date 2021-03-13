@@ -16,7 +16,12 @@ export const MiniMenu = ({ show, updateShow, menuItems, className }) => {
     const content = () => {
         return menuItems.map((menuItem) => {
             const { label, onClick } = menuItem;
-            return <button onClick={onClick}>{label}</button>;
+            const handleClick = () => {
+                onClick();
+                setClosing(true);
+                setTimeout(() => updateShow(false), 200);
+            }
+            return <button key={`miniMenu-${menuItem.label}`} onClick={handleClick}>{label}</button>;
         });
     }
     if (!show) return null;

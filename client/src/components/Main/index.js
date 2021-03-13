@@ -5,17 +5,18 @@ const getNotes = (view, allNotes) => {
     const notesTaggedWith = (tagsArray) => {
         // if note has these tags
         if (!tagsArray || !tagsArray.length) return [];
+        const array = [];
         allNotes.forEach(note => {
             // create test object by which to compare
             let testObject = {};
             note.tags.forEach((tag, index) => testObject[tag] = index);
-            const tagIsHad = (tag) => testObject[tag] !== undefined;
-            const noteHasTheseTags = view.sortTags === 'all'
+            const tagIsHad = (tag) => testObject[tag._id] !== undefined;
+            const noteHasTheseTags = view.sortMethod === 'all'
                 ? tagsArray.every(tagIsHad)
                 : tagsArray.some(tagIsHad);
-            if (!noteHasTheseTags) return null;
-            return note;
+            if (noteHasTheseTags) array.push(note);
         });
+        return array;
     }
     switch (view.type) {
         case 'all-notes': return allNotes.filter(note => !note.trash);

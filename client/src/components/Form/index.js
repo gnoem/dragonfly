@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Collection } from '../../helpers';
+import { Collection, Tag } from '../../helpers';
 import Loading from '../Loading';
 
 export const Form = (props) => {
@@ -30,7 +30,7 @@ export const Submit = (props) => {
     )
 }
 
-export const CreateCollection = (props) => {
+const CreateCollection = (props) => {
     const { user } = props;
     const [formData, setFormData] = useState({ userId: user._id });
     const [formError, setFormError] = useState({});
@@ -83,8 +83,29 @@ const DeleteCollection = (props) => {
     );
 }
 
+const CreateTag = (props) => {
+    const { user } = props;
+    const [formData, setFormData] = useState({ userId: user._id });
+    const [formError, setFormError] = useState({});
+    const updateFormData = (e) => {
+        setFormData(prevState => ({ ...prevState, [e.target.name]: e.target.value }));
+    }
+    const handleSubmit = (formData) => Tag.createTag(props, formData, props.gracefullyCloseModal);
+    return (
+        <Form {...props} onSubmit={handleSubmit} formData={formData} title="Create a new tag">
+            <label htmlFor="name">Enter a name for your tag:</label>
+            <input
+                name="name"
+                type="text"
+                className={formError?.name ? 'nope' : ''}
+                onChange={updateFormData} />
+        </Form>
+    );
+}
+
 export const formStore = {
     createCollection: (props) => <CreateCollection {...props} />,
     editCollection: (props) => <EditCollection {...props} />,
-    deleteCollection: (props) => <DeleteCollection {...props} />
+    deleteCollection: (props) => <DeleteCollection {...props} />,
+    createTag: (props) => <CreateTag {...props} />
 }

@@ -1,7 +1,12 @@
-import { List, ListHeader, ListContent, ListFooter } from '../../List';
+import { useState } from 'react';
+import { List, ListHeader, ListHeaderButton, ListContent, ListFooter } from '../../List';
 import { NotePreview } from './NotePreview';
+import { SortByTag } from '../../Tags';
+import { MiniMenu } from '../../MiniMenu';
 
 export const NoteList = (props) => {
+    const { notes } = props;
+    if (!notes) return null;
     return (
         <List>
             <NoteListHeader {...props} />
@@ -11,15 +16,11 @@ export const NoteList = (props) => {
 }
 
 const NoteListHeader = (props) => {
-    const { view, isMobile } = props;
-    const buttonShouldInherit = {
-        type: view.type,
-        isMobile
-    }
+    const { view } = props;
     switch (view.type) {
         case 'all-notes': return (
             <ListHeader title="All notes">
-                <HeaderButton {...buttonShouldInherit} />
+                <NewNoteButton {...props} />
             </ListHeader>
         );
         case 'starred-notes': return (
@@ -28,50 +29,65 @@ const NoteListHeader = (props) => {
         case 'trash': return (
             <ListHeader
                 title="Trash"
-                button={<HeaderButton {...buttonShouldInherit} />}
+                button={<TrashMenuButton {...props} />}
                 grid={true} />
         );
         case 'collection': return (
             <ListHeader
                 title={<CollectionTitle name={view.collection.name} />}
-                button={<HeaderButton {...buttonShouldInherit} />}
+                button={<CollectionMenuButton {...props} collection={view.collection} />}
                 grid={true} />
         );
         case 'tags': return (
             <ListHeader>
-                <SortByTag />
+                <SortByTag {...props} />
             </ListHeader>
         );
         default: return null;
     }
 }
 
-const HeaderButton = (props) => {
-    const { type, isMobile } = props;
-    switch (type) {
-        case 'all-notes': {
-            if (isMobile) return (
-                <button>
-                    <i className="fas fa-plus" style={{ marginRight: '0.5rem' }}></i> Create new
-                </button>
-            ); else return (
-                <button className="createNew">
-                    <span className="tooltip">Create a new note</span>
-                </button>
-            );
-        }
-        case 'trash': {
-            return (
-                <button className="icon bar-menu round-basic"></button>
-            );
-        }
-        case 'collection': {
-            return (
-                <button className="icon bar-menu round-basic"></button>
-            );
-        }
-        default: return null;
+const NewNoteButton = ({ isMobile }) => {
+    const button = () => {
+        if (isMobile) return (
+            <button>
+                <i className="fas fa-plus" style={{ marginRight: '0.5rem' }}></i> Create new
+            </button>
+        ); else return (
+            <button className="createNew">
+                <span className="tooltip">Create a new note</span>
+            </button>
+        );
     }
+    return (
+        <ListHeaderButton>{button()}</ListHeaderButton>
+    )
+}
+
+const TrashMenuButton = () => {
+    return (
+        <ListHeaderButton>
+            <button className="icon bar-menu round-basic"></button>
+        </ListHeaderButton>
+    )
+}
+
+const CollectionMenuButton = (props) => {
+    const { _id, name } = props.collection;
+    const [showingMenu, setShowingMenu] = useState(false);
+    const editCollection = () => {
+        props.updateModal('editCollection', 'form', { _id, name });
+    };
+    const deleteCollection = () => {
+        props.updateModal('deleteCollection', 'form', { _id, name });
+    };
+    const menuItems = [{ label: 'Edit', onClick: editCollection }, { label: 'Delete', onClick: deleteCollection }]
+    return (
+        <ListHeaderButton>
+            <button onClick={() => setShowingMenu(true)} className="icon bar-menu round-basic"></button>
+            <MiniMenu show={showingMenu} updateShow={setShowingMenu} menuItems={menuItems} />
+        </ListHeaderButton>
+    )
 }
 
 const CollectionTitle = ({ name }) => {
@@ -80,12 +96,6 @@ const CollectionTitle = ({ name }) => {
             <span>COLLECTION</span>
             <span>{name}</span>
         </span>
-    );
-}
-
-const SortByTag = () => {
-    return (
-        <div>sort by tag</div>
     );
 }
 

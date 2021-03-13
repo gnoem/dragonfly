@@ -23,6 +23,12 @@ export const NoteOperations = (props) => {
                 tooltipWillOpen={{ tooltipOpen: collectionsTooltip, updateTooltipOpen: setCollectionsTooltip }}
                 overflow={true}
                 defaultContent="Move to collection" />
+            <OptionItem {...props}
+                name="tags"
+                onClick={() => setTagsTooltip(true)}
+                ignoreClick={['.Modal']}
+                tooltipWillOpen={{ tooltipOpen: tagsTooltip, updateTooltipOpen: setTagsTooltip }}
+                defaultContent="Tag this note" />
             {/* <div className="OptionItem">
                 <button onClick={() => setCollectionsTooltip(true)} ref={collectionsRef}>
                     <i className="fas fa-book"></i>
