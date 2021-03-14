@@ -1,3 +1,28 @@
+export const User = {
+    editAccount: async (props, _id, formData, callback) => {
+        const response = await fetch(`/user/${_id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+        });
+        const body = await response.json();
+        if (!body.success) return console.log(body.error);
+        props.refreshData().then(callback);
+        return body.user;
+    },
+    changePassword: async (props, _id, formData, callback) => {
+        const response = await fetch(`/user/${_id}/password`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+        });
+        const body = await response.json();
+        if (!body.success) return console.log(body.error);
+        props.refreshData().then(callback);
+        return body.user;
+    }
+}
+
 export const Note = {
     createNote: async (props, formData, callback) => {
         const response = await fetch('/note', {

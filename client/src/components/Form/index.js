@@ -10,7 +10,9 @@ export const Form = (props) => {
     }, [reset, formRef]);
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setTimeout(() => onSubmit(formData).then(() => setSuccess(true)), 300);
+        setTimeout(() => {
+            onSubmit(formData).then(() => setSuccess(true)).then(() => setSuccess(false));
+        }, 300);
     }
     const customSubmit = submit ? React.cloneElement(submit, { ...props, success, onSuccess }) : null;
     return (
@@ -57,11 +59,9 @@ export const Button = ({ type, onClick, isClicked, className, disabled, showLoad
         if (success) {
             setLoadingIcon(false);
             setSuccessAnimation(true);
-            setTimeout(() => {
-                if (reportSuccess) return reportSuccess();
-                if (unmountButton) setPoof(true);
-                else setSuccessAnimation(false);
-            }, 500);
+            if (reportSuccess) setTimeout(reportSuccess, 500);
+            if (unmountButton) setTimeout(() => setPoof(true), 500);
+            else setTimeout(() => setSuccessAnimation(false), 1500);
         }
     }, [success]);
     const handleClick = () => {

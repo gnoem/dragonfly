@@ -8,16 +8,16 @@ export default (app) => {
         .post(Controller.login);
     app.route('/logout')
         .get(Controller.logout);
-    app.route('/user/:identifier/data')
+    app.route('/user/:_id/data')
         .get(Controller.getUser);
     app.route('/user')
         .post(Controller.createUser);
-    app.route('/account/:_id')
+    app.route('/user/:_id')
         .post(Controller.createAccount)
         .put(Controller.editAccount)
         .delete(Controller.deleteAccount);
-    app.route('/account/:_id/password')
-        .post(Controller.editPassword);
+    app.route('/user/:_id/password')
+        .put(Controller.editPassword);
     app.route('/note')
         .post(Controller.createNote);
     app.route('/note/:_id')

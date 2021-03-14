@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { User } from "../../helpers";
 import { Form, Submit, Input } from "../Form";
 
 export const EditAccount = (props) => {
@@ -13,14 +14,21 @@ export const EditAccount = (props) => {
 
 const AccountDetails = (props) => {
     const { user } = props;
-    const [formData, setFormData] = useState({
-        firstName: user.firstName ?? '',
-        lastName: user.lastName ?? '',
-        username: user.username ?? '',
-        email: user.email ?? ''
-    });
+    const [formData, setFormData] = useState(null);
     const [formError, setFormError] = useState({});
-    const handleSubmit = () => {};
+    const originalUsername = useRef(user.username);
+    useEffect(() => {
+        setFormData({
+            firstName: user.firstName ?? '',
+            lastName: user.lastName ?? '',
+            username: user.username ?? '',
+            email: user.email ?? ''
+        });
+    }, [user]);
+    const didUsernameChange = (newUsername) => {
+        if (newUsername !== originalUsername.current) window.history.pushState('', '', `/d/${newUsername}`);
+    }
+    const handleSubmit = () => User.editAccount(props, user._id, formData).then(user => didUsernameChange(user.username));
     const updateFormData = (e) => setFormData(prevState => ({ ...prevState, [e.target.name]: e.target.value }));
     return (
         <Form {...props} onSubmit={handleSubmit}

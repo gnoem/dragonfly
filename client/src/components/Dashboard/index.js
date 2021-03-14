@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Login } from '../Login';
 import { Modal } from '../Modal';
 import Menu from '../Menu';
@@ -19,18 +19,20 @@ export const Dashboard = (props) => {
         return view?.type;
     })();
     const isMobile = window.innerWidth < 900;
+    const userId = useRef(null);
     useEffect(() => {
         const auth = async () => {
             const response = await fetch(`/auth/${identifier}`);
             const body = await response.json();
-            if (body.redirect) return window.location.assign(`/d/${body.username}`); // todo without reload
+            if (body.username) return window.location.assign(`/d/${body.username}`); // todo without reload
             setAccessToken(body.success);
+            userId.current = body._id;
         }
         auth();
     }, []);
     const refreshData = useCallback(async () => {
-        if (!accessToken) return null;
-        const response = await fetch(`/user/${identifier}/data`);
+        if (!accessToken || !userId.current) return null;
+        const response = await fetch(`/user/${userId.current}/data`);
         const body = await response.json();
         if (!body.success) return console.dir(body.error);
         setData(body.data);

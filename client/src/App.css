@@ -376,7 +376,7 @@ button .SuccessAnimation svg {
     stroke-dashoffset: 2rem;
     height: 1.5rem;
     transform-origin: center right;
-    animation: 0.5s check 1 forwards/* , 0.5s checkmark-shrink 1 forwards 1s */;
+    animation: 0.7s check 1 forwards, 0.5s checkmark-shrink 1 forwards 1s;
     transform: rotate(45deg) scale(1);
 }
 button .Loading svg {
@@ -441,10 +441,11 @@ button .Loading svg * {
 .Main h1 {
     font-family: var(--display-font);
     font-size: 10vh;
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
+    line-height: 1;
 }
 .Main .List {
-    padding: 2rem 5rem 5rem;
+    padding: 4rem 5rem 5rem;
     width: 100%;
     min-width: 400px;
     height: 100%;
@@ -471,10 +472,8 @@ button .Loading svg * {
 .List {
     display: grid;
     grid-template-rows: auto 1fr;
+    row-gap: 2rem;
     overflow: hidden;
-}
-.ListHeader {
-    margin: 1rem 0 2rem;
 }
 .ListHeader.grid {
     width: 400px;
@@ -1782,7 +1781,7 @@ form.horizontal .buttons {
     margin-top: 1.5rem;
 } */
 .Account {
-    padding: 2rem 5rem 5rem 5rem;
+    padding: 4rem 5rem 5rem 5rem;
     height: 100%;
     overflow: auto;
 }

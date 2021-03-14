@@ -17,8 +17,8 @@ class Controller {
                 // (just because it's a valid objectID doesn't mean it's a dragonfly user)
                 if (findUserError) throw new Error(`Error finding user ${identifier}`);
                 if (!user) throw new Error(`User ${identifier} not found`);
-                if (user.username) return res.send({ redirect: user.username });
-                return res.send({ success: true }); // not password protected
+                if (user.username) return res.send({ _id: user._id, username: user.username });
+                return res.send({ success: true, _id: identifier }); // not password protected
             }
             // if not, then identifier is a username
             if (!accessToken) return res.send({ success: false, accessToken: false });
@@ -27,7 +27,7 @@ class Controller {
             if (findProtectedUserError) throw new Error(`Error finding user ${identifier}`);
             if (!protectedUser) throw new Error(`User ${identifier} not found`); // and delete cookie? todo figure out
             if (protectedUser._id.toString() !== decoded.id) return res.send({ success: false });
-            res.send({ success: true });
+            res.send({ success: true, _id: protectedUser._id });
         }
         run().catch(err => res.send({ success: false, error: err.message }));
     }
@@ -51,20 +51,18 @@ class Controller {
         res.send({ success: true });
     }
     getUser = (req, res) => {
-        const { identifier } = req.params;
-        const searchingById = isObjectId(identifier);
-        const searchParams = searchingById ? { _id: identifier } : { username: identifier };
+        const { _id } = req.params;
         const run = async () => {
-            const [user, findUserError] = await handle(User.findOne(searchParams));
-            if (findUserError) throw new Error(`Error finding user ${searchParams}`);
-            if (!user) throw new Error(`User ${searchParams} not found`);
-            const userId = user._id;
+            const [user, findUserError] = await handle(User.findOne({ _id }));
+            if (findUserError) throw new Error(`Error finding user ${_id}`);
+            if (!user) throw new Error(`User ${_id} not found`);
+            const userId = _id;
             const [foundData, findDataError] = await handle(Promise.all([
                 Note.find({ userId }).lean().sort({ lastModified: 'desc' }),
                 Collection.find({ userId }),
                 Tag.find({ userId })
             ]));
-            if (findDataError) throw new Error(`Error retrieving data from user ${identifier}`);
+            if (findDataError) throw new Error(`Error retrieving data from user ${_id}`);
             const [foundNotes, collections, tags] = foundData;
             const notes = foundNotes.map(note => Object.assign(note, { content: JSON.parse(note.content) }));
             res.status(200).send({ success: true, data: { user, notes, collections, tags } });
@@ -136,12 +134,12 @@ class Controller {
             });
             return;
         }
-        const { firstName, lastName, email, username } = req.body;
+        const formData = req.body;
         const run = async () => {
             let [foundUser, findUserError] = await handle(User.findOne({ _id }));
             if (findUserError) throw new Error(`Error finding user ${_id}`);
             if (!foundUser) throw new Error(`User ${_id} not found`);
-            foundUser = Object.assign(foundUser, { firstName, lastName, email, username });
+            foundUser = Object.assign(foundUser, formData);
             const [user, saveError] = await handle(foundUser.save());
             if (saveError) throw new Error(`Error saving user ${_id}`);
             res.send({ success: true, user });
