@@ -1,3 +1,5 @@
+import { Header } from '../Page';
+
 export const List = ({ children }) => {
     return (
         <div className="List">
@@ -9,7 +11,7 @@ export const List = ({ children }) => {
 export const ListHeader = ({ title, button, grid, children }) => {
     return (
         <div className={`ListHeader${grid ? ' grid' : ''}`}>
-            <h1>Dragonfly</h1>
+            <Header />
             <h2>{title}</h2>
             {button}
             {children}

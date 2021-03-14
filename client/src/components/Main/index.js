@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Notes } from '../Notes';
 import { Collections } from '../Collections';
+import { Account } from '../Account';
 
 const getNotes = (view, allNotes) => {
     const notesTaggedWith = (tagsArray) => {
@@ -40,6 +41,7 @@ export const Main = (props) => {
         switch (contentType) {
             case 'notes': return <Notes {...props} notes={getNotes(view, allNotes)} />;
             case 'collections': return <Collections {...props} />;
+            case 'my-account': return <Account {...props} />;
             default: return <div>figure it out</div>;
         }
     })();

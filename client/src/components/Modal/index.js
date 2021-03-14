@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { elementHasParent } from '../../utils';
-import { formStore } from '../Form';
+import { formStore } from './forms';
 
 // custom modals located in: NoteList
 

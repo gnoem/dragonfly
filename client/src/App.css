@@ -438,6 +438,11 @@ button .Loading svg * {
     height: 100%;
     overflow: hidden;
 }
+.Main h1 {
+    font-family: var(--display-font);
+    font-size: 10vh;
+    margin-bottom: 1rem;
+}
 .Main .List {
     padding: 2rem 5rem 5rem;
     width: 100%;
@@ -467,11 +472,6 @@ button .Loading svg * {
     display: grid;
     grid-template-rows: auto 1fr;
     overflow: hidden;
-}
-.List h1 {
-    font-family: var(--display-font);
-    font-size: 10vh;
-    margin-bottom: 1rem;
 }
 .ListHeader {
     margin: 1rem 0 2rem;
@@ -1743,7 +1743,26 @@ form input:not([type=submit]):not([type=checkbox]) {
     border-radius: 0.5rem;
     transition: 0.2s;
 }
-.Account {
+form.horizontal {
+    display: grid;
+    grid-template: auto 1fr / 1fr auto;
+    grid-template-areas:
+        'header header'
+        'text button';
+    justify-content: space-between;
+    column-gap: 1rem;
+}
+form.horizontal h2 {
+    grid-area: header;
+}
+form.horizontal p {
+    margin: 0;
+    font-size: 0.9rem;
+}
+form.horizontal .buttons {
+    margin: 0;
+}
+/* .Account {
     display: flex;
     flex-wrap: wrap;
     margin-bottom: 0.5rem;
@@ -1761,7 +1780,28 @@ form input:not([type=submit]):not([type=checkbox]) {
 }
 .Account .toc {
     margin-top: 1.5rem;
+} */
+.Account {
+    padding: 2rem 5rem 5rem 5rem;
+    height: 100%;
+    overflow: auto;
 }
+.Account form + form {
+    margin-top: 2rem;
+}
+.formGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, calc(50% - 0.5rem));
+    grid-gap: 1rem;
+}
+.Account .buttons {
+    text-align: left;
+}
+
+
+
+
+
 .formSection {
     margin-top: 1.5rem;
     border-top: 1px solid var(--element-main-border);
@@ -1779,7 +1819,7 @@ form input:not([type=submit]):not([type=checkbox]) {
     flex: 1 0 100%;
     margin: 0;
 }
-.formGrid {
+/* .formGrid {
     display: grid;
     grid-template-columns: 1fr auto;
     align-items: center;
@@ -1790,7 +1830,7 @@ form input:not([type=submit]):not([type=checkbox]) {
 .formGrid button {
     margin: 0;
     padding: 0.8rem 1rem;
-}
+} */
 .changePassword {
     display: flex;
     width: 100%;

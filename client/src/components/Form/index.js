@@ -1,18 +1,20 @@
-import React, { useState } from 'react';
-import { Note, Collection, Tag } from '../../helpers';
+import React, { useState, useEffect, useRef } from 'react';
 import Loading from '../Loading';
-import { Button } from '../Button';
 
 export const Form = (props) => {
-    const { title, children, submit, formData, onSubmit, onSuccess } = props;
+    const { title, children, formClass, submit, formData, onSubmit, onSuccess, reset } = props;
     const [success, setSuccess] = useState(null);
+    const formRef = useRef(null);
+    useEffect(() => {
+        if (reset && formRef) formRef.current.reset();
+    }, [reset, formRef]);
     const handleSubmit = async (e) => {
         e.preventDefault();
         setTimeout(() => onSubmit(formData).then(() => setSuccess(true)), 300);
     }
     const customSubmit = submit ? React.cloneElement(submit, { ...props, success, onSuccess }) : null;
     return (
-        <form onSubmit={handleSubmit} autoComplete="off">
+        <form onSubmit={handleSubmit} className={formClass} autoComplete="off" ref={formRef}>
             <h2>{title}</h2>
             {children}
             {customSubmit ?? <Submit {...props} success={success} onSuccess={onSuccess} />}
@@ -21,7 +23,7 @@ export const Form = (props) => {
 }
 
 export const Submit = (props) => {
-    const { modal, value, nvm, cancel, success, onSuccess } = props;
+    const { modal, value, buttonClass, nvm, cancel, success, onSuccess, disabled } = props;
     const handleCancel = () => {
         if (cancel) cancel();
         if (modal) props.gracefullyCloseModal();
@@ -29,200 +31,86 @@ export const Submit = (props) => {
     return (
         <div className="buttons">
             <Button type="submit"
+                    className={buttonClass}
                     showLoadingIcon={true}
                     success={success}
-                    reportSuccess={onSuccess}>
+                    reportSuccess={onSuccess}
+                    disabled={disabled}>
                 {value || 'Submit'}
             </Button>
-            <button type="button" className="greyed" onClick={handleCancel}>{nvm || 'Cancel'}</button>
+            {(cancel !== false) && <button type="button" className="greyed" onClick={handleCancel}>{nvm || 'Cancel'}</button>}
         </div>
     );
 }
 
-const WarnUnsavedChanges = (props) => {
-    const { options } = props;
-    const { saveChanges, discardChanges } = options;
-    return (
-        <Form {...props} onSubmit={saveChanges} onSuccess={props.gracefullyCloseModal}
-              title="Unsaved changes"
-              submit={<Submit {...props} value="Save changes" nvm="Discard changes" cancel={discardChanges} />}>
-            It looks like you have unsaved changes. Would you like to save changes or discard?
-        </Form>
-    );
-}
-
-const TrashNote = (props) => {
-    const { options } = props;
-    const handleSubmit = () => Note.trashNote(props, options?._id, options?.callback);
-    return (
-        <Form {...props} onSubmit={handleSubmit} onSuccess={props.gracefullyCloseModal}
-              title="Move to Trash?"
-              submit={<Submit {...props} value="Yes, I'm sure" />}>
-            Are you sure you want to move this note to the Trash?
-        </Form>
-    );
-}
-
-const DeleteNote = (props) => {
-    const { options } = props;
-    const handleSubmit = () => Note.deleteNote(props, options?._id, options?.callback);
-    return (
-        <Form {...props} onSubmit={handleSubmit} onSuccess={props.gracefullyCloseModal}
-              title="Delete note permanently"
-              submit={<Submit {...props} value="Yes, I'm sure" />}>
-            Are you sure you want to permanently delete this note? This action cannot be undone.
-        </Form>
-    );
-}
-
-const EmptyTrash = (props) => {
-    const { options } = props;
-    const handleSubmit = () => Note.emptyTrash(props, options?._id, options?.callback);
-    return (
-        <Form {...props} onSubmit={handleSubmit} onSuccess={props.gracefullyCloseModal}
-              title="Empty Trash"
-              submit={<Submit {...props} value="Yes, I'm sure" />}>
-            Are you sure you want to permanently delete all the notes in your Trash? This action cannot be undone.
-        </Form>
-    );
-}
-
-const RestoreTrash = (props) => {
-    const { options } = props;
-    const handleSubmit = () => Note.restoreTrash(props, options?._id, options?.callback);
-    return (
-        <Form {...props} onSubmit={handleSubmit} onSuccess={props.gracefullyCloseModal}
-              title="Restore all"
-              submit={<Submit {...props} value="Yes, I'm sure" />}>
-            Are you sure you want to restore all the notes in your Trash?
-        </Form>
-    );
-}
-
-const CreateCollection = (props) => {
-    const { user, options } = props;
-    const [formData, setFormData] = useState({ userId: user._id });
-    const [formError, setFormError] = useState({});
-    const updateFormData = (e) => {
-        setFormData(prevState => ({ ...prevState, [e.target.name]: e.target.value }));
+export const Button = ({ type, onClick, isClicked, className, disabled, showLoadingIcon, success, reportSuccess, unmountButton, children }) => {
+    const [poof, setPoof] = useState(false);
+    const [loadingIcon, setLoadingIcon] = useState(false);
+    const [successAnimation, setSuccessAnimation] = useState(false);
+    useEffect(() => {
+        if (isClicked) handleClick();
+    }, [isClicked]);
+    useEffect(() => {
+        if (poof) setTimeout(unmountButton, 500);
+    }, [poof]);
+    useEffect(() => {
+        if (success) {
+            setLoadingIcon(false);
+            setSuccessAnimation(true);
+            setTimeout(() => {
+                if (reportSuccess) return reportSuccess();
+                if (unmountButton) setPoof(true);
+                else setSuccessAnimation(false);
+            }, 500);
+        }
+    }, [success]);
+    const handleClick = () => {
+        if (loadingIcon || successAnimation) return;
+        if (showLoadingIcon) setLoadingIcon(true);
+        setTimeout(onClick, 700);
     }
-    const handleSubmit = (formData) => Collection.createCollection(props, formData, options?.callback);
+    const statusIcon = (() => {
+        if (loadingIcon) return <Loading />;
+        if (successAnimation) return <SuccessAnimation />;
+        return null;
+    })();
+    const buttonClassName = (() => {
+        const isPoofing = `${poof ? ' poof' : ''}`;
+        if (!className) return isPoofing;
+        else return className + isPoofing;
+    })();
     return (
-        <Form {...props} onSubmit={handleSubmit} onSuccess={props.gracefullyCloseModal}
-              formData={formData}
-              title="Create a new collection">
-            <label htmlFor="name">Enter a name for your collection:</label>
+        <button type={type ?? 'button'} onClick={handleClick}
+                className={buttonClassName}
+                disabled={disabled}>
+            {statusIcon}
+            <span data-ghost={!!statusIcon}>{children}</span>
+        </button>
+    );
+}
+
+export const Input = ({ type, name, label, className, defaultValue, onChange, onInput, disabled }) => {
+    return (
+        <div className="Input">
+            <label htmlFor={name}>{label}</label>
             <input
-                name="name"
-                type="text"
-                className={formError?.name ? 'nope' : ''}
-                onChange={updateFormData} />
-        </Form>
+                type={type}
+                name={name}
+                className={className}
+                defaultValue={defaultValue}
+                onChange={onChange}
+                onInput={onInput}
+                disabled={disabled} />
+        </div>
     );
 }
 
-const EditCollection = (props) => {
-    const { options } = props;
-    const [formData, setFormData] = useState({ name: options?.name });
-    const [formError, setFormError] = useState({});
-    const updateFormData = (e) => {
-        setFormData(prevState => ({ ...prevState, [e.target.name]: e.target.value }));
-    }
-    const handleSubmit = (formData) => Collection.editCollection(props, options?._id, formData, options?.callback);
+const SuccessAnimation = () => {
     return (
-        <Form {...props} onSubmit={handleSubmit} onSuccess={props.gracefullyCloseModal}
-              formData={formData}
-              title="Edit this collection">
-            <label htmlFor="name">Collection name:</label>
-            <input
-                name="name"
-                defaultValue={options?.name}
-                type="text"
-                className={formError?.name ? 'nope' : ''}
-                onChange={updateFormData} />
-        </Form>
+        <div className="SuccessAnimation">
+            <svg viewBox="0 0 10 10">
+                <path d="M5 10 L10 10 L10 0" />
+            </svg>
+        </div>
     );
-}
-
-const DeleteCollection = (props) => {
-    const { options } = props;
-    const handleSubmit = () => Collection.deleteCollection(props, options?._id, options?.callback);
-    return (
-        <Form {...props} onSubmit={handleSubmit} onSuccess={props.gracefullyCloseModal}
-              title="Delete this collection"
-              submit={<Submit {...props} value="Yes, I'm sure" />}>
-            Are you sure you want to delete the collection <b>{options?.name}</b>? Doing so will not delete any of its contents, only the collection itself.
-        </Form>
-    );
-}
-
-const CreateTag = (props) => {
-    const { user, options } = props;
-    const [formData, setFormData] = useState({ userId: user._id });
-    const [formError, setFormError] = useState({});
-    const updateFormData = (e) => {
-        setFormData(prevState => ({ ...prevState, [e.target.name]: e.target.value }));
-    }
-    const handleSubmit = (formData) => Tag.createTag(props, formData, options?.callback);
-    return (
-        <Form {...props} onSubmit={handleSubmit} onSuccess={props.gracefullyCloseModal}
-              formData={formData}
-              title="Create a new tag">
-            <label htmlFor="name">Enter a name for your tag:</label>
-            <input
-                name="name"
-                type="text"
-                className={formError?.name ? 'nope' : ''}
-                onChange={updateFormData} />
-        </Form>
-    );
-}
-
-const EditTag = (props) => {
-    const { options } = props;
-    const [formData, setFormData] = useState({ name: options?.name });
-    const [formError, setFormError] = useState({});
-    const updateFormData = (e) => {
-        setFormData(prevState => ({ ...prevState, [e.target.name]: e.target.value }));
-    }
-    const handleSubmit = (formData) => Tag.editTag(props, options?._id, formData, options?.callback);
-    return (
-        <Form {...props} onSubmit={handleSubmit} onSuccess={props.gracefullyCloseModal}
-              formData={formData}
-              title="Edit this tag">
-            <label htmlFor="name">Tag name:</label>
-            <input
-                name="name"
-                defaultValue={options?.name}
-                type="text"
-                className={formError?.name ? 'nope' : ''}
-                onChange={updateFormData} />
-        </Form>
-    );
-}
-
-const DeleteTag = (props) => {
-    const { options } = props;
-    const handleSubmit = () => Tag.deleteTag(props, options?._id, options?.callback);
-    return (
-        <Form {...props} onSubmit={handleSubmit} onSuccess={props.gracefullyCloseModal}
-              title="Delete this tag"
-              submit={<Submit {...props} value="Yes, I'm sure" />}>
-            Are you sure you want to delete the tag <b>{options?.name}</b>? Doing so will not delete any notes with this tag, only the tag itself.
-        </Form>
-    );
-}
-
-export const formStore = {
-    warnUnsavedChanges: (props) => <WarnUnsavedChanges {...props} />,
-    trashNote: (props) => <TrashNote {...props} />,
-    deleteNotePermanently: (props) => <DeleteNote {...props} />,
-    emptyTrash: (props) => <EmptyTrash {...props} />,
-    restoreTrash: (props) => <RestoreTrash {...props} />,
-    createCollection: (props) => <CreateCollection {...props} />,
-    editCollection: (props) => <EditCollection {...props} />,
-    deleteCollection: (props) => <DeleteCollection {...props} />,
-    createTag: (props) => <CreateTag {...props} />,
-    editTag: (props) => <EditTag {...props} />,
-    deleteTag: (props) => <DeleteTag {...props} />,
 }
