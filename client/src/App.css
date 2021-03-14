@@ -930,10 +930,10 @@ button.giantCornerButton.back::before {
     float: none;
     transition: transform 0.2s;
 }
-.Tag.selected button {
+.Tag.selected > button {
     background: var(--deep-theme-color);
 }
-.Tag.selected button::before {
+.Tag.selected > button::before {
     transform: rotate(45deg);
 }
 .Tag > button.createTag {

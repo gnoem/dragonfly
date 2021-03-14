@@ -81,6 +81,7 @@ export const Dashboard = (props) => {
         }
     }
     const inherit = {
+        modal, updateModal: setModal,
         view, updateView: setView,
         user: data?.user,
         allNotes: data?.notes,

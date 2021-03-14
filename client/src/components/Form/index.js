@@ -4,34 +4,34 @@ import Loading from '../Loading';
 import { Button } from '../Button';
 
 export const Form = (props) => {
-    const { title, children, submit, formData, onSubmit } = props;
+    const { title, children, submit, formData, onSubmit, onSuccess } = props;
     const [success, setSuccess] = useState(null);
     const handleSubmit = async (e) => {
         e.preventDefault();
         setTimeout(() => onSubmit(formData).then(() => setSuccess(true)), 300);
     }
-    const customSubmit = submit ? React.cloneElement(submit, { success }) : null;
+    const customSubmit = submit ? React.cloneElement(submit, { ...props, success, onSuccess }) : null;
     return (
         <form onSubmit={handleSubmit} autoComplete="off">
             <h2>{title}</h2>
             {children}
-            {customSubmit ?? <Submit {...props} success={success} />}
+            {customSubmit ?? <Submit {...props} success={success} onSuccess={onSuccess} />}
         </form>
     );
 }
 
 export const Submit = (props) => {
-    const { value, nvm, cancel, success } = props;
+    const { modal, value, nvm, cancel, success, onSuccess } = props;
     const handleCancel = () => {
         if (cancel) cancel();
-        props.gracefullyCloseModal();
+        if (modal) props.gracefullyCloseModal();
     }
     return (
         <div className="buttons">
             <Button type="submit"
                     showLoadingIcon={true}
                     success={success}
-                    reportSuccess={props.gracefullyCloseModal}>
+                    reportSuccess={onSuccess}>
                 {value || 'Submit'}
             </Button>
             <button type="button" className="greyed" onClick={handleCancel}>{nvm || 'Cancel'}</button>
@@ -43,7 +43,7 @@ const WarnUnsavedChanges = (props) => {
     const { options } = props;
     const { saveChanges, discardChanges } = options;
     return (
-        <Form {...props} onSubmit={saveChanges}
+        <Form {...props} onSubmit={saveChanges} onSuccess={props.gracefullyCloseModal}
               title="Unsaved changes"
               submit={<Submit {...props} value="Save changes" nvm="Discard changes" cancel={discardChanges} />}>
             It looks like you have unsaved changes. Would you like to save changes or discard?
@@ -55,7 +55,7 @@ const TrashNote = (props) => {
     const { options } = props;
     const handleSubmit = () => Note.trashNote(props, options?._id, options?.callback);
     return (
-        <Form {...props} onSubmit={handleSubmit}
+        <Form {...props} onSubmit={handleSubmit} onSuccess={props.gracefullyCloseModal}
               title="Move to Trash?"
               submit={<Submit {...props} value="Yes, I'm sure" />}>
             Are you sure you want to move this note to the Trash?
@@ -67,7 +67,7 @@ const DeleteNote = (props) => {
     const { options } = props;
     const handleSubmit = () => Note.deleteNote(props, options?._id, options?.callback);
     return (
-        <Form {...props} onSubmit={handleSubmit}
+        <Form {...props} onSubmit={handleSubmit} onSuccess={props.gracefullyCloseModal}
               title="Delete note permanently"
               submit={<Submit {...props} value="Yes, I'm sure" />}>
             Are you sure you want to permanently delete this note? This action cannot be undone.
@@ -79,7 +79,7 @@ const EmptyTrash = (props) => {
     const { options } = props;
     const handleSubmit = () => Note.emptyTrash(props, options?._id, options?.callback);
     return (
-        <Form {...props} onSubmit={handleSubmit}
+        <Form {...props} onSubmit={handleSubmit} onSuccess={props.gracefullyCloseModal}
               title="Empty Trash"
               submit={<Submit {...props} value="Yes, I'm sure" />}>
             Are you sure you want to permanently delete all the notes in your Trash? This action cannot be undone.
@@ -91,7 +91,7 @@ const RestoreTrash = (props) => {
     const { options } = props;
     const handleSubmit = () => Note.restoreTrash(props, options?._id, options?.callback);
     return (
-        <Form {...props} onSubmit={handleSubmit}
+        <Form {...props} onSubmit={handleSubmit} onSuccess={props.gracefullyCloseModal}
               title="Restore all"
               submit={<Submit {...props} value="Yes, I'm sure" />}>
             Are you sure you want to restore all the notes in your Trash?
@@ -108,7 +108,9 @@ const CreateCollection = (props) => {
     }
     const handleSubmit = (formData) => Collection.createCollection(props, formData, options?.callback);
     return (
-        <Form {...props} onSubmit={handleSubmit} formData={formData} title="Create a new collection">
+        <Form {...props} onSubmit={handleSubmit} onSuccess={props.gracefullyCloseModal}
+              formData={formData}
+              title="Create a new collection">
             <label htmlFor="name">Enter a name for your collection:</label>
             <input
                 name="name"
@@ -128,7 +130,9 @@ const EditCollection = (props) => {
     }
     const handleSubmit = (formData) => Collection.editCollection(props, options?._id, formData, options?.callback);
     return (
-        <Form {...props} onSubmit={handleSubmit} formData={formData} title="Edit this collection">
+        <Form {...props} onSubmit={handleSubmit} onSuccess={props.gracefullyCloseModal}
+              formData={formData}
+              title="Edit this collection">
             <label htmlFor="name">Collection name:</label>
             <input
                 name="name"
@@ -144,7 +148,7 @@ const DeleteCollection = (props) => {
     const { options } = props;
     const handleSubmit = () => Collection.deleteCollection(props, options?._id, options?.callback);
     return (
-        <Form {...props} onSubmit={handleSubmit}
+        <Form {...props} onSubmit={handleSubmit} onSuccess={props.gracefullyCloseModal}
               title="Delete this collection"
               submit={<Submit {...props} value="Yes, I'm sure" />}>
             Are you sure you want to delete the collection <b>{options?.name}</b>? Doing so will not delete any of its contents, only the collection itself.
@@ -161,7 +165,9 @@ const CreateTag = (props) => {
     }
     const handleSubmit = (formData) => Tag.createTag(props, formData, options?.callback);
     return (
-        <Form {...props} onSubmit={handleSubmit} formData={formData} title="Create a new tag">
+        <Form {...props} onSubmit={handleSubmit} onSuccess={props.gracefullyCloseModal}
+              formData={formData}
+              title="Create a new tag">
             <label htmlFor="name">Enter a name for your tag:</label>
             <input
                 name="name"
@@ -181,7 +187,9 @@ const EditTag = (props) => {
     }
     const handleSubmit = (formData) => Tag.editTag(props, options?._id, formData, options?.callback);
     return (
-        <Form {...props} onSubmit={handleSubmit} formData={formData} title="Edit this tag">
+        <Form {...props} onSubmit={handleSubmit} onSuccess={props.gracefullyCloseModal}
+              formData={formData}
+              title="Edit this tag">
             <label htmlFor="name">Tag name:</label>
             <input
                 name="name"
@@ -197,7 +205,7 @@ const DeleteTag = (props) => {
     const { options } = props;
     const handleSubmit = () => Tag.deleteTag(props, options?._id, options?.callback);
     return (
-        <Form {...props} onSubmit={handleSubmit}
+        <Form {...props} onSubmit={handleSubmit} onSuccess={props.gracefullyCloseModal}
               title="Delete this tag"
               submit={<Submit {...props} value="Yes, I'm sure" />}>
             Are you sure you want to delete the tag <b>{options?.name}</b>? Doing so will not delete any notes with this tag, only the tag itself.
