@@ -25,9 +25,9 @@ export const ListHeaderButton = ({ children }) => {
     );
 }
 
-export const ListContent = ({ footer, children }) => {
+export const ListContent = ({ footer, className, children }) => {
     return (
-        <div className="ListContent">
+        <div className={`ListContent ${className ?? ''}`}>
             <div className="ListItems">
                 {children}
             </div>

@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Notes } from '../Notes';
 import { Collections } from '../Collections';
 
@@ -30,6 +31,11 @@ const getNotes = (view, allNotes) => {
 
 export const Main = (props) => {
     const { view, contentType, allNotes, currentNote } = props;
+    const [slideIn, setSlideIn] = useState(false);
+    useEffect(() => {
+        if (currentNote) setSlideIn(true);
+        else setTimeout(() => setSlideIn(false), 200);
+    }, [currentNote]);
     const content = (() => {
         switch (contentType) {
             case 'notes': return <Notes {...props} notes={getNotes(view, allNotes)} />;
@@ -38,7 +44,7 @@ export const Main = (props) => {
         }
     })();
     return (
-        <div className="Main" data-editor={!!currentNote}>
+        <div className={`Main${slideIn ? ' slide' : ''}`} data-editor={!!currentNote}>
             {content}
         </div>
     );

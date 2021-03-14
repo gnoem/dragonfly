@@ -8,11 +8,7 @@ export const NoteOperations = (props) => {
     const [tagsTooltip, setTagsTooltip] = useState(false);
     return (
         <div className="NoteOperations">
-            <OptionItem {...props}
-                name="star"
-                className={currentNote.starred ? 'hasStar' : null}
-                onClick={() => Note.starNote(props, currentNote)}
-                defaultContent={currentNote.starred ? 'Unstar' : 'Add star'} />
+            <StarNote {...props} />
             <OptionItem {...props}
                 name="collection"
                 onClick={() => setCollectionsTooltip(true)}
@@ -28,7 +24,6 @@ export const NoteOperations = (props) => {
             <OptionItem {...props}
                 name="trash"
                 onClick={() => props.updateModal('trashNote', 'form', { _id: currentNote._id, callback: () => props.updateCurrentNote(null) })}
-                // todo test callback
                 defaultContent="Move to Trash" />
         </div>
     );
@@ -43,5 +38,34 @@ const OptionItem = (props) => {
             <Tooltip {...props} parent={tooltipParent} />
             <div className="tooltipArrow"></div>
         </div>
+    );
+}
+
+const StarNote = (props) => {
+    const { currentNote } = props;
+    const [pulse, setPulse] = useState(false);
+    const [instantToggle, setInstantToggle] = useState(null);
+    const isStarred = (() => {
+        let value = currentNote.starred;
+        if (instantToggle) value = !value;
+        return value;
+    })();
+    const className = (() => {
+        const hasStar = `${isStarred ? 'hasStar': null}`;
+        const wasClicked = `${pulse ? 'pulse' : null}`;
+        return `${hasStar} ${wasClicked}`;
+    })();
+    const handleClick = () => {
+        setPulse(true);
+        setTimeout(() => setPulse(false), 500);
+        setInstantToggle(true);
+        Note.starNote(props, currentNote, () => setInstantToggle(false));
+    }
+    return (
+        <OptionItem {...props}
+            name="star"
+            className={className}
+            onClick={handleClick}
+            defaultContent={isStarred ? 'Unstar' : 'Add star'} />
     );
 }

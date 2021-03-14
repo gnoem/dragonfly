@@ -48,7 +48,7 @@
         transform: translate3d(0, 0, 0);
     }
 }
-@keyframes slideleft {
+@keyframes slideInFromRight {
     from {
         opacity: 0;
         transform: translate3d(2rem, 0, 0);
@@ -58,7 +58,7 @@
         transform: translate3d(0, 0, 0);
     }
 }
-@keyframes slideright {
+@keyframes slideInFromLeft {
     from {
         opacity: 0;
         transform: translate3d(-2rem, 0, 0);
@@ -122,20 +122,31 @@
         transform: scale(0.6);
     }
     50% {
-        transform: scale(1.5);
+        transform: scale(1.2);
     }
     100% {
         transform: scale(1);
     }
 }
-@keyframes shrinkDown {
+@keyframes shrinkAllTheWayDown {
     from {
         opacity: 1;
         transform: scale(1);
     }
     to {
         opacity: 0;
-        transform: scale(0.6);
+        transform: scale(0);
+    }
+}
+@keyframes check {
+    100% {
+        stroke-dashoffset: 0;
+    }
+}
+@keyframes checkmark-shrink {
+    100% {
+        opacity: 0;
+        transform: rotate(45deg) scale(0);
     }
 }
 .shrinkit {
@@ -269,6 +280,9 @@ input:not([type=submit]) {
     font-size: inherit;
     font-weight: inherit;
 }
+[data-ghost='true'] {
+    visibility: hidden;
+}
 button, input[type=submit] {
     cursor: pointer;
     border: 0;
@@ -325,7 +339,7 @@ button.ellipsis::before {
 }
 .buttons {
     text-align: center;
-    margin-top: 1rem;
+    margin-top: 1.5rem;
 }
 .buttons button {
     display: inline-block;
@@ -337,6 +351,41 @@ button.ellipsis::before {
 .buttons.smaller button {
     padding: 0.7rem 1rem;
 }
+
+button {
+    position: relative;
+}
+button.poof {
+    animation: 0.3s shrinkAllTheWayDown 1 forwards;
+}
+button .Loading, button .SuccessAnimation {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate3d(-50%, -50%, 0);
+}
+button .SuccessAnimation {
+    margin-top: 2px;
+    margin-left: -0.2rem;
+}
+button .SuccessAnimation svg {
+    fill: none;
+    stroke: #fff;
+    stroke-width: 2px;
+    stroke-dasharray: 2rem;
+    stroke-dashoffset: 2rem;
+    height: 1.5rem;
+    transform-origin: center right;
+    animation: 0.5s check 1 forwards/* , 0.5s checkmark-shrink 1 forwards 1s */;
+    transform: rotate(45deg) scale(1);
+}
+button .Loading svg {
+    height: 70%;
+}
+button .Loading svg * {
+    fill: #fff;
+}
+
 .nowrap {
     display: inline-block;
 }
@@ -404,11 +453,14 @@ button.ellipsis::before {
 .Main[data-editor='true'] .List {
     display: none;
 }
-.slideright {
-    animation: slideright 0.2s 1; 
+.slideUpIn {
+    animation: slideup 0.2s 1; 
+}
+.Main.slide .List {
+    animation: slideInFromLeft 0.2s 1;
 }
  /* .Main[data-editor='false'] .List {
-   animation: slideright 0.2s 1; // todo figure out how to put this back
+   animation: slideInFromLeft 0.2s 1; // todo figure out how to put this back
 } */
 
 .List {
@@ -572,6 +624,9 @@ button.createNew:hover .tooltip {
 .NoteOperations .OptionItem.hasStar > button {
     color: #2f9e72;
 }
+.NoteOperations .OptionItem.pulse button {
+    animation: 0.5s pulse 1;
+}
 .ListItem .hasStar {
     color: #52d19e;
     font-size: 0.8rem;
@@ -600,7 +655,7 @@ button.createNew:hover .tooltip {
     margin-top: 1rem;
 }
 button.giantCornerButton {
-    position: absolute;
+    position: fixed;
     top: 2.5rem;
     right: 3rem;
     color: #ccc;
@@ -610,7 +665,7 @@ button.giantCornerButton {
     border: 0;
     padding: 0;
     margin: 0;
-    animation: slideleft 0.2s 1;
+    animation: slideInFromRight 0.2s 1;
 }
 button.giantCornerButton::before {
     font: 900 1em 'Font Awesome 5 Free';
@@ -665,12 +720,11 @@ button.giantCornerButton.back::before {
 .Editor .saveChanges {
     text-align: right;
     padding-right: 3rem;
+    animation: slideup 0.2s 1;
 }
 .Editor .saveChanges button {
     background: var(--deep-gradient);
     display: inline-block;
-    animation: slideup 0.2s 1;
-    transition: 0.2s;
 }
 .NoteOperations {
     position: fixed;
@@ -1563,6 +1617,7 @@ button.hasCollection:hover::before {
     padding-right: 2rem;
     border-radius: 0.5rem;
     color: #939aaa;
+    white-space: nowrap;
     transition: 0.2s;
     text-align: left;
 }
@@ -1668,15 +1723,11 @@ button.hasCollection:hover::before {
     background: transparent;
     display: block;
     shape-rendering: auto;
+    width: 5rem;
+    height: 5rem;
 }
-.Loading svg circle {
+.Loading svg * {
     fill: var(--med-theme-color);
-}
-.buttons .Loading {
-    margin: 0 1rem;
-}
-.Modal .Loading:not(.mini) {
-    margin-top: 1rem;
 }
 form label {
     font-size: 0.8rem;

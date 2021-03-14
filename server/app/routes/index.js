@@ -20,9 +20,13 @@ export default (app) => {
         .post(Controller.editPassword);
     app.route('/note')
         .post(Controller.createNote);
-    app.route('/note/:_id/:action')
-        .put(Controller.editNote)
+    app.route('/note/:_id')
         .delete(Controller.deleteNote);
+    app.route('/note/:_id/:action')
+        .put(Controller.editNote);
+    app.route('/notes-in-trash/:userId')
+        .put(Controller.restoreTrash)
+        .delete(Controller.emptyTrash);
     app.route('/tag')
         .post(Controller.createTag);
     app.route('/tag/:_id')

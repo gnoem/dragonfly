@@ -2,7 +2,7 @@ export default function Loading(props) {
     const iconSize = props.size ?? '5rem';
     return (
         <div className={`Loading${props.mini ? ' mini' : ''}`}>
-            <svg xmlns="http://www.w3.org/2000/svg" style={{ width: iconSize, height: iconSize }} viewBox="0 0 100 100" preserveAspectRatio="xMidYMid">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid">
                 <g transform="translate(80,50)">
                     <g transform="rotate(0)">
                         <circle cx="0" cy="0" r="6" fill="#93dbe9" fillOpacity="1">

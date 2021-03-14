@@ -2,19 +2,20 @@ import { useEffect, useRef } from 'react';
 import { elementHasParent } from '../../utils';
 import { formStore } from '../Form';
 
+// custom modals located in: NoteList
 
 export const Modal = (props) => {
-    const { content, type } = props;
+    const { children, content, type } = props;
     const formContent = () => {
         switch (type) {
             case 'form': return formStore[content](props);
-            case 'simple': return content;
-            default: return 'Something weird happened';
+            case 'custom': return content;
+            default: return content;
         }
     }
     return (
         <ModalWrapper {...props}>
-            {formContent()}
+            {children ?? formContent()}
         </ModalWrapper>
     );
 }

@@ -192,10 +192,10 @@ class Controller {
         });
     }
     createNote = (req, res) => {
-        const { id, title, content } = req.body;
+        const { userId, title, content } = req.body;
         const run = async () => {
             const newNote = {
-                userId: id,
+                userId,
                 title,
                 content: JSON.stringify(content),
                 createdAt: Date.now(),
@@ -256,37 +256,37 @@ class Controller {
         return Object.assign(foundNote, { trash: !foundNote.trash });
     }
     deleteNote = (req, res) => {
-        const { id } = req.body;
-        Note.findOneAndDelete({ _id: id }, (err, note) => {
-            if (err) {
-                res.status(500).send({
-                    success: false,
-                    err
-                });
-                return console.error('error finding note', err);
-            }
-            if (!note) {
-                res.status(404).send({
-                    success: false,
-                    error: `Note "${id}" not found`
-                });
-                return;
-            }
-            res.status(200).send({ success: true });
-        })
+        const { _id } = req.params;
+        const run = async () => {
+            const [note, deleteNoteError] = await handle(Note.findOneAndDelete({ _id }));
+            if (deleteNoteError) throw new Error(`Error deleting note ${_id}`);
+            res.send({ success: true, note });
+        }
+        run().catch(err => res.send({ success: false, error: err.message }));
     }
     emptyTrash = (req, res) => {
-        const { _id } = req.body;
-        Note.deleteMany({ userId: _id, trash: true }, (err) => {
-            if (err) {
-                res.status(500).send({
-                    success: false,
-                    err
-                });
-                return console.error('error deleting notes', err);
-            }
-            res.status(200).send({ success: true });
-        });
+        const { userId } = req.params;
+        const run = async () => {
+            const [notes, deleteNotesError] = await handle(Note.deleteMany({ userId, trash: true }));
+            if (deleteNotesError) throw new Error(`Error deleting notes`);
+            res.send({ success: true, notes });
+        }
+        run().catch(err => res.send({ success: false, error: err.message }));
+    }
+    restoreTrash = (req, res) => {
+        const { userId } = req.params;
+        const run = async () => {
+            const [notes, findNotesError] = await handle(Note.find({ userId, trash: true }));
+            if (findNotesError) throw new Error(`Error finding notes`);
+            const restoreNotes = notes.map(note => {
+                note.trash = false;
+                return note.save();
+            });
+            const [restoredNotes, saveNotesError] = await handle(Promise.all(restoreNotes));
+            if (saveNotesError) throw new Error(`Error saving notes`);
+            res.send({ success: true, notes: restoredNotes });
+        }
+        run().catch(err => res.send({ success: false, error: err.message }));
     }
     createCollection = (req, res) => {
         const errors = validationResult(req); // todo add collectionAlreadyExists to validation
@@ -424,7 +424,7 @@ class Controller {
                 ...updateNotesWithThisTag
             ]));
             if (error) throw new Error(`Error deleting this tag and associated notes`);
-            res.send({ success });
+            res.send({ success: true, tag: success });
         }
         run().catch(err => res.send({ success: false, error: err.message }));
     }

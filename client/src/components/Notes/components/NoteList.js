@@ -3,6 +3,7 @@ import { List, ListHeader, ListHeaderButton, ListContent, ListFooter } from '../
 import { NotePreview } from './NotePreview';
 import { SortByTag } from '../../Tags';
 import { MiniMenu } from '../../MiniMenu';
+import { Modal } from '../../Modal';
 
 export const NoteList = (props) => {
     const { notes } = props;
@@ -47,29 +48,44 @@ const NoteListHeader = (props) => {
     }
 }
 
-const NewNoteButton = ({ isMobile }) => {
-    const button = () => {
-        if (isMobile) return (
-            <button>
-                <i className="fas fa-plus" style={{ marginRight: '0.5rem' }}></i> Create new
-            </button>
-        ); else return (
-            <button className="createNew">
-                <span className="tooltip">Create a new note</span>
-            </button>
-        );
-    }
-    return (
-        <ListHeaderButton>{button()}</ListHeaderButton>
-    )
-}
-
-const TrashMenuButton = () => {
+const NewNoteButton = (props) => {
+    const newNote = () => props.updateView(prevView => ({ ...prevView, currentNote: true }));
     return (
         <ListHeaderButton>
-            <button className="icon bar-menu round-basic"></button>
+            <button className="createNew" onClick={newNote}>
+                <span className="tooltip">Create a new note</span>
+            </button>
         </ListHeaderButton>
-    )
+    );
+}
+
+const TrashMenuButton = (props) => {
+    const { user, notes } = props;
+    const [showingMenu, setShowingMenu] = useState(false);
+    const trashIsEmpty = (word) => (
+        <div>
+            <h2>Your Trash is empty</h2>
+            No notes here to {word ?? 'select'}!
+            <div className="buttons">
+                <button type="button" className="gryed" onClick={props.gracefullyCloseModal}>Close</button>
+            </div>
+        </div>
+    );
+    const restoreAll = () => {
+        if (notes.length) props.updateModal('restoreTrash', 'form', { _id: user._id });
+        else props.updateModal(trashIsEmpty('restore'));
+    }
+    const emptyTrash = () => {
+        if (notes.length) props.updateModal('emptyTrash', 'form', { _id: user._id });
+        else props.updateModal(trashIsEmpty('delete'));
+    }
+    const menuItems = [{ label: 'Restore all', onClick: restoreAll }, { label: 'Empty Trash', onClick: emptyTrash }];
+    return (
+        <ListHeaderButton>
+            <button onClick={() => setShowingMenu(true)} className="icon bar-menu round-basic"></button>
+            <MiniMenu show={showingMenu} updateShow={setShowingMenu} menuItems={menuItems} />
+        </ListHeaderButton>
+    );
 }
 
 const CollectionMenuButton = (props) => {
@@ -87,7 +103,7 @@ const CollectionMenuButton = (props) => {
             <button onClick={() => setShowingMenu(true)} className="icon bar-menu round-basic"></button>
             <MiniMenu show={showingMenu} updateShow={setShowingMenu} menuItems={menuItems} />
         </ListHeaderButton>
-    )
+    );
 }
 
 const CollectionTitle = ({ name }) => {
@@ -100,7 +116,7 @@ const CollectionTitle = ({ name }) => {
 }
 
 const NoteListContent = (props) => {
-    const { notes } = props;
+    const { notes, view } = props;
     const notesList = () => {
         return notes.map(note => (
             <NotePreview
@@ -111,7 +127,7 @@ const NoteListContent = (props) => {
         ));
     }
     return (
-        <ListContent footer={<NoteListFooter {...props} />}>
+        <ListContent className={(view.type === 'collection') && 'slideUpIn'} footer={<NoteListFooter {...props} />}>
             {notesList()}
         </ListContent>
     );

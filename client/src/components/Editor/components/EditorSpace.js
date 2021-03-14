@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import Button from '../../Button';
+import { Button } from '../../Button';
 import Immutable from 'immutable';
 import { Editor, EditorState, RichUtils, convertToRaw, convertFromRaw, DefaultDraftBlockRenderMap } from 'draft-js';
 import 'draft-js/dist/Draft.css';
@@ -7,13 +7,16 @@ import { Note } from '../../../helpers';
 
 export const EditorSpace = (props) => {
     const { user, currentNote, unsavedChanges } = props;
-    const newNote = !currentNote.content;
+    const newNote = !currentNote._id;
     const [editorTitle, setEditorTitle] = useState(newNote ? '' : currentNote.title);
     const [editorState, setEditorState] = useState(
         newNote ? () => EditorState.createEmpty() : EditorState.createWithContent(convertFromRaw(currentNote.content))
     );
-    const [saveChangesButtonClick, setSaveChangesButtonClick] = useState(false); // prop for button, to simulate click event after Ctrl + S
+    const [showSaveChangesButton, setShowSaveChangesButton] = useState(false);
+    const [simulateSaveButtonClick, setSimulateSaveButtonClick] = useState(false); // prop for button, to simulate click event after Ctrl + S
+    const isMounted = useRef(false);
     useEffect(() => {
+        isMounted.current = true;
         const keys = [];
         const keydown = (e) => {
             keys[e.key] = true;
@@ -21,7 +24,7 @@ export const EditorSpace = (props) => {
                 e.preventDefault(); // hides automatic dialog but also prevents keyup event listener(?), hence the next 2 lines
                 keys['Meta'] = false;
                 keys['s'] = false;
-                setSaveChangesButtonClick(true);
+                setSimulateSaveButtonClick(true);
             }
         }
         const keyup = (e) => {
@@ -32,33 +35,51 @@ export const EditorSpace = (props) => {
         return () => {
             window.removeEventListener('keydown', keydown);
             window.removeEventListener('keyup', keyup);
+            isMounted.current = false;
         }
     }, []);
-    const handleSubmit = async () => {
-        console.log('handling submit');
-        if (!unsavedChanges) return;
+    useEffect(() => {
+        if (unsavedChanges) setShowSaveChangesButton(true);
+    }, [unsavedChanges]);
+    const handleSubmit = async (optionalCallback) => {
         const contentState = editorState.getCurrentContent();
-        console.log(editorTitle);
-        console.log(contentState);
-        let ROUTE = newNote ? '/add/note' : '/edit/note';
-        const response = await fetch(ROUTE, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                id: newNote ? user._id : currentNote._id,
+        const defaultCallback = () => {
+            props.updateUnsavedChanges(false);
+            if (!newNote && simulateSaveButtonClick) setSimulateSaveButtonClick(false);
+            // ^^^ error (can't perform state update on unmounted component) if i don't include !newNote
+            if (newNote) props.updateCurrentNote(null); //idk why but this feels right
+            // when saving a new note, close the editor afterwards
+            // won't happen when editing existing notes - you open something up to work on it
+            // todo come back to this
+        }
+        const handleCreateNote = () => {
+            const formData = {
+                userId: user._id,
                 title: editorTitle,
                 content: convertToRaw(contentState)
-            })
-        });
-        const body = await response.json();
-        if (!body) return console.log('no response from server');
-        if (!body.success) return console.log('no success: true response from server');
-        props.updateUnsavedChanges(false);
-        if (saveChangesButtonClick) setSaveChangesButtonClick(false);
-        props.refreshData();
-        if (body.id) props.updateCurrentNote(false); // only get id from server when creating new note
+            };
+            Note.createNote(props, formData, optionalCallback ?? defaultCallback);
+        }
+        const handleEditNote = () => {
+            const formData = {
+                title: editorTitle,
+                content: convertToRaw(contentState)
+            };
+            return Note.editNote(props, currentNote._id, formData, optionalCallback ?? defaultCallback);
+        }
+        if (newNote) return handleCreateNote();
+        return handleEditNote();
+    }
+    const warnUnsavedChanges = () => {
+        const closeEditor = () => {
+            props.updateUnsavedChanges(false);
+            props.updateCurrentNote(null);
+        }
+        props.updateModal('warnUnsavedChanges', 'form', { saveChanges: () => handleSubmit(closeEditor), discardChanges: closeEditor });
+    }
+    const handleExit = () => {
+        if (unsavedChanges) return warnUnsavedChanges();
+        props.updateCurrentNote(null);
     }
     const inherit = {
         ...props,
@@ -67,14 +88,24 @@ export const EditorSpace = (props) => {
         editorState, updateEditorState: setEditorState,
     }
     return (
-        <div className="NoteEditor">
-            {currentNote.trash ? <TrashOptions {...inherit} /> : <EditorToolbar {...inherit} />}
-            <NoteTitle {...inherit} />
-            <NoteBody {...inherit} />
-            {unsavedChanges && <div className="saveChanges">
-                <Button onClick={handleSubmit} isClicked={saveChangesButtonClick} loadingIconSize="2.5rem">Save Changes</Button>
-            </div>}
-        </div>
+        <>
+            <button className="giantCornerButton exit" onClick={handleExit}></button>
+            <div className="NoteEditor">
+                {currentNote.trash ? <TrashOptions {...inherit} /> : <EditorToolbar {...inherit} />}
+                <NoteTitle {...inherit} />
+                <NoteBody {...inherit} />
+                {showSaveChangesButton && <div className="saveChanges">
+                    <Button type="button"
+                            onClick={handleSubmit}
+                            isClicked={simulateSaveButtonClick}
+                            showLoadingIcon={true}
+                            success={!unsavedChanges}
+                            unmountButton={() => setShowSaveChangesButton(false)}>
+                        Save Changes
+                    </Button>
+                </div>}
+            </div>
+        </>
     );
 }
 
@@ -85,15 +116,17 @@ const TrashOptions = (props) => {
         // choosing not to include updateCurrentNote(null) as callback in case user wants to start editing immediately
     }
     const deletePermanently = () => {
-        console.log('deleting note permanently');
-        // props.updateModal('deleteNotePermanently', 'form', { _id: currentNote._id });
+        props.updateModal('deleteNotePermanently', 'form', { _id: currentNote._id });
     }
     return (
         <div className="noteIsInTrash">
             <i className="giantIcon fas fa-exclamation-triangle"></i>
             <p>This note can't be edited while it is in the Trash.</p>
             <div className="smaller buttons">
-                <Button onClick={restoreNote} loadingIconSize="2rem">Restore note</Button>
+                <Button onClick={restoreNote}
+                        showLoadingIcon={true}>
+                    Restore note
+                </Button>
                 <button className="caution" onClick={deletePermanently}>Delete permanently</button>
             </div>
         </div>
@@ -153,7 +186,7 @@ const EditorToolbar = (props) => {
 }
 
 const NoteTitle = (props) => {
-    const { newNote, currentNote } = props;
+    const { newNote, currentNote, unsavedChanges } = props;
     useEffect(() => {
         if (newNote) titleInput?.current?.focus();
     }, [newNote]);
@@ -161,7 +194,7 @@ const NoteTitle = (props) => {
     const title = newNote ? '' : currentNote.title;
     const handleInput = (e) => {
         props.updateEditorTitle(e.target.value);
-        props.updateUnsavedChanges(true);
+        if (!unsavedChanges) props.updateUnsavedChanges(true);
     }
     return <input
         type="text"
@@ -176,18 +209,18 @@ const NoteTitle = (props) => {
 const NoteBody = (props) => {
     const { currentNote, editorState, unsavedChanges } = props;
     const editorRef = useRef(null);
-    const handleChange = (state) => {
-        props.updateEditorState(state);
-        if (unsavedChanges) return;
-        const inputTypes = ['insert-characters', 'backspace-character', 'insert-fragment', 'remove-range'];
-        if (!inputTypes.includes(state.getLastChangeType())) return;
-        props.updateUnsavedChanges(true);
+    const handleChange = (newState) => {
+        const currentContent = editorState.getCurrentContent();
+        const newContent = newState.getCurrentContent();
+        props.updateEditorState(newState);
+        if (currentContent === newContent) return;
+        if (!unsavedChanges) props.updateUnsavedChanges(true);
     }
     const handleKeyCommand = (command, editorState) => {
         const newState = RichUtils.handleKeyCommand(editorState, command);
         if (newState) {
             props.updateEditorState(newState);
-            props.updateUnsavedChanges(true);
+            if (!unsavedChanges) props.updateUnsavedChanges(true);
             return 'handled';
         }
         return 'not-handled';

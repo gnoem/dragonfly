@@ -2,16 +2,12 @@ import { EditorSpace } from './components/EditorSpace';
 import { NoteOperations } from './components/NoteOperations';
 
 export const Editor = (props) => {
-    const { unsavedChanges, currentNote } = props;
-    const handleExit = () => {
-        if (unsavedChanges) return props.warnUnsavedChanges();
-        props.updateCurrentNote(false);
-    }
+    const { currentNote } = props;
+    const newNote = !currentNote._id;
     return (
         <div className="Editor">
-            <button className="giantCornerButton exit" onClick={handleExit}></button>
             <EditorSpace {...props} />
-            {(!currentNote.trash/*  && !newNote */) && <NoteOperations {...props} />}
+            {(!currentNote.trash && !newNote) && <NoteOperations {...props} />}
         </div>
     );
 }

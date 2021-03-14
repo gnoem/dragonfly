@@ -69,11 +69,9 @@ export const Dashboard = (props) => {
             setView(prevView => ({
                 ...prevView,
                 unsavedChanges: value
-            }))
+            }));
         },
-        warnUnsavedChanges: () => {
-            console.log('unsaved changes!');
-        },
+        warnUnsavedChanges: () => {},
         logout: async () => {
             await fetch(`/logout`);
             setIsLoaded(false);
