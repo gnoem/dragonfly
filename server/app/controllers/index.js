@@ -21,12 +21,12 @@ class Controller {
                 return res.send({ success: true, _id: identifier }); // not password protected
             }
             // if not, then identifier is a username
-            if (!accessToken) return res.send({ success: false, accessToken: false });
-            const decoded = jwt.verify(accessToken, secretKey);
             const [protectedUser, findProtectedUserError] = await handle(User.findOne({ username: identifier }));
             if (findProtectedUserError) throw new Error(`Error finding user ${identifier}`);
             if (!protectedUser) throw new Error(`User ${identifier} not found`); // and delete cookie? todo figure out
-            if (protectedUser._id.toString() !== decoded.id) return res.send({ success: false });
+            if (!accessToken) return res.send({ success: false, accessToken: false, _id: protectedUser._id });
+            const decoded = jwt.verify(accessToken, secretKey);
+            if (protectedUser._id.toString() !== decoded.id) return res.send({ success: false, _id: protectedUser._id });
             res.send({ success: true, _id: protectedUser._id });
         }
         run().catch(err => res.send({ success: false, error: err.message }));

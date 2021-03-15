@@ -24,11 +24,10 @@ export const Form = (props) => {
     );
 }
 
-export const Submit = (props) => {
-    const { modal, value, buttonClass, nvm, cancel, success, onSuccess, disabled } = props;
+export const Submit = ({ modal, value, buttonClass, nvm, cancel, success, onSuccess, disabled, gracefullyCloseModal }) => {
     const handleCancel = () => {
         if (cancel) cancel();
-        if (modal) props.gracefullyCloseModal();
+        if (modal) gracefullyCloseModal();
     }
     return (
         <div className="buttons">
@@ -66,8 +65,11 @@ export const Button = ({ type, onClick, isClicked, className, disabled, showLoad
     }, [success]);
     const handleClick = () => {
         if (loadingIcon || successAnimation) return;
-        if (showLoadingIcon) setLoadingIcon(true);
-        setTimeout(onClick, 700);
+        if (showLoadingIcon) {
+            setLoadingIcon(true);
+            setTimeout(onClick, 700);
+        }
+        else onClick();
     }
     const statusIcon = (() => {
         if (loadingIcon) return <Loading />;

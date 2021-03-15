@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { User } from "../../helpers";
-import { Form, Submit, Input } from "../Form";
+import { Form, Submit, Button, Input } from "../Form";
 
 export const EditAccount = (props) => {
     return (
@@ -62,10 +62,12 @@ const AccountDetails = (props) => {
 }
 
 const EditPassword = (props) => {
+    const { user } = props;
     const [formReset, setFormReset] = useState(false);
     const [formData, setFormData] = useState({});
     const [formError, setFormError] = useState({});
-    const handleSubmit = () => {};
+    const callback = () => setTimeout(handleCancel, 1000);
+    const handleSubmit = () => User.changePassword(props, user._id, formData, callback);
     const updateFormData = (e) => {
         if (formReset) setFormReset(false);
         setFormData(prevState => ({ ...prevState, [e.target.name]: e.target.value }));
@@ -98,14 +100,25 @@ const EditPassword = (props) => {
 }
 
 const DeleteAccount = (props) => {
-    const handleSubmit = () => {};
+    const handleDelete = () => {};
+    const confirmDeleteAccount = () => {
+        const content = (
+            <Form onSubmit={handleDelete}
+                  title="Are you sure?"
+                  submit={<Submit buttonClass="caution" value="Yes, I'm sure" />}>
+                If you proceed, any notes, settings, and other data associated with this account will be irrevocably lost. There is no going back from this!
+            </Form>
+        );
+        props.updateModal(content);
+    }
     return (
-        <Form {...props} onSubmit={handleSubmit}
-              formClass="horizontal"
-              title="Delete my account"
-              submit={<Submit buttonClass="caution" value="Delete my account" cancel={false} />}>
+        <div className="deleteAccount">
+            <h2>Delete my account</h2>
             <p>This will permanently delete all notes, settings, and other data associated with your account.</p>
-        </Form>
+            <div className="buttons">
+                <Button type="button" className="caution smaller" onClick={confirmDeleteAccount}>Delete my account</Button>
+            </div>
+        </div>
     )
 }
 
