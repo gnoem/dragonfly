@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Loading from '../Loading';
+import './Input.css';
 
 export const Form = (props) => {
-    const { title, children, formClass, submit, formData, onSubmit, onSuccess, reset } = props;
+    const { title, children, formClass, submit, formData, onSubmit, onSuccess, handleError, reset } = props;
     const [success, setSuccess] = useState(null);
+    const [successPending, setSuccessPending] = useState(false);
     const formRef = useRef(null);
     useEffect(() => {
         if (reset && formRef) formRef.current.reset();
@@ -11,20 +13,28 @@ export const Form = (props) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setTimeout(() => {
-            onSubmit(formData).then(() => setSuccess(true)).then(() => setSuccess(false));
+            setSuccessPending(true);
+            onSubmit(formData)
+                .then(() => setSuccess(true))
+                .then(() => setSuccess(false))
+                .catch(err => {
+                    console.dir(err);
+                    setSuccessPending(false);
+                    handleError(err);
+                });
         }, 300);
     }
-    const customSubmit = submit ? React.cloneElement(submit, { ...props, success, onSuccess }) : null;
+    const customSubmit = submit ? React.cloneElement(submit, { ...props, success, onSuccess, successPending }) : null;
     return (
         <form onSubmit={handleSubmit} className={formClass} autoComplete="off" ref={formRef}>
             <h2>{title}</h2>
             {children}
-            {customSubmit ?? <Submit {...props} success={success} onSuccess={onSuccess} />}
+            {customSubmit ?? <Submit {...props} success={success} onSuccess={onSuccess} successPending={successPending} />}
         </form>
     );
 }
 
-export const Submit = ({ modal, value, buttonClass, nvm, cancel, success, onSuccess, disabled, gracefullyCloseModal }) => {
+export const Submit = ({ modal, value, buttonClass, nvm, cancel, success, onSuccess, successPending, disabled, gracefullyCloseModal }) => {
     const handleCancel = () => {
         if (cancel) cancel();
         if (modal) gracefullyCloseModal();
@@ -36,6 +46,7 @@ export const Submit = ({ modal, value, buttonClass, nvm, cancel, success, onSucc
                     showLoadingIcon={true}
                     success={success}
                     reportSuccess={onSuccess}
+                    successPending={successPending}
                     disabled={disabled}>
                 {value || 'Submit'}
             </Button>
@@ -44,10 +55,14 @@ export const Submit = ({ modal, value, buttonClass, nvm, cancel, success, onSucc
     );
 }
 
-export const Button = ({ type, onClick, isClicked, className, disabled, showLoadingIcon, success, reportSuccess, unmountButton, children }) => {
+export const Button = ({ type, onClick, isClicked, className, disabled, showLoadingIcon, success, reportSuccess, successPending, unmountButton, children }) => {
     const [poof, setPoof] = useState(false);
     const [loadingIcon, setLoadingIcon] = useState(false);
     const [successAnimation, setSuccessAnimation] = useState(false);
+    const buttonRef = useRef(null);
+    useEffect(() => {
+        if (successPending === false) setLoadingIcon(false);
+    }, [successPending])
     useEffect(() => {
         if (isClicked) handleClick();
     }, [isClicked]);
@@ -59,10 +74,17 @@ export const Button = ({ type, onClick, isClicked, className, disabled, showLoad
             setLoadingIcon(false);
             setSuccessAnimation(true);
             if (reportSuccess) setTimeout(reportSuccess, 500);
-            if (unmountButton) setTimeout(() => setPoof(true), 500);
-            else setTimeout(() => setSuccessAnimation(false), 1500);
+            buttonResolve();
         }
-    }, [success]);
+    }, [success, buttonRef?.current]);
+    const buttonResolve = () => {
+        if (unmountButton) setTimeout(() => {
+            if (buttonRef.current) setPoof(true);
+        }, 500);
+        else setTimeout(() => {
+            if (buttonRef.current) setSuccessAnimation(false);
+        }, 1500);
+    }
     const handleClick = () => {
         if (loadingIcon || successAnimation) return;
         if (showLoadingIcon) {
@@ -84,26 +106,72 @@ export const Button = ({ type, onClick, isClicked, className, disabled, showLoad
     return (
         <button type={type ?? 'button'} onClick={handleClick}
                 className={buttonClassName}
-                disabled={disabled}>
+                disabled={disabled}
+                ref={buttonRef}>
             {statusIcon}
             <span data-ghost={!!statusIcon}>{children}</span>
         </button>
     );
 }
 
-export const Input = ({ type, name, label, className, defaultValue, onChange, onInput, disabled }) => {
+export const Input = ({ type, name, label, className, defaultValue, onChange, onInput, note, hint, disabled }) => {
+    const inputRef = useRef(null);
     return (
         <div className="Input">
             <label htmlFor={name}>{label}</label>
-            <input
-                type={type}
-                name={name}
-                className={className}
-                defaultValue={defaultValue}
-                onChange={onChange}
-                onInput={onInput}
-                disabled={disabled} />
+            <div>
+                <input
+                    type={type}
+                    name={name}
+                    className={className}
+                    defaultValue={defaultValue}
+                    onChange={onChange}
+                    onInput={onInput}
+                    disabled={disabled}
+                    ref={inputRef} />
+                {hint && <InputHint {...hint} inputRef={inputRef} />}
+            </div>
+            <InputNote>{note}</InputNote>
         </div>
+    );
+}
+
+const InputNote = ({ children }) => {
+    return <div className="InputNote">{children}</div>
+}
+
+const InputHint = ({ type, message, inputRef }) => {
+    const [show, setShow] = useState(false);
+    const messageRef = useRef(null);
+    useEffect(() => {
+        if (!messageRef.current) return;
+        const inputWidth = inputRef?.current?.scrollWidth;
+        const messageWidth = messageRef?.current?.scrollWidth;
+        if (messageWidth > inputWidth) {
+            messageRef.current.style.width = (inputWidth - 22) + 'px';
+            messageRef.current.style.whiteSpace = 'normal';
+        }
+        messageRef.current.style.opacity = '1';
+    }, [messageRef, inputRef, show]);
+    const className = (() => {
+        let className = 'InputHint';
+        if (type === 'success') className += ' success'; else className += ' error';
+        if (show) className += ' show';
+        return className;
+    })();
+    return (
+        <div className={className}>
+            <InputHintIcon type={type} updateShow={setShow} />
+            {show && <span className="inputHintMessage" ref={messageRef}>{message}</span>}
+        </div>
+    );
+}
+
+const InputHintIcon = ({ type, updateShow }) => {
+    return (
+        <span className="inputHintIcon" onMouseEnter={() => updateShow(true)} onMouseLeave={() => updateShow(false)}>
+            {(type === 'success') ? <i className="fas fa-check"></i> : <i className="fas fa-exclamation"></i>}
+        </span>
     );
 }
 

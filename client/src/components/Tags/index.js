@@ -31,14 +31,15 @@ export const SortByTag = (props) => {
     return (
         <div className="SortByTag">
             {/* <Hint className="qmark">Right-click on a tag for more options.</Hint> */}
-            <SortTagTitle viewingTags={view.tags.length > 0} />
+            <SortTagTitle {...props} viewingTags={view.tags.length > 0} />
             <SortTagGrid {...props} sortMethod={sortMethod ?? 'all'} />
             <SortTagOptions {...props} />
         </div>
     );
 }
 
-const SortTagTitle = ({ viewingTags }) => {
+const SortTagTitle = ({ tags, viewingTags }) => {
+    if (!tags.length) return <h2>Create your first tag:</h2>;
     return <h2>{viewingTags ? 'Viewing' : 'View'} notes tagged:</h2>;
 }
 
@@ -90,6 +91,7 @@ const SortTagGrid = (props) => {
 }
 
 const SortTagOptions = (props) => {
+    const { tags } = props;
     const updateSortMethod = (value) => {
         props.updateView(prevView => ({
             ...prevView,
@@ -100,6 +102,7 @@ const SortTagOptions = (props) => {
         listItems: () => [{ value: 'all', display: 'all' }, { value: 'any', display: 'any' }],
         defaultValue: () => dropdown.listItems()[0]
     }
+    if (!tags.length) return null;
     return (
         <div className="SortTagOptions">
             Find notes with

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { User } from "../../helpers";
+import { Hint } from "../Hint";
 import { Form, Submit, Button, Input } from "../Form";
 
 export const EditAccount = (props) => {
@@ -9,6 +10,33 @@ export const EditAccount = (props) => {
             <EditPassword {...props} />
             <DeleteAccount {...props} />
         </>
+    );
+}
+
+const AccountFormContent = ({ formData, updateFormData }) => {
+    return (
+        <div className="formGrid">
+            <Input type="text"
+                name="firstName"
+                label="First name:"
+                defaultValue={formData?.firstName}
+                onChange={updateFormData} />
+            <Input type="text"
+                name="lastName"
+                label="Last name:"
+                defaultValue={formData?.lastName}
+                onChange={updateFormData} />
+            <Input type="text"
+                name="email"
+                label="Email address:"
+                defaultValue={formData?.email}
+                onChange={updateFormData} />
+            <Input type="text"
+                name="username"
+                label="Username:"
+                defaultValue={formData?.username}
+                onChange={updateFormData} />
+        </div>
     );
 }
 
@@ -35,28 +63,7 @@ const AccountDetails = (props) => {
               formData={formData}
               title="Edit account details"
               submit={<Submit value="Save changes" cancel={false} />}>
-            <div className="formGrid">
-                <Input type="text"
-                    name="firstName"
-                    label="First name:"
-                    defaultValue={formData?.firstName}
-                    onChange={updateFormData} />
-                <Input type="text"
-                    name="lastName"
-                    label="Last name:"
-                    defaultValue={formData?.lastName}
-                    onChange={updateFormData} />
-                <Input type="text"
-                    name="email"
-                    label="Email address:"
-                    defaultValue={formData?.email}
-                    onChange={updateFormData} />
-                <Input type="text"
-                    name="username"
-                    label="Username:"
-                    defaultValue={formData?.username}
-                    onChange={updateFormData} />
-            </div>
+            <AccountFormContent formData={formData} updateFormData={updateFormData} />
         </Form>
     );
 }
@@ -100,12 +107,14 @@ const EditPassword = (props) => {
 }
 
 const DeleteAccount = (props) => {
-    const handleDelete = () => {};
+    const { user } = props;
+    const handleDelete = () => User.deleteAccount(user._id);
+    const handleError = (error) => props.updateModal(error, 'error');
     const confirmDeleteAccount = () => {
         const content = (
-            <Form onSubmit={handleDelete}
+            <Form onSubmit={handleDelete} handleError={handleError}
                   title="Are you sure?"
-                  submit={<Submit buttonClass="caution" value="Yes, I'm sure" />}>
+                  submit={<Submit buttonClass="caution" value="Yes, I'm sure" cancel={props.gracefullyCloseModal} />}>
                 If you proceed, any notes, settings, and other data associated with this account will be irrevocably lost. There is no going back from this!
             </Form>
         );
@@ -123,16 +132,59 @@ const DeleteAccount = (props) => {
 }
 
 export const CreateAccount = (props) => {
+    const { user } = props;
     const [formData, setFormData] = useState({});
     const [formError, setFormError] = useState({});
-    const handleSubmit = () => {};
+    const updateFormData = (e) => setFormData(prevState => ({ ...prevState, [e.target.name]: e.target.value }));
+    const onSuccess = (user) => window.history.pushState('', '', `/d/${user.username}`);
+    const handleError = (errors) => setFormError({ ...errors });
+    const handleSubmit = () => User.createAccount(props, user._id, formData).then(onSuccess);
+    const inputHint = (inputName) => {
+        if (formError?.[inputName]) return { type: 'error', message: formError[inputName] };
+    }
     return (
-        <Form {...props} onSubmit={handleSubmit}
+        <Form {...props} onSubmit={handleSubmit} handleError={handleError}
               formData={formData}
               title="Create an account"
               submit={<Submit value="Save changes" cancel={false} />}>
-             title, children, submit, formData, onSubmit, onSuccess
-            form here
+            <p>It looks like you haven't registered an account yet. To customize your Dragonfly dashboard URL, password-protect your notes, and personalize your dashboard, create a free account below. Click <a href="/">here</a> to learn more.</p>
+            <div className="formGrid formComponent">
+                <Input type="text"
+                    name="firstName"
+                    label="First name:"
+                    defaultValue={formData?.firstName}
+                    onChange={updateFormData}
+                    hint={inputHint('firstName')} />
+                <Input type="text"
+                    name="lastName"
+                    label="Last name:"
+                    defaultValue={formData?.lastName}
+                    onChange={updateFormData}
+                    hint={inputHint('lastName')} />
+            </div>
+            <div className="formComponent">
+                <Input type="text"
+                    name="email"
+                    label="Email address:"
+                    defaultValue={formData?.email}
+                    onChange={updateFormData}
+                    hint={inputHint('email')}
+                    note={"For password recovery only. We'll never send you marketing emails or share your contact information with third parties."} />
+            </div>
+            <div className="formGrid formComponent">
+                <Input type="text"
+                    name="username"
+                    label="Choose a username:"
+                    defaultValue={formData?.username}
+                    onChange={updateFormData}
+                    hint={inputHint('username')} />
+                <Input type="password"
+                    name="password"
+                    label="Choose a password:"
+                    defaultValue={formData?.password}
+                    onChange={updateFormData}
+                    hint={inputHint('password')} />
+            </div>
         </Form>
     );
 }

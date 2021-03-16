@@ -13,8 +13,8 @@ export default (app) => {
     app.route('/user')
         .post(Controller.createUser);
     app.route('/user/:_id')
-        .post(Controller.createAccount)
-        .put(Controller.editAccount)
+        .post(validate.accountDetails, Controller.createAccount)
+        .put(validate.accountDetails, Controller.editAccount)
         .delete(Controller.deleteAccount);
     app.route('/user/:_id/password')
         .put(Controller.editPassword);

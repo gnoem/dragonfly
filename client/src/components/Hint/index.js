@@ -1,6 +1,7 @@
 export const Hint = ({ children, className }) => {
+    const hintClassName = className ? `Hint ${className}` : `Hint`;
     return (
-        <div className={`Hint ${className ?? ''}`}>
+        <div className={hintClassName}>
             {children}
         </div>
     );

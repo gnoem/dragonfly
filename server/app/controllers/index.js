@@ -2,7 +2,7 @@ import { validationResult } from 'express-validator';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { User, Note, Collection, Tag } from '../models/index.js';
-import { handle, isObjectId } from './utils.js';
+import { handle, isObjectId, FormError, validationError } from './utils.js';
 
 const secretKey = process.env.SECRET_KEY;
 
@@ -18,7 +18,7 @@ class Controller {
                 if (findUserError) throw new Error(`Error finding user ${identifier}`);
                 if (!user) throw new Error(`User ${identifier} not found`);
                 if (user.username) return res.send({ _id: user._id, username: user.username });
-                return res.send({ success: true, _id: identifier }); // not password protected
+                return res.status(200).send({ success: true, _id: identifier }); // not password protected
             }
             // if not, then identifier is a username
             const [protectedUser, findProtectedUserError] = await handle(User.findOne({ username: identifier }));
@@ -27,7 +27,7 @@ class Controller {
             if (!accessToken) return res.send({ success: false, accessToken: false, _id: protectedUser._id });
             const decoded = jwt.verify(accessToken, secretKey);
             if (protectedUser._id.toString() !== decoded.id) return res.send({ success: false, _id: protectedUser._id });
-            res.send({ success: true, _id: protectedUser._id });
+            res.status(200).send({ success: true, _id: protectedUser._id });
         }
         run().catch(err => res.send({ success: false, error: err.message }));
     }
@@ -48,7 +48,7 @@ class Controller {
     }
     logout = (req, res) => {
         res.clearCookie('auth');
-        res.send({ success: true });
+        res.status(200).send({ success: true });
     }
     getUser = (req, res) => {
         const { _id } = req.params;
@@ -71,31 +71,17 @@ class Controller {
     }
     createUser = (req, res) => {
         const run = async () => {
-            const [user, createUserError] = await handle(User.create());
-            if (createUserError) throw new Error(`Error creating new user`);
+            const newUser = new User();
+            const [user, saveUserError] = await handle(newUser.save());
+            if (saveUserError) throw new Error(`Error saving new user`);
             res.status(200).send({ success: true, user });
         }
         run().catch(err => res.send({ success: false, error: err.message }));
     }
     createAccount = (req, res) => {
         const { _id } = req.params;
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            const generateError = (type) => {
-                let error = errors.errors.find(error => error.param === type);
-                if (error) return error.msg; else return false;
-            }
-            const errorReport = {
-                emailError: generateError('email'),
-                usernameError: generateError('username'),
-                passwordError: generateError('password')
-            }
-            res.send({
-                success: false,
-                errorReport
-            });
-            return;
-        }
+        const { errors } = validationResult(req);
+        if (errors.length) return res.send({ success: false, error: validationError(errors) });
         const { firstName, lastName, email, username, password } = req.body;
         const run = async () => {
             let [foundUser, findUserError] = await handle(User.findOne({ _id }));
@@ -111,29 +97,14 @@ class Controller {
             foundUser = Object.assign(foundUser, formData);
             const [user, saveError] = await handle(foundUser.save());
             if (saveError) throw new Error(`Error saving user ${_id}`);
-            res.send({ success: true, user });
+            res.status(200).send({ success: true, user });
         }
         run().catch(err => res.send({ success: false, error: err.message }));
     }
     editAccount = (req, res) => {
         const { _id } = req.params;
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            const generateError = (type) => {
-                let error = errors.errors.find(error => error.param === type);
-                if (error) return error.msg; else return false;
-            }
-            const errorReport = {
-                emailError: generateError('email'),
-                usernameError: generateError('username'),
-                passwordError: generateError('password')
-            }
-            res.send({
-                success: false,
-                errorReport
-            });
-            return;
-        }
+        const { errors } = validationResult(req);
+        if (errors.length) return res.send({ success: false, error: validationError(errors) });
         const formData = req.body;
         const run = async () => {
             let [foundUser, findUserError] = await handle(User.findOne({ _id }));
@@ -142,7 +113,7 @@ class Controller {
             foundUser = Object.assign(foundUser, formData);
             const [user, saveError] = await handle(foundUser.save());
             if (saveError) throw new Error(`Error saving user ${_id}`);
-            res.send({ success: true, user });
+            res.status(200).send({ success: true, user });
         }
         run().catch(err => res.send({ success: false, error: err.message }));
     }
@@ -156,38 +127,26 @@ class Controller {
             foundUser = Object.assign(foundUser, { password: bcrypt.hashSync(password, 8) });
             const [user, saveError] = await handle(foundUser.save());
             if (saveError) throw new Error(`Error saving user ${_id}`);
-            res.send({ success: true, user });
+            res.status(200).send({ success: true, user });
         }
         run().catch(err => res.send({ success: false, error: err.message }));
     }
     deleteAccount = (req, res) => {
-        const { _id } = req.body;
-        User.findOneAndDelete({ _id }, (err, user) => {
-            if (err) {
-                res.status(500).send({
-                    success: false,
-                    err
-                });
-                return console.error('error finding user', err);
-            }
-            if (!user) {
-                res.status(404).send({
-                    success: false,
-                    error: `User "${_id}" not found`
-                });
-                return;
-            }
-            Note.deleteMany({ userId: _id }, (err) => {
-                if (err) {
-                    res.status(500).send({
-                        success: false,
-                        err
-                    });
-                    return console.error('error deleting notes', err);
-                }
-                res.status(200).send({ success: true });
-            });
-        });
+        const { _id } = req.params;
+        const run = async () => {
+            const [user, findUserError] = await handle(User.findOne({ _id }));
+            if (findUserError) throw new Error(`Error finding user ${_id}`);
+            if (!user) throw new Error(`User ${_id} not found`);
+            const [data, findAndDeleteError] = await handle(Promise.all([
+                user.deleteOne(),
+                Note.deleteMany({ userId: _id }),
+                Collection.deleteMany({ userId: _id }),
+                Tag.deleteMany({ userId: _id })
+            ]));
+            if (findAndDeleteError) throw new Error(`Error deleting data associated with user ${_id}`);
+            res.status(200).send({ success: true, deleted: [...data] });
+        }
+        run().catch(err => res.send({ success: false, error: err.message }));
     }
     createNote = (req, res) => {
         const { userId, title, content } = req.body;
@@ -225,7 +184,7 @@ class Controller {
             if (editNoteError) throw new Error(`Dispatch error`);
             const [note, saveError] = await handle(editedNote.save());
             if (saveError) throw new Error(`Error saving note ${_id}`);
-            res.send({ success: true, note });
+            res.status(200).send({ success: true, note });
         }
         run().catch(err => res.send({ success: false, error: err.message }));
     }
@@ -258,7 +217,7 @@ class Controller {
         const run = async () => {
             const [note, deleteNoteError] = await handle(Note.findOneAndDelete({ _id }));
             if (deleteNoteError) throw new Error(`Error deleting note ${_id}`);
-            res.send({ success: true, note });
+            res.status(200).send({ success: true, note });
         }
         run().catch(err => res.send({ success: false, error: err.message }));
     }
@@ -267,7 +226,7 @@ class Controller {
         const run = async () => {
             const [notes, deleteNotesError] = await handle(Note.deleteMany({ userId, trash: true }));
             if (deleteNotesError) throw new Error(`Error deleting notes`);
-            res.send({ success: true, notes });
+            res.status(200).send({ success: true, notes });
         }
         run().catch(err => res.send({ success: false, error: err.message }));
     }
@@ -282,44 +241,24 @@ class Controller {
             });
             const [restoredNotes, saveNotesError] = await handle(Promise.all(restoreNotes));
             if (saveNotesError) throw new Error(`Error saving notes`);
-            res.send({ success: true, notes: restoredNotes });
+            res.status(200).send({ success: true, notes: restoredNotes });
         }
         run().catch(err => res.send({ success: false, error: err.message }));
     }
     createCollection = (req, res) => {
-        const errors = validationResult(req); // todo add collectionAlreadyExists to validation
-        if (!errors.isEmpty()) {
-            const generateError = (type) => {
-                let error = errors.errors.find(error => error.param === type);
-                if (error) return error.msg; else return false;
-            }
-            res.send({
-                success: false,
-                collectionNameError: generateError('collectionName')
-            });
-            return;
-        }
+        const { errors } = validationResult(req); // todo add collectionAlreadyExists to validation
+        if (errors.length) return res.send({ success: false, error: validationError(errors) });
         const { userId, name } = req.body;
         const run = async () => {
             const [collection, createCollectionError] = await handle(Collection.create({ userId, name }));
             if (createCollectionError) throw new Error(`Error creating collection`);
-            res.send({ success: true, collection });
+            res.status(200).send({ success: true, collection });
         }
         run().catch(err => res.send({ success: false, error: err.message }));
     }
     editCollection = (req, res) => {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            const generateError = (type) => {
-                let error = errors.errors.find(error => error.param === type);
-                if (error) return error.msg; else return false;
-            }
-            res.send({
-                success: false,
-                updatedNameError: generateError('updatedName')
-            });
-            return;
-        }
+        const { errors } = validationResult(req);
+        if (errors.length) return res.send({ success: false, error: validationError(errors) });
         const { _id } = req.params;
         const { name } = req.body;
         const run = async () => {
@@ -329,7 +268,7 @@ class Controller {
             foundCollection = Object.assign(foundCollection, { name });
             const [collection, saveError] = await handle(foundCollection.save());
             if (saveError) throw new Error(`Error saving collection ${_id}`);
-            res.send({ success: true, collection });
+            res.status(200).send({ success: true, collection });
         }
         run().catch(err => res.send({ success: false, error: err.message }));
     }
@@ -350,12 +289,12 @@ class Controller {
                 ...removeCollectionFromNotes
             ]));
             if (error) throw new Error(`Error deleting this collection and associated notes`);
-            res.send({ success });
+            res.status(200).send({ success });
         }
         run().catch(err => res.send({ success: false, error: err.message }));
     }
     createTag = (req, res) => {
-        const errors = validationResult(req);
+        const { errors } = validationResult(req);
         if (!errors.isEmpty()) {
             const generateError = (type) => {
                 let error = errors.errors.find(error => error.param === type);
@@ -371,12 +310,12 @@ class Controller {
         const run = async () => {
             const [tag, createTagError] = await handle(Tag.create({ userId, name }));
             if (createTagError) throw new Error(`Error creating tag`);
-            res.send({ success: true, tag });
+            res.status(200).send({ success: true, tag });
         }
         run().catch(err => res.send({ success: false, error: err.message }));
     }
     editTag = (req, res) => {
-        const errors = validationResult(req);
+        const { errors } = validationResult(req);
         if (!errors.isEmpty()) {
             const generateError = (type) => {
                 let error = errors.errors.find(error => error.param === type);
@@ -397,7 +336,7 @@ class Controller {
             foundTag = Object.assign(foundTag, { name });
             const [tag, saveError] = await handle(foundTag.save());
             if (saveError) throw new Error(`Error saving tag ${_id}`);
-            res.send({ success: true, tag });
+            res.status(200).send({ success: true, tag });
         }
         run().catch(err => res.send({ success: false, error: err.message }));
     }
@@ -422,7 +361,7 @@ class Controller {
                 ...updateNotesWithThisTag
             ]));
             if (error) throw new Error(`Error deleting this tag and associated notes`);
-            res.send({ success: true, tag: success });
+            res.status(200).send({ success: true, tag: success });
         }
         run().catch(err => res.send({ success: false, error: err.message }));
     }

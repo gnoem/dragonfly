@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { Alert, Error } from './Alert';
 import { elementHasParent } from '../../utils';
 import { formStore } from './forms';
 
@@ -9,6 +10,8 @@ export const Modal = (props) => {
     const formContent = () => {
         switch (type) {
             case 'form': return formStore[content](props);
+            case 'alert': return <Alert>{content}</Alert>;
+            case 'error': return <Error>{content}</Error>;
             case 'custom': return content;
             default: return content;
         }

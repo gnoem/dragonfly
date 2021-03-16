@@ -6,7 +6,7 @@ export const Account = (props) => {
     return (
         <div className="Account">
             <Header />
-            {user ? <EditAccount {...props} /> : <CreateAccount {...props} />}
+            {user.username ? <EditAccount {...props} /> : <CreateAccount {...props} />}
         </div>
     );
 }

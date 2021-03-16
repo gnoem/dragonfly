@@ -1,4 +1,23 @@
+import { handleError } from "./handleError";
+
 export const User = {
+    createUser: async () => {
+        const response = await fetch('/user', { method: 'POST' });
+        const body = await response.json();
+        if (!body.success) throw body.error;
+        return body.user;
+    },
+    createAccount: async (props, _id, formData, callback) => {
+        const response = await fetch(`/user/${_id}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+        });
+        const body = await response.json();
+        if (!body.success) throw body.error;
+        props.refreshData().then(callback);
+        return body.user;
+    },
     editAccount: async (props, _id, formData, callback) => {
         const response = await fetch(`/user/${_id}`, {
             method: 'PUT',
@@ -6,7 +25,7 @@ export const User = {
             body: JSON.stringify(formData)
         });
         const body = await response.json();
-        if (!body.success) return console.log(body.error);
+        if (!body.success) throw body.error;
         props.refreshData().then(callback);
         return body.user;
     },
@@ -17,9 +36,16 @@ export const User = {
             body: JSON.stringify(formData)
         });
         const body = await response.json();
-        if (!body.success) return console.log(body.error);
+        if (!body.success) throw body.error;
         props.refreshData().then(callback);
         return body.user;
+    },
+    deleteAccount: async (_id) => {
+        const response = await fetch(`/user/${_id}/fakeit`, { method: 'DELETE' });
+        const body = await handleError(response).json();
+        if (!body.success) {console.log(body.error); throw body.error;}
+        throw 'fake error';
+        //return body.user;
     }
 }
 
@@ -31,7 +57,7 @@ export const Note = {
             body: JSON.stringify(formData)
         });
         const body = await response.json();
-        if (!body.success) return console.log(body.error);
+        if (!body.success) throw body.error;
         props.refreshData().then(callback);
     },
     editNote: async (props, _id, formData, callback) => {
@@ -41,13 +67,13 @@ export const Note = {
             body: JSON.stringify(formData)
         });
         const body = await response.json();
-        if (!body.success) return console.log(body.error);
+        if (!body.success) throw body.error;
         props.refreshData().then(callback);
     },
     starNote: async (props, currentNote, callback) => {
         const response = await fetch(`/note/${currentNote._id}/star`, { method: 'PUT' });
         const body = await response.json();
-        if (!body.success) return console.log(body.error);
+        if (!body.success) throw body.error;
         props.refreshData().then(callback);
     },
     moveNoteToCollection: async (props, currentNote, collectionId, callback) => {
@@ -57,7 +83,7 @@ export const Note = {
             body: JSON.stringify({ collectionId })
         });
         const body = await response.json();
-        if (!body.success) return console.log(body.error);
+        if (!body.success) throw body.error;
         props.refreshData().then(callback);
     },
     tagNote: async (props, currentNote, tagId, callback) => {
@@ -67,34 +93,34 @@ export const Note = {
             body: JSON.stringify({ tagId })
         });
         const body = await response.json();
-        if (!body.success) return console.log(body.error);
+        if (!body.success) throw body.error;
         props.refreshData().then(callback);
     },
     trashNote: async (props, _id, callback) => {
         const response = await fetch(`/note/${_id}/trash`, { method: 'PUT' });
         const body = await response.json();
-        if (!body.success) return console.log(body.error);
+        if (!body.success) throw body.error;
         props.refreshData().then(callback);
         return body.note;
     },
     deleteNote: async (props, _id, callback) => {
         const response = await fetch(`/note/${_id}`, { method: 'DELETE' });
         const body = await response.json();
-        if (!body.success) return console.log(body.error);
+        if (!body.success) throw body.error;
         props.refreshData().then(callback);
         return body.note;
     },
     emptyTrash: async (props, userId, callback) => {
         const response = await fetch(`/notes-in-trash/${userId}`, { method: 'DELETE' });
         const body = await response.json();
-        if (!body.success) return console.log(body.error);
+        if (!body.success) throw body.error;
         props.refreshData().then(callback);
         return body.notes;
     },
     restoreTrash: async (props, userId, callback) => {
         const response = await fetch(`/notes-in-trash/${userId}`, { method: 'PUT' });
         const body = await response.json();
-        if (!body.success) return console.log(body.error);
+        if (!body.success) throw body.error;
         props.refreshData().then(callback);
         return body.notes;
     }
@@ -108,7 +134,7 @@ export const Collection = {
             body: JSON.stringify(formData)
         });
         const body = await response.json();
-        if (!body.success) return console.log(body.error);
+        if (!body.success) throw body.error;
         props.refreshData().then(callback);
         return body.collection;
     },
@@ -119,14 +145,14 @@ export const Collection = {
             body: JSON.stringify(formData)
         });
         const body = await response.json();
-        if (!body.success) return console.log(body.error);
+        if (!body.success) throw body.error;
         props.refreshData().then(callback);
         return body.collection;
     },
     deleteCollection: async (props, _id, callback) => {
         const response = await fetch(`/collection/${_id}`, { method: 'DELETE' });
         const body = await response.json();
-        if (!body.success) return console.log(body.error);
+        if (!body.success) throw body.error;
         props.refreshData().then(callback);
         return body.collection;
     }
@@ -140,7 +166,7 @@ export const Tag = {
             body: JSON.stringify(formData)
         });
         const body = await response.json();
-        if (!body.success) return console.log(body.error);
+        if (!body.success) throw body.error;
         props.refreshData().then(callback);
         return body.tag;
     },
@@ -151,14 +177,14 @@ export const Tag = {
             body: JSON.stringify(formData)
         });
         const body = await response.json();
-        if (!body.success) return console.log(body.error);
+        if (!body.success) throw body.error;
         props.refreshData().then(callback);
         return body.tag;
     },
     deleteTag: async (props, _id, callback) => {
         const response = await fetch(`/tag/${_id}`, { method: 'DELETE' });
         const body = await response.json();
-        if (!body.success) return console.log(body.error);
+        if (!body.success) throw body.error;
         props.refreshData().then(callback);
         return body.tag;
     }

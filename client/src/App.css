@@ -1791,11 +1791,15 @@ form input:not([type=submit]):not([type=checkbox]) {
     flex-direction: column;
     gap: 2rem;
 }
+.formComponent + .formComponent {
+    margin-top: 1rem;
+}
 .formGrid {
     display: grid;
     grid-template-columns: repeat(auto-fill, calc(50% - 0.5rem));
     grid-gap: 1rem;
 }
+
 .Account .buttons {
     text-align: left;
 }
@@ -1954,6 +1958,10 @@ input.nope + .formError {
 }
 .Hint.qmark::before {
     content: '\f05a';
+}
+.Input .InputNote {
+    font-size: 0.8rem;
+    margin-top: 0.2rem;
 }
 
 
