@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Dropdown from '../Dropdown';
 import { elementHasParent } from '../../utils';
-import { Collection, Note } from '../../helpers';
+import { Collection, Note } from '../../api';
 import { TagList, Tag } from '../Tags';
 
 export const Tooltip = (props) => {

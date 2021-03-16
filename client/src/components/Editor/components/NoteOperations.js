@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { Tooltip } from '../../Tooltip';
-import { Note } from '../../../helpers';
+import { Note } from '../../../api';
 
 export const NoteOperations = (props) => {
     const { currentNote } = props;

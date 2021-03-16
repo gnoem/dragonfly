@@ -20,7 +20,7 @@ export const Form = (props) => {
                 .catch(err => {
                     console.dir(err);
                     setSuccessPending(false);
-                    handleError(err);
+                    handleError?.(err);
                 });
         }, 300);
     }

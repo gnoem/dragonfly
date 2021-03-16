@@ -1,5 +1,5 @@
 import React from 'react';
-import { User } from '../../helpers';
+import { User } from '../../api';
 import { Button } from '../Form';
 import { Header } from '../Page';
 

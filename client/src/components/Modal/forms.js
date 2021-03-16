@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Form, Submit } from '../Form';
-import { Note, Collection, Tag } from '../../helpers';
+import { Note, Collection, Tag } from '../../api';
 
 export const formStore = {
     warnUnsavedChanges: (props) => <WarnUnsavedChanges {...props} />,

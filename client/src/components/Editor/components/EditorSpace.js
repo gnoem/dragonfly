@@ -3,7 +3,7 @@ import { Button } from '../../Form';
 import Immutable from 'immutable';
 import { Editor, EditorState, RichUtils, convertToRaw, convertFromRaw, DefaultDraftBlockRenderMap } from 'draft-js';
 import 'draft-js/dist/Draft.css';
-import { Note } from '../../../helpers';
+import { Note } from '../../../api';
 
 export const EditorSpace = (props) => {
     const { user, currentNote, unsavedChanges } = props;

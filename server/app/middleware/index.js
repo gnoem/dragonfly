@@ -18,7 +18,7 @@ export const validate = {
         check('updatedName')
             .isLength({ min: 1, max: 25 }).withMessage('Tag name must be between 1 and 25 characters')
     ],
-    accountDetails: [
+    createAccount: [
         check('email')
             .not().isEmpty().withMessage('This field is required').bail()
             .isEmail().withMessage('Please enter a valid email address').bail()
@@ -41,5 +41,16 @@ export const validate = {
         check('password')
             .not().isEmpty().withMessage('This field is required').bail()
             .isLength({ min: 6 }).withMessage('Password must be at least 6 characters')
+    ],
+    editAccount: [
+        check('email')
+            .not().isEmpty().withMessage('This field is required').bail()
+            .isEmail().withMessage('Please enter a valid email address').bail()
+            .normalizeEmail(),
+        check('username')
+            .not().isEmpty().withMessage('This field is required').bail()
+            .isAlphanumeric().withMessage('Username cannot contain any special characters').bail()
+            .isLength({ min: 2, max: 50 }).withMessage('Username must be between 2 and 50 characters').bail()
+            .toLowerCase()
     ]
 }
