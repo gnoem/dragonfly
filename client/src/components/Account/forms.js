@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { User } from "../../helpers";
+import { User } from "../../api";
 import { Hint } from "../Hint";
 import { Form, Submit, Button, Input } from "../Form";
 
