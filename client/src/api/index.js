@@ -9,80 +9,15 @@ export const User = {
 }
 
 export const Note = {
-    createNote: async (props, formData, callback) => {
-        const response = await fetch('/note', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(formData)
-        });
-        const body = await response.json();
-        if (!body.success) throw body.error;
-        props.refreshData().then(callback);
-    },
-    editNote: async (props, _id, formData, callback) => {
-        const response = await fetch(`/note/${_id}/content`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(formData)
-        });
-        const body = await response.json();
-        if (!body.success) throw body.error;
-        props.refreshData().then(callback);
-    },
-    starNote: async (props, currentNote, callback) => {
-        const response = await fetch(`/note/${currentNote._id}/star`, { method: 'PUT' });
-        const body = await response.json();
-        if (!body.success) throw body.error;
-        props.refreshData().then(callback);
-    },
-    moveNoteToCollection: async (props, currentNote, collectionId, callback) => {
-        const response = await fetch(`/note/${currentNote._id}/collection`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ collectionId })
-        });
-        const body = await response.json();
-        if (!body.success) throw body.error;
-        props.refreshData().then(callback);
-    },
-    tagNote: async (props, currentNote, tagId, callback) => {
-        const response = await fetch(`/note/${currentNote._id}/tag`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ tagId })
-        });
-        const body = await response.json();
-        if (!body.success) throw body.error;
-        props.refreshData().then(callback);
-    },
-    trashNote: async (props, _id, callback) => {
-        const response = await fetch(`/note/${_id}/trash`, { method: 'PUT' });
-        const body = await response.json();
-        if (!body.success) throw body.error;
-        props.refreshData().then(callback);
-        return body.note;
-    },
-    deleteNote: async (props, _id, callback) => {
-        const response = await fetch(`/note/${_id}`, { method: 'DELETE' });
-        const body = await response.json();
-        if (!body.success) throw body.error;
-        props.refreshData().then(callback);
-        return body.note;
-    },
-    emptyTrash: async (props, userId, callback) => {
-        const response = await fetch(`/notes-in-trash/${userId}`, { method: 'DELETE' });
-        const body = await response.json();
-        if (!body.success) throw body.error;
-        props.refreshData().then(callback);
-        return body.notes;
-    },
-    restoreTrash: async (props, userId, callback) => {
-        const response = await fetch(`/notes-in-trash/${userId}`, { method: 'PUT' });
-        const body = await response.json();
-        if (!body.success) throw body.error;
-        props.refreshData().then(callback);
-        return body.notes;
-    }
+    createNote: async (formData) => await post(`/note`, formData),
+    editNote: async (_id, formData) => await put(`/note/${_id}/content`, formData),
+    starNote: async (_id) => await put(`/note/${_id}/star`),
+    moveNoteToCollection: async (_id, collectionId) => await put(`/note/${_id}/collection`, { collectionId }),
+    tagNote: async (_id, tagId) => await put(`/note/${_id}/tag`, { tagId }),
+    trashNote: async (_id) => await put(`/note/${_id}/trash`),
+    deleteNote: async (_id) => await del(`/note/${_id}`),
+    emptyTrash: async (userId) => await del(`/notes-in-trash/${userId}`),
+    restoreTrash: async (userId) => await put(`/notes-in-trash/${userId}`)
 }
 
 export const Collection = {

@@ -17,9 +17,9 @@ class ValidationError extends Error {
 }
 
 class ServerError extends Error {
-    constructor({ status, message }) {
+    constructor({ status, message, error }) {
         super(`Server error ${status}: ${message}`);
-        Object.assign(this, { status, message });
+        Object.assign(this, { status, message, error });
         this.name = 'ServerError';
         this.wisdom = 'I am indeed amazed when I consider how weak my mind is and how prone to error';
         this.attribution = 'René Descartes';
@@ -36,10 +36,10 @@ class UnknownError extends Error {
 
 export const handleError = async (res) => {
     if (res.ok) return res;
-    const { error } = await handleResponse(res);
+    const { message, error } = await handleResponse(res);
     switch (res.status) {
-        case 422: throw new ValidationError({ error });
-        case 500: throw new ServerError({ status: res.status, message: error });
+        case 422: throw new ValidationError({ message });
+        case 500: throw new ServerError({ status: res.status, message, error });
         default: throw new UnknownError();
     }
 }

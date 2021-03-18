@@ -73,10 +73,10 @@ class Controller {
         const run = async () => {
             const newUser = new User();
             const [user, saveUserError] = await handle(newUser.save());
-            if (saveUserError) throw new ServerError('500', `Error saving new user`);
+            if (saveUserError) throw new ServerError(500, `Error saving new user`, saveUserError);
             res.status(201).send({ user });
         }
-        run().catch(({ status, message }) => res.status(status ?? 500).send({ error: message }));
+        run().catch(({ status, message, error }) => res.status(status ?? 500).send({ message, error }));
     }
     createAccount = (req, res) => {
         const { errors } = validationResult(req);
@@ -85,8 +85,8 @@ class Controller {
         const { firstName, lastName, email, username, password } = req.body;
         const run = async () => {
             let [foundUser, findUserError] = await handle(User.findOne({ _id }));
-            if (findUserError) throw new ServerError('500', `Error retrieving user`, findUserError);
-            if (!foundUser) throw new ServerError('500', `User not found`);
+            if (findUserError) throw new ServerError(500, `Error retrieving user`, findUserError);
+            if (!foundUser) throw new ServerError(500, `User not found`);
             const formData = {
                 firstName,
                 lastName,
@@ -96,10 +96,10 @@ class Controller {
             };
             foundUser = Object.assign(foundUser, formData);
             const [user, saveError] = await handle(foundUser.save());
-            if (saveError) throw new ServerError('500', `Error saving user`, saveError);
+            if (saveError) throw new ServerError(500, `Error saving user`, saveError);
             res.status(201).send({ user });
         }
-        run().catch(({ status, message }) => res.status(status ?? 500).send({ error: message }));
+        run().catch(({ status, message, error }) => res.status(status ?? 500).send({ message, error }));
     }
     editAccount = (req, res) => {
         const { errors } = validationResult(req);
@@ -108,45 +108,45 @@ class Controller {
         const formData = req.body;
         const run = async () => {
             let [foundUser, findUserError] = await handle(User.findOne({ _id }));
-            if (findUserError) throw new ServerError('500', `Error retrieving user`, findUserError);
-            if (!foundUser) throw new ServerError('500', `User not found`);
+            if (findUserError) throw new ServerError(500, `Error retrieving user`, findUserError);
+            if (!foundUser) throw new ServerError(500, `User not found`);
             foundUser = Object.assign(foundUser, formData);
             const [user, saveError] = await handle(foundUser.save());
-            if (saveError) throw new ServerError('500', `Error saving user`, saveError);
+            if (saveError) throw new ServerError(500, `Error saving user`, saveError);
             res.status(200).send({ user });
         }
-        run().catch(({ status, message }) => res.status(status ?? 500).send({ error: message }));
+        run().catch(({ status, message, error }) => res.status(status ?? 500).send({ message, error }));
     }
     editPassword = (req, res) => {
         const { _id } = req.params;
         const { password } = req.body;
         const run = async () => {
             let [foundUser, findUserError] = await handle(User.findOne({ _id }));
-            if (findUserError) throw new ServerError('500', `Error retrieving user`, findUserError);
-            if (!foundUser) throw new ServerError('500', `User not found`);
+            if (findUserError) throw new ServerError(500, `Error retrieving user`, findUserError);
+            if (!foundUser) throw new ServerError(500, `User not found`);
             foundUser = Object.assign(foundUser, { password: bcrypt.hashSync(password, 8) });
             const [user, saveError] = await handle(foundUser.save());
-            if (saveError) throw new ServerError('500', `Error saving user`, saveError);
+            if (saveError) throw new ServerError(500, `Error saving user`, saveError);
             res.status(200).send({ user });
         }
-        run().catch(({ status, message }) => res.status(status ?? 500).send({ error: message }));
+        run().catch(({ status, message, error }) => res.status(status ?? 500).send({ message, error }));
     }
     deleteAccount = (req, res) => {
         const { _id } = req.params;
         const run = async () => {
             const [user, findUserError] = await handle(User.findOne({ _id }));
-            if (findUserError) throw new ServerError('500', `Error retrieving user`, findUserError);
-            if (!user) throw new ServerError('500', `User not found`);
+            if (findUserError) throw new ServerError(500, `Error retrieving user`, findUserError);
+            if (!user) throw new ServerError(500, `User not found`);
             const [_, findAndDeleteError] = await handle(Promise.all([
                 user.deleteOne(),
                 Note.deleteMany({ userId: _id }),
                 Collection.deleteMany({ userId: _id }),
                 Tag.deleteMany({ userId: _id })
             ]));
-            if (findAndDeleteError) throw new ServerError('500', `Error deleting user`, saveError);
+            if (findAndDeleteError) throw new ServerError(500, `Error deleting user`, saveError);
             res.status(204).end();
         }
-        run().catch(({ status, message }) => res.status(status ?? 500).send({ error: message }));
+        run().catch(({ status, message, error }) => res.status(status ?? 500).send({ message, error }));
     }
     createNote = (req, res) => {
         const { userId, title, content } = req.body;
@@ -159,17 +159,17 @@ class Controller {
                 lastModified: Date.now()
             };
             const [note, createNoteError] = await handle(Note.create(newNote));
-            if (createNoteError) throw new Error(`Error creating new note`);
-            res.status(200).send({ success: true, note });
+            if (createNoteError) throw new ServerError(500, `Error creating new note`, createNoteError);
+            res.status(201).send({ note });
         }
-        run().catch(err => res.send({ success: false, error: err.message }));
+        run().catch(({ status, message, error }) => res.status(status ?? 500).send({ message, error }));
     }
     editNote = (req, res) => {
         const { _id, action } = req.params;
         const run = async () => {
             let [foundNote, findNoteError] = await handle(Note.findOne({ _id }));
-            if (findNoteError) throw new Error(`Error finding note ${_id}`);
-            if (!foundNote) throw new Error(`Note ${_id} not found`);
+            if (findNoteError) throw new ServerError(500, `Error finding note`, findNoteError);
+            if (!foundNote) throw new ServerError(500, `Note not found`);
             const dispatch = (() => {
                 switch (action) {
                     case 'content': return this.editNoteContent;
@@ -177,16 +177,16 @@ class Controller {
                     case 'collection': return this.moveNoteToCollection;
                     case 'tag': return this.tagNote;
                     case 'trash': return this.trashNote;
-                    default: throw new Error(`Invalid action: ${action}`);
+                    default: throw new ServerError(500, `Invalid action: ${action}`);
                 }
             })();
             const [editedNote, editNoteError] = await handle(dispatch(foundNote, req.body));
-            if (editNoteError) throw new Error(`Dispatch error`);
+            if (editNoteError) throw new ServerError(500, `Dispatch error for ${action}`, editNoteError);
             const [note, saveError] = await handle(editedNote.save());
-            if (saveError) throw new Error(`Error saving note ${_id}`);
-            res.status(200).send({ success: true, note });
+            if (saveError) throw new ServerError(500, `Error saving note`, saveError);
+            res.status(200).send({ note });
         }
-        run().catch(err => res.send({ success: false, error: err.message }));
+        run().catch(({ status, message, error }) => res.status(status ?? 500).send({ message, error }));
     }
     editNoteContent = async (foundNote, { title, content }) => {
         return Object.assign(foundNote, {
@@ -215,35 +215,35 @@ class Controller {
     deleteNote = (req, res) => {
         const { _id } = req.params;
         const run = async () => {
-            const [note, deleteNoteError] = await handle(Note.findOneAndDelete({ _id }));
-            if (deleteNoteError) throw new Error(`Error deleting note ${_id}`);
-            res.status(200).send({ success: true, note });
+            const [_, deleteNoteError] = await handle(Note.findOneAndDelete({ _id }));
+            if (deleteNoteError) throw new ServerError(500, `Error deleting note`, deleteNoteError);
+            res.status(204).end();
         }
-        run().catch(err => res.send({ success: false, error: err.message }));
+        run().catch(({ status, message, error }) => res.status(status ?? 500).send({ message, error }));
     }
     emptyTrash = (req, res) => {
         const { userId } = req.params;
         const run = async () => {
-            const [notes, deleteNotesError] = await handle(Note.deleteMany({ userId, trash: true }));
-            if (deleteNotesError) throw new Error(`Error deleting notes`);
-            res.status(200).send({ success: true, notes });
+            const [_, deleteNotesError] = await handle(Note.deleteMany({ userId, trash: true }));
+            if (deleteNotesError) throw new ServerError(500, `Error deleting notes`, deleteNotesError);
+            res.status(204).end();
         }
-        run().catch(err => res.send({ success: false, error: err.message }));
+        run().catch(({ status, message, error }) => res.status(status ?? 500).send({ message, error }));
     }
     restoreTrash = (req, res) => {
         const { userId } = req.params;
         const run = async () => {
             const [notes, findNotesError] = await handle(Note.find({ userId, trash: true }));
-            if (findNotesError) throw new Error(`Error finding notes`);
+            if (findNotesError) throw new ServerError(500, `Error finding notes`, findNotesError);
             const restoreNotes = notes.map(note => {
                 note.trash = false;
                 return note.save();
             });
             const [restoredNotes, saveNotesError] = await handle(Promise.all(restoreNotes));
-            if (saveNotesError) throw new Error(`Error saving notes`);
-            res.status(200).send({ success: true, notes: restoredNotes });
+            if (saveNotesError) throw new ServerError(500, `Error saving notes`, saveNotesError);
+            res.status(200).send({ notes: restoredNotes });
         }
-        run().catch(err => res.send({ success: false, error: err.message }));
+        run().catch(({ status, message, error }) => res.status(status ?? 500).send({ message, error }));
     }
     createCollection = (req, res) => {
         const { errors } = validationResult(req); // todo add collectionAlreadyExists to validation
@@ -295,17 +295,7 @@ class Controller {
     }
     createTag = (req, res) => {
         const { errors } = validationResult(req);
-        if (!errors.isEmpty()) {
-            const generateError = (type) => {
-                let error = errors.errors.find(error => error.param === type);
-                if (error) return error.msg; else return false;
-            }
-            res.send({
-                success: false,
-                tagNameError: generateError('tagName')
-            });
-            return;
-        }
+        if (errors.length) return res.send({ success: false, error: formErrorReport(errors) });
         const { userId, name } = req.body;
         const run = async () => {
             const [tag, createTagError] = await handle(Tag.create({ userId, name }));
@@ -316,17 +306,7 @@ class Controller {
     }
     editTag = (req, res) => {
         const { errors } = validationResult(req);
-        if (!errors.isEmpty()) {
-            const generateError = (type) => {
-                let error = errors.errors.find(error => error.param === type);
-                if (error) return error.msg; else return false;
-            }
-            res.send({
-                success: false,
-                updatedNameError: generateError('updatedName')
-            });
-            return;
-        }
+        if (errors.length) return res.send({ success: false, error: formErrorReport(errors) });
         const { _id } = req.params;
         const { name } = req.body;
         const run = async () => {

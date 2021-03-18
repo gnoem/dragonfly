@@ -56,7 +56,7 @@ const tooltipStore = {
 
 const MoveNoteToCollection = (props) => {
     const { user, currentNote, collections } = props;
-    const handleChange = (collectionId) => Note.moveNoteToCollection(props, currentNote, collectionId);
+    const handleChange = (collectionId) => Note.moveNoteToCollection(currentNote._id, collectionId).then(props.refreshData);
     const handleAddNew = (name) => {
         Collection.createCollection(props, { userId: user._id, name }).then(collection => handleChange(collection._id));
     };
@@ -107,7 +107,8 @@ const TagNote = (props) => {
     }
     const tagNote = (tagId) => {
         const index = addToInstantToggle(tagId);
-        Note.tagNote(props, currentNote, tagId, () => removeFromInstantToggle(index));
+        const onSuccess = () => props.refreshData().then(() => removeFromInstantToggle(index));
+        Note.tagNote(currentNote._id, tagId).then(onSuccess);
     }
     const tagList = () => {
         const createTag = () => {

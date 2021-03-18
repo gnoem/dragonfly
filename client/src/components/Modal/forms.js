@@ -30,9 +30,13 @@ const WarnUnsavedChanges = (props) => {
 
 const TrashNote = (props) => {
     const { options } = props;
-    const handleSubmit = () => Note.trashNote(props, options?._id, options?.callback);
+    const handleSuccess = () => {
+        options?.onSuccess();
+        props.gracefullyCloseModal();
+    }
+    const handleSubmit = () => Note.trashNote(options?._id);
     return (
-        <Form {...props} onSubmit={handleSubmit} onSuccess={props.gracefullyCloseModal}
+        <Form {...props} onSubmit={handleSubmit} onSuccess={handleSuccess}
               title="Move to Trash?"
               submit={<Submit value="Yes, I'm sure" />}>
             Are you sure you want to move this note to the Trash?
@@ -42,9 +46,13 @@ const TrashNote = (props) => {
 
 const DeleteNote = (props) => {
     const { options } = props;
-    const handleSubmit = () => Note.deleteNote(props, options?._id, options?.callback);
+    const handleSuccess = () => {
+        options?.onSuccess();
+        props.gracefullyCloseModal();
+    }
+    const handleSubmit = () => Note.deleteNote(options?._id);
     return (
-        <Form {...props} onSubmit={handleSubmit} onSuccess={props.gracefullyCloseModal}
+        <Form {...props} onSubmit={handleSubmit} onSuccess={handleSuccess}
               title="Delete note permanently"
               submit={<Submit value="Yes, I'm sure" />}>
             Are you sure you want to permanently delete this note? This action cannot be undone.
@@ -54,9 +62,13 @@ const DeleteNote = (props) => {
 
 const EmptyTrash = (props) => {
     const { options } = props;
-    const handleSubmit = () => Note.emptyTrash(props, options?._id, options?.callback);
+    const handleSuccess = () => {
+        options?.onSuccess();
+        props.gracefullyCloseModal();
+    }
+    const handleSubmit = () => Note.emptyTrash(options?._id);
     return (
-        <Form {...props} onSubmit={handleSubmit} onSuccess={props.gracefullyCloseModal}
+        <Form {...props} onSubmit={handleSubmit} onSuccess={handleSuccess}
               title="Empty Trash"
               submit={<Submit value="Yes, I'm sure" />}>
             Are you sure you want to permanently delete all the notes in your Trash? This action cannot be undone.
@@ -66,9 +78,13 @@ const EmptyTrash = (props) => {
 
 const RestoreTrash = (props) => {
     const { options } = props;
-    const handleSubmit = () => Note.restoreTrash(props, options?._id, options?.callback);
+    const handleSuccess = () => {
+        options?.onSuccess();
+        props.gracefullyCloseModal();
+    }
+    const handleSubmit = () => Note.restoreTrash(options?._id);
     return (
-        <Form {...props} onSubmit={handleSubmit} onSuccess={props.gracefullyCloseModal}
+        <Form {...props} onSubmit={handleSubmit} onSuccess={handleSuccess}
               title="Restore all"
               submit={<Submit value="Yes, I'm sure" />}>
             Are you sure you want to restore all the notes in your Trash?

@@ -72,11 +72,11 @@ const TrashMenuButton = (props) => {
         </div>
     );
     const restoreAll = () => {
-        if (notes.length) props.updateModal('restoreTrash', 'form', { _id: user._id });
+        if (notes.length) props.updateModal('restoreTrash', 'form', { _id: user._id, onSuccess: props.refreshData });
         else props.updateModal(trashIsEmpty('restore'));
     }
     const emptyTrash = () => {
-        if (notes.length) props.updateModal('emptyTrash', 'form', { _id: user._id });
+        if (notes.length) props.updateModal('emptyTrash', 'form', { _id: user._id, onSuccess: props.refreshData });
         else props.updateModal(trashIsEmpty('delete'));
     }
     const menuItems = [{ label: 'Restore all', onClick: restoreAll }, { label: 'Empty Trash', onClick: emptyTrash }];

@@ -51,6 +51,7 @@ export const EditorSpace = (props) => {
             // when saving a new note, close the editor afterwards
             // won't happen when editing existing notes - you open something up to work on it
             // todo come back to this
+            props.refreshData();
         }
         const handleCreateNote = () => {
             const formData = {
@@ -58,14 +59,14 @@ export const EditorSpace = (props) => {
                 title: editorTitle,
                 content: convertToRaw(contentState)
             };
-            Note.createNote(props, formData, optionalCallback ?? defaultCallback);
+            Note.createNote(formData).then(optionalCallback ?? defaultCallback);
         }
         const handleEditNote = () => {
             const formData = {
                 title: editorTitle,
                 content: convertToRaw(contentState)
             };
-            return Note.editNote(props, currentNote._id, formData, optionalCallback ?? defaultCallback);
+            return Note.editNote(currentNote._id, formData).then(optionalCallback ?? defaultCallback);
         }
         if (newNote) return handleCreateNote();
         return handleEditNote();
@@ -74,6 +75,7 @@ export const EditorSpace = (props) => {
         const closeEditor = () => {
             props.updateUnsavedChanges(false);
             props.updateCurrentNote(null);
+            props.refreshData();
         }
         props.updateModal('warnUnsavedChanges', 'form', { saveChanges: () => handleSubmit(closeEditor), discardChanges: closeEditor });
     }
@@ -112,11 +114,11 @@ export const EditorSpace = (props) => {
 const TrashOptions = (props) => {
     const { currentNote } = props;
     const restoreNote = () => {
-        Note.trashNote(props, currentNote._id); // todo keep an eye on this
-        // choosing not to include updateCurrentNote(null) as callback in case user wants to start editing immediately
+        Note.trashNote(currentNote._id).then(props.refreshData); // todo keep an eye on this
+        // choosing not to include updateCurrentNote(null) as callback in case user wants to start editing immediately after removing from trash
     }
     const deletePermanently = () => {
-        props.updateModal('deleteNotePermanently', 'form', { _id: currentNote._id });
+        props.updateModal('deleteNotePermanently', 'form', { _id: currentNote._id, onSuccess: props.refreshData });
     }
     return (
         <div className="noteIsInTrash">

@@ -21,10 +21,7 @@ export const NoteOperations = (props) => {
                 ignoreClick={['.Modal']}
                 tooltipWillOpen={{ tooltipOpen: tagsTooltip, updateTooltipOpen: setTagsTooltip }}
                 defaultContent="Tag this note" />
-            <OptionItem {...props}
-                name="trash"
-                onClick={() => props.updateModal('trashNote', 'form', { _id: currentNote._id, callback: () => props.updateCurrentNote(null) })}
-                defaultContent="Move to Trash" />
+            <TrashNote {...props} />
         </div>
     );
 }
@@ -59,7 +56,8 @@ const StarNote = (props) => {
         setPulse(true);
         setTimeout(() => setPulse(false), 500);
         setInstantToggle(true);
-        Note.starNote(props, currentNote, () => setInstantToggle(false));
+        const onSuccess = () => props.refreshData().then(() => setInstantToggle(false));
+        Note.starNote(currentNote._id).then(onSuccess);
     }
     return (
         <OptionItem {...props}
@@ -67,5 +65,25 @@ const StarNote = (props) => {
             className={className}
             onClick={handleClick}
             defaultContent={isStarred ? 'Unstar' : 'Add star'} />
+    );
+}
+
+const TrashNote = (props) => {
+    const { currentNote } = props;
+    const handleClick = () => {
+        const formOptions = {
+            _id: currentNote._id,
+            onSuccess: () => {
+                props.refreshData();
+                props.updateCurrentNote(null);
+            }
+        }
+        props.updateModal('trashNote', 'form', formOptions)
+    }
+    return (
+        <OptionItem {...props}
+            name="trash"
+            onClick={handleClick}
+            defaultContent="Move to Trash" />
     );
 }
