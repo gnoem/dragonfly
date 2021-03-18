@@ -1,52 +1,11 @@
-import { handleError } from "./handleError";
+import { get, post, put, del } from "./fetchWrapper";
 
 export const User = {
-    createUser: async () => {
-        const response = await fetch('/user', { method: 'POST' });
-        const body = await response.json();
-        if (!body.success) throw body.error;
-        return body.user;
-    },
-    createAccount: async (props, _id, formData, callback) => {
-        const response = await fetch(`/user/${_id}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(formData)
-        });
-        const body = await response.json();
-        if (!body.success) throw body.error;
-        props.refreshData().then(callback);
-        return body.user;
-    },
-    editAccount: async (props, _id, formData, callback) => {
-        const response = await fetch(`/user/${_id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(formData)
-        });
-        const body = await response.json();
-        if (!body.success) throw body.error;
-        props.refreshData().then(callback);
-        return body.user;
-    },
-    changePassword: async (props, _id, formData, callback) => {
-        const response = await fetch(`/user/${_id}/password`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(formData)
-        });
-        const body = await response.json();
-        if (!body.success) throw body.error;
-        props.refreshData().then(callback);
-        return body.user;
-    },
-    deleteAccount: async (_id) => {
-        const response = await fetch(`/user/${_id}/fakeit`, { method: 'DELETE' });
-        const body = await handleError(response).json();
-        if (!body.success) {console.log(body.error); throw body.error;}
-        throw 'fake error';
-        //return body.user;
-    }
+    createUser: async () => await post('/user'),
+    createAccount: async (_id, formData) => await post(`/user/${_id}`, formData),
+    editAccount: async (_id, formData) => await put(`/user/${_id}`, formData),
+    changePassword: async (_id, formData) => await put(`/user/${_id}/password`, formData),
+    deleteAccount: async (_id) => await del(`/user/${_id}`)
 }
 
 export const Note = {

@@ -2,7 +2,7 @@ import { validationResult } from 'express-validator';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { User, Note, Collection, Tag } from '../models/index.js';
-import { handle, isObjectId, FormError, validationError } from './utils.js';
+import { handle, isObjectId, ServerError, formErrorReport } from './utils.js';
 
 const secretKey = process.env.SECRET_KEY;
 
@@ -73,20 +73,20 @@ class Controller {
         const run = async () => {
             const newUser = new User();
             const [user, saveUserError] = await handle(newUser.save());
-            if (saveUserError) throw new Error(`Error saving new user`);
-            res.status(200).send({ success: true, user });
+            if (saveUserError) throw new ServerError('500', `Error saving new user`);
+            res.status(201).send({ user });
         }
-        run().catch(err => res.send({ success: false, error: err.message }));
+        run().catch(({ status, message }) => res.status(status ?? 500).send({ error: message }));
     }
     createAccount = (req, res) => {
-        const { _id } = req.params;
         const { errors } = validationResult(req);
-        if (errors.length) return res.send({ success: false, error: validationError(errors) });
+        if (errors.length) return res.status(422).send({ error: formErrorReport(errors) });
+        const { _id } = req.params;
         const { firstName, lastName, email, username, password } = req.body;
         const run = async () => {
             let [foundUser, findUserError] = await handle(User.findOne({ _id }));
-            if (findUserError) throw new Error(`Error finding user ${_id}`);
-            if (!foundUser) throw new Error(`User ${_id} not found`);
+            if (findUserError) throw new ServerError('500', `Error retrieving user`, findUserError);
+            if (!foundUser) throw new ServerError('500', `User not found`);
             const formData = {
                 firstName,
                 lastName,
@@ -96,57 +96,57 @@ class Controller {
             };
             foundUser = Object.assign(foundUser, formData);
             const [user, saveError] = await handle(foundUser.save());
-            if (saveError) throw new Error(`Error saving user ${_id}`);
-            res.status(200).send({ success: true, user });
+            if (saveError) throw new ServerError('500', `Error saving user`, saveError);
+            res.status(201).send({ user });
         }
-        run().catch(err => res.send({ success: false, error: err.message }));
+        run().catch(({ status, message }) => res.status(status ?? 500).send({ error: message }));
     }
     editAccount = (req, res) => {
-        const { _id } = req.params;
         const { errors } = validationResult(req);
-        if (errors.length) return res.send({ success: false, error: validationError(errors) });
+        if (errors.length) return res.status(422).send({ error: formErrorReport(errors) });
+        const { _id } = req.params;
         const formData = req.body;
         const run = async () => {
             let [foundUser, findUserError] = await handle(User.findOne({ _id }));
-            if (findUserError) throw new Error(`Error finding user ${_id}`);
-            if (!foundUser) throw new Error(`User ${_id} not found`);
+            if (findUserError) throw new ServerError('500', `Error retrieving user`, findUserError);
+            if (!foundUser) throw new ServerError('500', `User not found`);
             foundUser = Object.assign(foundUser, formData);
             const [user, saveError] = await handle(foundUser.save());
-            if (saveError) throw new Error(`Error saving user ${_id}`);
-            res.status(200).send({ success: true, user });
+            if (saveError) throw new ServerError('500', `Error saving user`, saveError);
+            res.status(200).send({ user });
         }
-        run().catch(err => res.send({ success: false, error: err.message }));
+        run().catch(({ status, message }) => res.status(status ?? 500).send({ error: message }));
     }
     editPassword = (req, res) => {
         const { _id } = req.params;
         const { password } = req.body;
         const run = async () => {
             let [foundUser, findUserError] = await handle(User.findOne({ _id }));
-            if (findUserError) throw new Error(`Error finding user ${_id}`);
-            if (!foundUser) throw new Error(`User ${_id} not found`);
+            if (findUserError) throw new ServerError('500', `Error retrieving user`, findUserError);
+            if (!foundUser) throw new ServerError('500', `User not found`);
             foundUser = Object.assign(foundUser, { password: bcrypt.hashSync(password, 8) });
             const [user, saveError] = await handle(foundUser.save());
-            if (saveError) throw new Error(`Error saving user ${_id}`);
-            res.status(200).send({ success: true, user });
+            if (saveError) throw new ServerError('500', `Error saving user`, saveError);
+            res.status(200).send({ user });
         }
-        run().catch(err => res.send({ success: false, error: err.message }));
+        run().catch(({ status, message }) => res.status(status ?? 500).send({ error: message }));
     }
     deleteAccount = (req, res) => {
         const { _id } = req.params;
         const run = async () => {
             const [user, findUserError] = await handle(User.findOne({ _id }));
-            if (findUserError) throw new Error(`Error finding user ${_id}`);
-            if (!user) throw new Error(`User ${_id} not found`);
-            const [data, findAndDeleteError] = await handle(Promise.all([
+            if (findUserError) throw new ServerError('500', `Error retrieving user`, findUserError);
+            if (!user) throw new ServerError('500', `User not found`);
+            const [_, findAndDeleteError] = await handle(Promise.all([
                 user.deleteOne(),
                 Note.deleteMany({ userId: _id }),
                 Collection.deleteMany({ userId: _id }),
                 Tag.deleteMany({ userId: _id })
             ]));
-            if (findAndDeleteError) throw new Error(`Error deleting data associated with user ${_id}`);
-            res.status(200).send({ success: true, deleted: [...data] });
+            if (findAndDeleteError) throw new ServerError('500', `Error deleting user`, saveError);
+            res.status(204).end();
         }
-        run().catch(err => res.send({ success: false, error: err.message }));
+        run().catch(({ status, message }) => res.status(status ?? 500).send({ error: message }));
     }
     createNote = (req, res) => {
         const { userId, title, content } = req.body;
@@ -247,7 +247,7 @@ class Controller {
     }
     createCollection = (req, res) => {
         const { errors } = validationResult(req); // todo add collectionAlreadyExists to validation
-        if (errors.length) return res.send({ success: false, error: validationError(errors) });
+        if (errors.length) return res.send({ success: false, error: formErrorReport(errors) });
         const { userId, name } = req.body;
         const run = async () => {
             const [collection, createCollectionError] = await handle(Collection.create({ userId, name }));
@@ -258,7 +258,7 @@ class Controller {
     }
     editCollection = (req, res) => {
         const { errors } = validationResult(req);
-        if (errors.length) return res.send({ success: false, error: validationError(errors) });
+        if (errors.length) return res.send({ success: false, error: formErrorReport(errors) });
         const { _id } = req.params;
         const { name } = req.body;
         const run = async () => {

@@ -8,7 +8,15 @@ export const isObjectId = (id) => mongoose.Types.ObjectId.isValid(id) && (new mo
 
 export const FormError = (fieldName, errorMessage) => ({ [fieldName]: errorMessage });
 
-export const validationError = (errors) => {
+export class ServerError extends Error {
+    constructor(status, message) {
+        super(status && message ? `Server error ${status}: ${message}` : 'Server error');
+        Object.assign(this, { status, message });
+        this.name = 'ServerError';
+    }
+}
+
+export const formErrorReport = (errors) => {
     const report = errors.reduce((obj, error) => {
         if (error.location !== 'body') return null;
         obj[error.param] = error.msg;

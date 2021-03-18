@@ -4,7 +4,8 @@ import { Button } from '../Form';
 import { Header } from '../Page';
 
 export default function Home() {
-    const createUser = () => User.createUser().then(user => window.location.assign(`/d/${user._id}`));
+    const onSuccess = ({ user }) => window.location.assign(`/d/${user._id}`);
+    const createUser = () => User.createUser().then(onSuccess);
     return (
         <div className="Home">
             <Header />

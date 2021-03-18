@@ -51,6 +51,11 @@ export const validate = {
             .not().isEmpty().withMessage('This field is required').bail()
             .isAlphanumeric().withMessage('Username cannot contain any special characters').bail()
             .isLength({ min: 2, max: 50 }).withMessage('Username must be between 2 and 50 characters').bail()
+            .custom(username => {
+                return User.findOne({ username }).then(user => {
+                    if (user) return Promise.reject('Username is taken');
+                });
+            }).bail()
             .toLowerCase()
     ]
 }

@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { handleError } from './handleError';
 import Loading from '../Loading';
 import './Input.css';
 
 export const Form = (props) => {
-    const { title, children, formClass, submit, formData, onSubmit, onSuccess, handleError, reset } = props;
+    const { title, children, formClass, submit, formData, onSubmit, onSuccess, handleFormError, reset, updateModal } = props;
     const [success, setSuccess] = useState(null);
     const [successPending, setSuccessPending] = useState(false);
     const formRef = useRef(null);
@@ -18,9 +19,8 @@ export const Form = (props) => {
                 .then(() => setSuccess(true))
                 .then(() => setSuccess(false))
                 .catch(err => {
-                    console.dir(err);
                     setSuccessPending(false);
-                    handleError?.(err);
+                    handleError(err, { handleFormError, updateModal });
                 });
         }, 300);
     }
