@@ -40,16 +40,34 @@ export const Dashboard = (props) => {
         return body.data;
     }, [identifier, accessToken]);
     useEffect(() => {
-        if (accessToken) refreshData().then(/* body => console.dir(body) */);
+        if (accessToken) return refreshData();
+        // else reload?
     }, [refreshData]);
     useEffect(() => {
         if (!data?.notes || !view.currentNote) return;
-        const refreshCurrentNote = (notes) => {
-            const replaceCurrentNote = notes.find(note => note._id === view.currentNote._id);
-            setView(prevView => ({ ...prevView, currentNote: replaceCurrentNote }));
-        }
-        refreshCurrentNote(data.notes);
+        // make sure currentNote is up to date after possible change
+        const updatedCurrentNote = data.notes.find(note => note._id === view.currentNote._id);
+        setView(prevView => ({ ...prevView, currentNote: updatedCurrentNote }));
     }, [data?.notes]);
+    useEffect(() => {
+        if (view.type !== 'collection') return;
+        // make sure current collection is up to date after possible change
+        const updatedCollection = data?.collections?.find(item => item._id === view.collection._id);
+        setView(prevView => ({ ...prevView, collection: updatedCollection }));
+    }, [data?.collections]);
+    useEffect(() => {
+        if (view.type !== 'tags') return;
+        // make sure current tags are up to date after possible change
+        // loop through view.tags, for each, get replaced tag info
+        const updatedTagList = (view) => {
+            const arrayWithPossibleNulls = view.tags.map(tag => {
+                return data?.tags?.find(item => item._id === tag._id);
+            });
+            const filteredArray = arrayWithPossibleNulls.filter(el => el != null);
+            return filteredArray;
+        }
+        setView(prevView => ({ ...prevView, tags: updatedTagList(prevView) }));
+    }, [data?.tags]);
     const utils = {
         updateModal: (content, type, options) => {
             setModal({
@@ -73,7 +91,6 @@ export const Dashboard = (props) => {
                 unsavedChanges: value
             }));
         },
-        warnUnsavedChanges: () => {},
         logout: async () => {
             await fetch(`/logout`);
             setIsLoaded(false);

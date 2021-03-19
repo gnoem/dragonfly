@@ -32,8 +32,8 @@ export const Note = mongoose.model(
 export const Collection = mongoose.model(
     'Collection',
     new Schema({
-        userId: String,
-        name: String,
+        userId: { type: String, required: true },
+        name: { type: String, required: true },
         order: Number,
         // passwordProtected: Boolean???????
     }),

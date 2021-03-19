@@ -44,7 +44,7 @@ const SortTagTitle = ({ tags, viewingTags }) => {
 }
 
 const SortTagGrid = (props) => {
-    const { view, tags } = props;
+    const { user, view, tags } = props;
     const toggleTag = (tag) => {
         const updatedArray = (prevView) => {
             const tagsArray = [...prevView.tags];
@@ -59,22 +59,28 @@ const SortTagGrid = (props) => {
         }));
     }
     const tagList = () => {
-        const createTag = () => props.updateModal('createTag', 'form');
+        const formOptions = {
+            _id: user._id,
+            onSuccess: props.refreshData
+        }
+        const createTag = () => props.updateModal('createTag', 'form', formOptions);
         const addNew = <Tag key="SortByTag-addNew" name="Add new" onClick={createTag} />;
         const list = tags.map(tag => {
+            const { _id, name } = tag;
             const selected = (() => {
-                const index = view.tags.findIndex(viewingTag => viewingTag._id === tag._id);
+                const index = view.tags.findIndex(viewingTag => viewingTag._id === _id);
                 return index !== -1;
             })();
-            const editTag = () => props.updateModal('editTag', 'form', { _id: tag._id, name: tag.name });
-            const deleteTag = () => props.updateModal('deleteTag', 'form', { _id: tag._id, name: tag.name });
+            const formOptions = { _id, name, onSuccess: props.refreshData }
+            const editTag = () => props.updateModal('editTag', 'form', formOptions);
+            const deleteTag = () => props.updateModal('deleteTag', 'form', formOptions);
             const tagContextMenu = {
                 menuItems: [{ label: 'Edit', onClick: editTag }, { label: 'Delete', onClick: deleteTag }]
             }
             return (
                 <Tag
-                    key={`SortByTag-${tag._id}`}
-                    name={tag.name}
+                    key={`SortByTag-${_id}`}
+                    name={name}
                     selected={selected}
                     onClick={() => toggleTag(tag)}
                     contextMenu={tagContextMenu} />

@@ -9,9 +9,9 @@ export const isObjectId = (id) => mongoose.Types.ObjectId.isValid(id) && (new mo
 export const FormError = (fieldName, errorMessage) => ({ [fieldName]: errorMessage });
 
 export class ServerError extends Error {
-    constructor(status, message) {
+    constructor(status, message, error) {
         super(status && message ? `Server error ${status}: ${message}` : 'Server error');
-        Object.assign(this, { status, message });
+        Object.assign(this, { status, message, error });
         this.name = 'ServerError';
     }
 }

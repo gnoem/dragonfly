@@ -71,12 +71,13 @@ const TrashMenuButton = (props) => {
             </div>
         </div>
     );
+    const formData = { _id: user._id, onSuccess: props.refreshData };
     const restoreAll = () => {
-        if (notes.length) props.updateModal('restoreTrash', 'form', { _id: user._id, onSuccess: props.refreshData });
+        if (notes.length) props.updateModal('restoreTrash', 'form', formData);
         else props.updateModal(trashIsEmpty('restore'));
     }
     const emptyTrash = () => {
-        if (notes.length) props.updateModal('emptyTrash', 'form', { _id: user._id, onSuccess: props.refreshData });
+        if (notes.length) props.updateModal('emptyTrash', 'form', formData);
         else props.updateModal(trashIsEmpty('delete'));
     }
     const menuItems = [{ label: 'Restore all', onClick: restoreAll }, { label: 'Empty Trash', onClick: emptyTrash }];
@@ -91,12 +92,12 @@ const TrashMenuButton = (props) => {
 const CollectionMenuButton = (props) => {
     const { _id, name } = props.collection;
     const [showingMenu, setShowingMenu] = useState(false);
-    const editCollection = () => {
-        props.updateModal('editCollection', 'form', { _id, name });
-    };
-    const deleteCollection = () => {
-        props.updateModal('deleteCollection', 'form', { _id, name });
-    };
+    const onSuccessDelete = () => {
+        props.refreshData();
+        props.updateView({ type: 'collections' });
+    }
+    const editCollection = () => props.updateModal('editCollection', 'form', { _id, name, onSuccess: props.refreshData });
+    const deleteCollection = () => props.updateModal('deleteCollection', 'form', { _id, name, onSuccess: onSuccessDelete });
     const menuItems = [{ label: 'Edit', onClick: editCollection }, { label: 'Delete', onClick: deleteCollection }]
     return (
         <ListHeaderButton>

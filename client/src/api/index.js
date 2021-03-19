@@ -1,4 +1,4 @@
-import { get, post, put, del } from "./fetchWrapper";
+import { post, put, del } from "./fetchWrapper";
 
 export const User = {
     createUser: async () => await post('/user'),
@@ -21,65 +21,13 @@ export const Note = {
 }
 
 export const Collection = {
-    createCollection: async (props, formData, callback) => {
-        const response = await fetch('/collection', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(formData)
-        });
-        const body = await response.json();
-        if (!body.success) throw body.error;
-        props.refreshData().then(callback);
-        return body.collection;
-    },
-    editCollection: async (props, _id, formData, callback) => {
-        const response = await fetch(`/collection/${_id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(formData)
-        });
-        const body = await response.json();
-        if (!body.success) throw body.error;
-        props.refreshData().then(callback);
-        return body.collection;
-    },
-    deleteCollection: async (props, _id, callback) => {
-        const response = await fetch(`/collection/${_id}`, { method: 'DELETE' });
-        const body = await response.json();
-        if (!body.success) throw body.error;
-        props.refreshData().then(callback);
-        return body.collection;
-    }
+    createCollection: async (formData) => await post(`/collection`, formData),
+    editCollection: async (_id, { userId, name }) => await put(`/collection/${_id}`, { userId, name }),
+    deleteCollection: async (_id) => await del(`/collection/${_id}`)
 }
 
 export const Tag = {
-    createTag: async (props, formData, callback) => {
-        const response = await fetch('/tag', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(formData)
-        });
-        const body = await response.json();
-        if (!body.success) throw body.error;
-        props.refreshData().then(callback);
-        return body.tag;
-    },
-    editTag: async (props, _id, formData, callback) => {
-        const response = await fetch(`/tag/${_id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(formData)
-        });
-        const body = await response.json();
-        if (!body.success) throw body.error;
-        props.refreshData().then(callback);
-        return body.tag;
-    },
-    deleteTag: async (props, _id, callback) => {
-        const response = await fetch(`/tag/${_id}`, { method: 'DELETE' });
-        const body = await response.json();
-        if (!body.success) throw body.error;
-        props.refreshData().then(callback);
-        return body.tag;
-    }
+    createTag: async (formData) => await post(`/tag`, formData),
+    editTag: async (_id, { userId, name }) => await put(`/tag/${_id}`, { userId, name }),
+    deleteTag: async (_id) => await del(`/tag/${_id}`)
 }

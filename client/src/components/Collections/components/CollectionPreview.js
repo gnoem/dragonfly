@@ -33,12 +33,9 @@ const CollectionPreviewContent = (props) => {
 const CollectionPreviewButton = (props) => {
     const { _id, name } = props;
     const [showMiniMenu, setShowMiniMenu] = useState(false);
-    const editCollection = () => {
-        props.updateModal('editCollection', 'form', { _id, name });
-    };
-    const deleteCollection = () => {
-        props.updateModal('deleteCollection', 'form', { _id, name });
-    };
+    const formData = { _id, name, onSuccess: props.refreshData };
+    const editCollection = () => props.updateModal('editCollection', 'form', formData);
+    const deleteCollection = () => props.updateModal('deleteCollection', 'form', formData);
     const menuItems = [{ label: 'Edit', onClick: editCollection }, { label: 'Delete', onClick: deleteCollection }];
     return (
         <div className="previewButton">

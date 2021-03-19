@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Form, Submit } from '../Form';
+import { Form, Input, Submit } from '../Form';
 import { Note, Collection, Tag } from '../../api';
 
 export const formStore = {
@@ -31,7 +31,7 @@ const WarnUnsavedChanges = (props) => {
 const TrashNote = (props) => {
     const { options } = props;
     const handleSuccess = () => {
-        options?.onSuccess();
+        options?.onSuccess?.();
         props.gracefullyCloseModal();
     }
     const handleSubmit = () => Note.trashNote(options?._id);
@@ -47,7 +47,7 @@ const TrashNote = (props) => {
 const DeleteNote = (props) => {
     const { options } = props;
     const handleSuccess = () => {
-        options?.onSuccess();
+        options?.onSuccess?.();
         props.gracefullyCloseModal();
     }
     const handleSubmit = () => Note.deleteNote(options?._id);
@@ -63,7 +63,7 @@ const DeleteNote = (props) => {
 const EmptyTrash = (props) => {
     const { options } = props;
     const handleSuccess = () => {
-        options?.onSuccess();
+        options?.onSuccess?.();
         props.gracefullyCloseModal();
     }
     const handleSubmit = () => Note.emptyTrash(options?._id);
@@ -79,7 +79,7 @@ const EmptyTrash = (props) => {
 const RestoreTrash = (props) => {
     const { options } = props;
     const handleSuccess = () => {
-        options?.onSuccess();
+        options?.onSuccess?.();
         props.gracefullyCloseModal();
     }
     const handleSubmit = () => Note.restoreTrash(options?._id);
@@ -99,49 +99,83 @@ const CreateCollection = (props) => {
     const updateFormData = (e) => {
         setFormData(prevState => ({ ...prevState, [e.target.name]: e.target.value }));
     }
-    const handleSubmit = (formData) => Collection.createCollection(props, formData, options?.callback);
+    const resetFormError = (e) => setFormError(prevState => {
+        if (!prevState?.[e.target.name]) return prevState;
+        const newState = {...prevState};
+        delete newState[e.target.name];
+        return newState;
+    });
+    const inputHint = (inputName) => {
+        if (formError?.[inputName]) return { type: 'error', message: formError[inputName] };
+    }
+    const handleSubmit = () => Collection.createCollection(formData);
+    const handleSuccess = () => {
+        options?.onSuccess?.();
+        props.gracefullyCloseModal();
+    }
+    const handleFormError = (errors) => setFormError({ ...errors });
     return (
-        <Form {...props} onSubmit={handleSubmit} onSuccess={props.gracefullyCloseModal}
+        <Form {...props} onSubmit={handleSubmit} onSuccess={handleSuccess} handleFormError={handleFormError}
               formData={formData}
               title="Create a new collection">
-            <label htmlFor="name">Enter a name for your collection:</label>
-            <input
+            <Input type="text"
                 name="name"
-                type="text"
-                className={formError?.name ? 'nope' : ''}
-                onChange={updateFormData} />
+                label="Enter a name for your collection:"
+                defaultValue={formData?.name}
+                onChange={updateFormData}
+                onInput={resetFormError}
+                hint={inputHint('name')} />
         </Form>
     );
 }
 
 const EditCollection = (props) => {
-    const { options } = props;
-    const [formData, setFormData] = useState({ name: options?.name });
+    const { options, user } = props;
+    const [formData, setFormData] = useState({ userId: user._id, name: options?.name });
     const [formError, setFormError] = useState({});
     const updateFormData = (e) => {
         setFormData(prevState => ({ ...prevState, [e.target.name]: e.target.value }));
     }
-    const handleSubmit = (formData) => Collection.editCollection(props, options?._id, formData, options?.callback);
+    const resetFormError = (e) => setFormError(prevState => {
+        if (!prevState?.[e.target.name]) return prevState;
+        const newState = {...prevState};
+        delete newState[e.target.name];
+        return newState;
+    });
+    const inputHint = (inputName) => {
+        if (formError?.[inputName]) return { type: 'error', message: formError[inputName] };
+    }
+    const handleSubmit = () => Collection.editCollection(options?._id, formData);
+    const handleSuccess = () => {
+        console.dir(options);
+        options?.onSuccess?.();
+        props.gracefullyCloseModal();
+    }
+    const handleFormError = (errors) => setFormError({ ...errors });
     return (
-        <Form {...props} onSubmit={handleSubmit} onSuccess={props.gracefullyCloseModal}
+        <Form {...props} onSubmit={handleSubmit} onSuccess={handleSuccess} handleFormError={handleFormError}
               formData={formData}
               title="Edit this collection">
-            <label htmlFor="name">Collection name:</label>
-            <input
+            <Input type="text"
                 name="name"
-                defaultValue={options?.name}
-                type="text"
-                className={formError?.name ? 'nope' : ''}
-                onChange={updateFormData} />
+                label="Collection name:"
+                defaultValue={formData?.name}
+                onChange={updateFormData}
+                onInput={resetFormError}
+                hint={inputHint('name')} />
         </Form>
     );
 }
 
 const DeleteCollection = (props) => {
     const { options } = props;
-    const handleSubmit = () => Collection.deleteCollection(props, options?._id, options?.callback);
+    const handleSubmit = () => Collection.deleteCollection(options?._id);
+    const handleSuccess = () => {
+        options?.onSuccess?.();
+        props.gracefullyCloseModal();
+    }
     return (
-        <Form {...props} onSubmit={handleSubmit} onSuccess={props.gracefullyCloseModal}
+        <Form {...props} onSubmit={handleSubmit} onSuccess={handleSuccess}
               title="Delete this collection"
               submit={<Submit value="Yes, I'm sure" />}>
             Are you sure you want to delete the collection <b>{options?.name}</b>? Doing so will not delete any of its contents, only the collection itself.
@@ -156,49 +190,82 @@ const CreateTag = (props) => {
     const updateFormData = (e) => {
         setFormData(prevState => ({ ...prevState, [e.target.name]: e.target.value }));
     }
-    const handleSubmit = (formData) => Tag.createTag(props, formData, options?.callback);
+    const resetFormError = (e) => setFormError(prevState => {
+        if (!prevState?.[e.target.name]) return prevState;
+        const newState = {...prevState};
+        delete newState[e.target.name];
+        return newState;
+    });
+    const inputHint = (inputName) => {
+        if (formError?.[inputName]) return { type: 'error', message: formError[inputName] };
+    }
+    const handleSubmit = () => Tag.createTag(formData);
+    const handleSuccess = () => {
+        options?.onSuccess?.();
+        props.gracefullyCloseModal();
+    }
+    const handleFormError = (errors) => setFormError({ ...errors });
     return (
-        <Form {...props} onSubmit={handleSubmit} onSuccess={props.gracefullyCloseModal}
+        <Form {...props} onSubmit={handleSubmit} onSuccess={handleSuccess} handleFormError={handleFormError}
               formData={formData}
               title="Create a new tag">
-            <label htmlFor="name">Enter a name for your tag:</label>
-            <input
+            <Input type="text"
                 name="name"
-                type="text"
-                className={formError?.name ? 'nope' : ''}
-                onChange={updateFormData} />
+                label="Enter a name for your tag:"
+                defaultValue={formData?.name}
+                onChange={updateFormData}
+                onInput={resetFormError}
+                hint={inputHint('name')} />
         </Form>
     );
 }
 
 const EditTag = (props) => {
-    const { options } = props;
-    const [formData, setFormData] = useState({ name: options?.name });
+    const { options, user } = props;
+    const [formData, setFormData] = useState({ userId: user._id, name: options?.name });
     const [formError, setFormError] = useState({});
     const updateFormData = (e) => {
         setFormData(prevState => ({ ...prevState, [e.target.name]: e.target.value }));
     }
-    const handleSubmit = (formData) => Tag.editTag(props, options?._id, formData, options?.callback);
+    const resetFormError = (e) => setFormError(prevState => {
+        if (!prevState?.[e.target.name]) return prevState;
+        const newState = {...prevState};
+        delete newState[e.target.name];
+        return newState;
+    });
+    const inputHint = (inputName) => {
+        if (formError?.[inputName]) return { type: 'error', message: formError[inputName] };
+    }
+    const handleSubmit = () => Tag.editTag(options?._id, formData);
+    const handleSuccess = () => {
+        options?.onSuccess?.();
+        props.gracefullyCloseModal();
+    }
+    const handleFormError = (errors) => setFormError({ ...errors });
     return (
-        <Form {...props} onSubmit={handleSubmit} onSuccess={props.gracefullyCloseModal}
+        <Form {...props} onSubmit={handleSubmit} onSuccess={handleSuccess} handleFormError={handleFormError}
               formData={formData}
               title="Edit this tag">
-            <label htmlFor="name">Tag name:</label>
-            <input
+            <Input type="text"
                 name="name"
-                defaultValue={options?.name}
-                type="text"
-                className={formError?.name ? 'nope' : ''}
-                onChange={updateFormData} />
+                label="Tag name:"
+                defaultValue={formData?.name}
+                onChange={updateFormData}
+                onInput={resetFormError}
+                hint={inputHint('name')} />
         </Form>
     );
 }
 
 const DeleteTag = (props) => {
     const { options } = props;
-    const handleSubmit = () => Tag.deleteTag(props, options?._id, options?.callback);
+    const handleSubmit = () => Tag.deleteTag(options?._id);
+    const handleSuccess = () => {
+        options?.onSuccess?.();
+        props.gracefullyCloseModal();
+    }
     return (
-        <Form {...props} onSubmit={handleSubmit} onSuccess={props.gracefullyCloseModal}
+        <Form {...props} onSubmit={handleSubmit} onSuccess={handleSuccess}
               title="Delete this tag"
               submit={<Submit value="Yes, I'm sure" />}>
             Are you sure you want to delete the tag <b>{options?.name}</b>? Doing so will not delete any notes with this tag, only the tag itself.

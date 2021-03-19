@@ -3,6 +3,7 @@ import Dropdown from '../Dropdown';
 import { elementHasParent } from '../../utils';
 import { Collection, Note } from '../../api';
 import { TagList, Tag } from '../Tags';
+import { handleError } from '../Form/handleError';
 
 export const Tooltip = (props) => {
     const { name, parent, tooltipWillOpen, defaultContent, overflow } = props;
@@ -55,10 +56,20 @@ const tooltipStore = {
 }
 
 const MoveNoteToCollection = (props) => {
-    const { user, currentNote, collections } = props;
-    const handleChange = (collectionId) => Note.moveNoteToCollection(currentNote._id, collectionId).then(props.refreshData);
+    const { user, currentNote, collections, updateModal } = props;
+    const handleChange = (collectionId) => {
+        Note.moveNoteToCollection(currentNote._id, collectionId)
+            .then(props.refreshData)
+            .catch(err => handleError(err, { updateModal }));
+    }
+    const onSuccess = ({ collection }) => {
+        props.refreshData();
+        handleChange(collection._id);
+    }
     const handleAddNew = (name) => {
-        Collection.createCollection(props, { userId: user._id, name }).then(collection => handleChange(collection._id));
+        Collection.createCollection({ userId: user._id, name })
+            .then(onSuccess)
+            .catch(err => handleError(err, { updateModal }));
     };
     const dropdown = {
         style: { minWidth: '9rem' },
@@ -87,7 +98,7 @@ const MoveNoteToCollection = (props) => {
 }
 
 const TagNote = (props) => {
-    const { currentNote, tags } = props;
+    const { user, currentNote, tags } = props;
     const [instantToggle, setInstantToggle] = useState([]);
     const addToInstantToggle = (tagId) => {
         const index = instantToggle.indexOf(tagId);
@@ -112,7 +123,8 @@ const TagNote = (props) => {
     }
     const tagList = () => {
         const createTag = () => {
-            props.updateModal('createTag', 'form', { callback: () => props.updateAdjustHeight(true) });
+            const onSuccess = () => props.refreshData().then(() => props.updateAdjustHeight(true));
+            props.updateModal('createTag', 'form', { _id: user._id, onSuccess });
         }
         const addNew = <Tag key="Tooltip-addNewTag" name="Add new" onClick={createTag} />;
         const list = tags.map(tag => {

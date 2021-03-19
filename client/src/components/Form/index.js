@@ -15,7 +15,8 @@ export const Form = (props) => {
         e.preventDefault();
         setTimeout(() => {
             setSuccessPending(true);
-            onSubmit(formData)
+            onSubmit(formData) // does formData even need to be here? should already be in the declaration for onSubmit
+            // maybe as a fallback
                 .then(() => setSuccess(true))
                 .then(() => setSuccess(false))
                 .catch(err => {

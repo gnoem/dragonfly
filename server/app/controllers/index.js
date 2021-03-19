@@ -246,79 +246,79 @@ class Controller {
         run().catch(({ status, message, error }) => res.status(status ?? 500).send({ message, error }));
     }
     createCollection = (req, res) => {
-        const { errors } = validationResult(req); // todo add collectionAlreadyExists to validation
-        if (errors.length) return res.send({ success: false, error: formErrorReport(errors) });
+        const { errors } = validationResult(req);
+        if (errors.length) return res.status(422).send({ error: formErrorReport(errors) });
         const { userId, name } = req.body;
         const run = async () => {
             const [collection, createCollectionError] = await handle(Collection.create({ userId, name }));
-            if (createCollectionError) throw new Error(`Error creating collection`);
-            res.status(200).send({ success: true, collection });
+            if (createCollectionError) throw new ServerError(500, `Error creating collection`, createCollectionError);
+            res.status(201).send({ collection });
         }
-        run().catch(err => res.send({ success: false, error: err.message }));
+        run().catch(({ status, message, error }) => res.status(status ?? 500).send({ message, error }));
     }
     editCollection = (req, res) => {
         const { errors } = validationResult(req);
-        if (errors.length) return res.send({ success: false, error: formErrorReport(errors) });
+        if (errors.length) return res.status(422).send({ error: formErrorReport(errors) });
         const { _id } = req.params;
         const { name } = req.body;
         const run = async () => {
             let [foundCollection, findCollectionError] = await handle(Collection.findOne({ _id }));
-            if (findCollectionError) throw new Error(`Error finding collection ${_id}`);
-            if (!foundCollection) throw new Error(`Collection ${_id} not found`);
+            if (findCollectionError) throw new ServerError(500, `Error finding collection`, findCollectionError);
+            if (!foundCollection) throw new ServerError(500, `Collection not found`);
             foundCollection = Object.assign(foundCollection, { name });
             const [collection, saveError] = await handle(foundCollection.save());
-            if (saveError) throw new Error(`Error saving collection ${_id}`);
-            res.status(200).send({ success: true, collection });
+            if (saveError) throw new ServerError(500, `Error saving collection`, saveError);
+            res.status(200).send({ collection });
         }
-        run().catch(err => res.send({ success: false, error: err.message }));
+        run().catch(({ status, message, error }) => res.status(status ?? 500).send({ message, error }));
     }
     deleteCollection = (req, res) => {
         const { _id } = req.params;
         const run = async () => {
             const [collection, findCollectionError] = await handle(Collection.findOne({ _id }));
-            if (findCollectionError) throw new Error(`Error finding collection ${_id}`);
-            if (!collection) throw new Error(`Collection ${_id} not found`);
+            if (findCollectionError) throw new ServerError(500, `Error finding collection`, findCollectionError);
+            if (!collection) throw new ServerError(500, `Collection not found`);
             const [notesInCollection, findNotesError] = await handle(Note.find({ collectionId: _id }));
-            if (findNotesError) throw new Error(`Error finding notes in this collection`);
+            if (findNotesError) throw new ServerError(500, `Error finding notes`, findNotesError);
             const removeCollectionFromNotes = notesInCollection.map(note => {
                 note.collectionId = null;
                 return note.save();
             });
-            const [success, error] = await handle(Promise.all([
+            const [_, error] = await handle(Promise.all([
                 collection.deleteOne(),
                 ...removeCollectionFromNotes
             ]));
-            if (error) throw new Error(`Error deleting this collection and associated notes`);
-            res.status(200).send({ success });
+            if (error) throw new ServerError(500, `Error deleting collection`, error);
+            res.status(204).end();
         }
-        run().catch(err => res.send({ success: false, error: err.message }));
+        run().catch(({ status, message, error }) => res.status(status ?? 500).send({ message, error }));
     }
     createTag = (req, res) => {
         const { errors } = validationResult(req);
-        if (errors.length) return res.send({ success: false, error: formErrorReport(errors) });
+        if (errors.length) return res.status(422).send({ error: formErrorReport(errors) });
         const { userId, name } = req.body;
         const run = async () => {
             const [tag, createTagError] = await handle(Tag.create({ userId, name }));
-            if (createTagError) throw new Error(`Error creating tag`);
-            res.status(200).send({ success: true, tag });
+            if (createTagError) throw new ServerError(500, `Error creating tag`, createTagError);
+            res.status(201).send({ tag });
         }
-        run().catch(err => res.send({ success: false, error: err.message }));
+        run().catch(({ status, message, error }) => res.status(status ?? 500).send({ message, error }));
     }
     editTag = (req, res) => {
         const { errors } = validationResult(req);
-        if (errors.length) return res.send({ success: false, error: formErrorReport(errors) });
+        if (errors.length) return res.status(422).send({ error: formErrorReport(errors) });
         const { _id } = req.params;
         const { name } = req.body;
         const run = async () => {
             let [foundTag, findTagError] = await handle(Tag.findOne({ _id }));
-            if (findTagError) throw new Error(`Error finding tag ${_id}`);
-            if (!foundTag) throw new Error(`Tag ${_id} not found`);
+            if (findTagError) throw new ServerError(500, `Error finding tag`, findTagError);
+            if (!foundTag) throw new ServerError(500, `Tag not found`);
             foundTag = Object.assign(foundTag, { name });
             const [tag, saveError] = await handle(foundTag.save());
-            if (saveError) throw new Error(`Error saving tag ${_id}`);
-            res.status(200).send({ success: true, tag });
+            if (saveError) throw new ServerError(500, `Error saving tag`, saveError);
+            res.status(200).send({ tag });
         }
-        run().catch(err => res.send({ success: false, error: err.message }));
+        run().catch(({ status, message, error }) => res.status(status ?? 500).send({ message, error }));
     }
     deleteTag = (req, res) => {
         const { _id } = req.params;
@@ -343,7 +343,7 @@ class Controller {
             if (error) throw new Error(`Error deleting this tag and associated notes`);
             res.status(200).send({ success: true, tag: success });
         }
-        run().catch(err => res.send({ success: false, error: err.message }));
+        run().catch(({ status, message, error }) => res.status(status ?? 500).send({ message, error }));
     }
 }
 

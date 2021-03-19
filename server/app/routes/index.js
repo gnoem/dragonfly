@@ -28,14 +28,14 @@ export default (app) => {
         .put(Controller.restoreTrash)
         .delete(Controller.emptyTrash);
     app.route('/tag')
-        .post(Controller.createTag);
+        .post(validate.tagName, Controller.createTag);
     app.route('/tag/:_id')
-        .put(Controller.editTag)
+        .put(validate.tagName, Controller.editTag)
         .delete(Controller.deleteTag);
     app.route('/collection')
-        .post(Controller.createCollection);
+        .post(validate.collectionName, Controller.createCollection);
     app.route('/collection/:_id')
-        .put(Controller.editCollection)
+        .put(validate.collectionName, Controller.editCollection)
         .delete(Controller.deleteCollection); /*
     //app.post('/logout/user', Controller.logoutUser);
     //app.post('/login/user', Controller.loginUser);

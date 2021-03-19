@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { Tooltip } from '../../Tooltip';
 import { Note } from '../../../api';
+import { handleError } from '../../Form/handleError';
 
 export const NoteOperations = (props) => {
     const { currentNote } = props;
@@ -39,7 +40,7 @@ const OptionItem = (props) => {
 }
 
 const StarNote = (props) => {
-    const { currentNote } = props;
+    const { currentNote, updateModal } = props;
     const [pulse, setPulse] = useState(false);
     const [instantToggle, setInstantToggle] = useState(null);
     const isStarred = (() => {
@@ -57,7 +58,13 @@ const StarNote = (props) => {
         setTimeout(() => setPulse(false), 500);
         setInstantToggle(true);
         const onSuccess = () => props.refreshData().then(() => setInstantToggle(false));
-        Note.starNote(currentNote._id).then(onSuccess);
+        const onError = (err) => {
+            setInstantToggle(false);
+            handleError(err, { updateModal });
+        }
+        Note.starNote(currentNote._id)
+            .then(onSuccess)
+            .catch(onError);
     }
     return (
         <OptionItem {...props}
@@ -78,7 +85,7 @@ const TrashNote = (props) => {
                 props.updateCurrentNote(null);
             }
         }
-        props.updateModal('trashNote', 'form', formOptions)
+        props.updateModal('trashNote', 'form', formOptions);
     }
     return (
         <OptionItem {...props}

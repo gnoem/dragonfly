@@ -11,14 +11,19 @@ export const CollectionsList = (props) => {
 }
 
 const CollectionsListHeader = (props) => {
-    const createNewCollection = () => props.updateModal('createCollection', 'form');
+    const { user } = props;
+    const formOptions = {
+        _id: user._id,
+        onSuccess: props.refreshData
+    }
+    const createNewCollection = () => props.updateModal('createCollection', 'form', formOptions);
     return (
         <ListHeader title="Collections">
             <button className="createNew" onClick={createNewCollection}>
                 <span className="tooltip">Create a new collection</span>
             </button>
         </ListHeader>
-    )
+    );
 }
 
 const CollectionsListContent = (props) => {

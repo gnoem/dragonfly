@@ -1,43 +1,27 @@
 import { check } from 'express-validator';
-import { User } from '../models/index.js';
+import { User, Collection, Tag } from '../models/index.js';
 
 export const validate = {
-    createCollection: [
-        check('collectionName')
-            .isLength({ min: 1, max: 25 }).withMessage('Collection name must be between 1 and 25 characters')
-    ],
-    editCollection: [
-        check('updatedName')
-            .isLength({ min: 1, max: 25 }).withMessage('Collection name must be between 1 and 25 characters')
-    ],
-    createTag: [
-        check('tagName')
-            .isLength({ min: 1, max: 25 }).withMessage('Tag name must be between 1 and 25 characters')
-    ],
-    editTag: [
-        check('updatedName')
-            .isLength({ min: 1, max: 25 }).withMessage('Tag name must be between 1 and 25 characters')
-    ],
     createAccount: [
         check('email')
             .not().isEmpty().withMessage('This field is required').bail()
             .isEmail().withMessage('Please enter a valid email address').bail()
+            .normalizeEmail()
             .custom(email => {
                 return User.findOne({ email }).then(user => {
                     if (user) return Promise.reject('Email address is already in use');
                 });
-            }).bail()
-            .normalizeEmail(),
+            }),
         check('username')
             .not().isEmpty().withMessage('This field is required').bail()
             .isAlphanumeric().withMessage('Username cannot contain any special characters').bail()
             .isLength({ min: 2, max: 50 }).withMessage('Username must be between 2 and 50 characters').bail()
+            .toLowerCase()
             .custom(username => {
                 return User.findOne({ username }).then(user => {
                     if (user) return Promise.reject('Username is taken');
                 });
-            }).bail()
-            .toLowerCase(),
+            }),
         check('password')
             .not().isEmpty().withMessage('This field is required').bail()
             .isLength({ min: 6 }).withMessage('Password must be at least 6 characters')
@@ -46,16 +30,47 @@ export const validate = {
         check('email')
             .not().isEmpty().withMessage('This field is required').bail()
             .isEmail().withMessage('Please enter a valid email address').bail()
-            .normalizeEmail(),
+            .normalizeEmail()
+            .custom((email, { req }) => {
+                return User.findOne({ email }).then(user => {
+                    if (user && (user._id.toString() !== req.params._id)) return Promise.reject('Email address is already in use');
+                });
+            }).bail(),
         check('username')
             .not().isEmpty().withMessage('This field is required').bail()
             .isAlphanumeric().withMessage('Username cannot contain any special characters').bail()
             .isLength({ min: 2, max: 50 }).withMessage('Username must be between 2 and 50 characters').bail()
-            .custom(username => {
-                return User.findOne({ username }).then(user => {
-                    if (user) return Promise.reject('Username is taken');
-                });
-            }).bail()
             .toLowerCase()
-    ]
+            .custom((username, { req }) => {
+                return User.findOne({ username }).then(user => {
+                    if (user && (user._id.toString() !== req.params._id)) return Promise.reject('Username is taken');
+                });
+            })
+    ],
+    collectionName: [
+        check('name')
+            .not().isEmpty().withMessage('This field is required').bail()
+            .isLength({ max: 25 }).withMessage('Limit 25 characters').bail()
+            .custom((name, { req }) => {
+                return Collection.findOne({ userId: req.body.userId, name: name }).then(collection => {
+                    if (!collection) return;
+                    const creatingCollection = !req.params?._id;
+                    if (!creatingCollection && (collection._id.toString() === req.params._id)) return;
+                    return Promise.reject('Collection already exists');
+                });
+            })
+    ],
+    tagName: [
+        check('name')
+            .not().isEmpty().withMessage('This field is required').bail()
+            .isLength({ max: 25 }).withMessage('Limit 25 characters').bail()
+            .custom((name, { req }) => {
+                return Tag.findOne({ userId: req.body.userId, name: name }).then(tag => {
+                    if (!tag) return;
+                    const creatingTag = !req.params?._id;
+                    if (!creatingTag && (tag._id.toString() === req.params._id)) return;
+                    return Promise.reject('Tag already exists');
+                });
+            })
+    ],
 }

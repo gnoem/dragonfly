@@ -40,7 +40,7 @@ const AccountDetails = (props) => {
         props.refreshData();
     }
     const handleSubmit = () => User.editAccount(user._id, formData).then(onSuccess);
-    const handleFormError = (errorObject) => setFormError({ ...errorObject });
+    const handleFormError = (errors) => setFormError({ ...errors });
     const inputHint = (inputName) => {
         if (formError?.[inputName]) return { type: 'error', message: formError[inputName] };
     }
@@ -88,7 +88,7 @@ const EditPassword = (props) => {
     const [formReset, setFormReset] = useState(false);
     const [formData, setFormData] = useState({});
     const onSuccess = () => setTimeout(handleCancel, 1000);
-    const handleSubmit = () => User.changePassword(user._id, formData).then(onSuccess);
+    const handleSubmit = () => User.changePassword(user._id, formData);
     const updateFormData = (e) => {
         if (formReset) setFormReset(false);
         setFormData(prevState => ({ ...prevState, [e.target.name]: e.target.value }));
@@ -102,7 +102,7 @@ const EditPassword = (props) => {
         setFormReset(true);
     }
     return (
-        <Form {...props} onSubmit={handleSubmit} handleFormError={handleCancel}
+        <Form {...props} onSubmit={handleSubmit} onSuccess={onSuccess} handleFormError={handleCancel}
               reset={formReset}
               formData={formData}
               title="Change password"
@@ -124,11 +124,10 @@ const EditPassword = (props) => {
 const DeleteAccount = (props) => {
     const { user } = props;
     const onSuccess = () => window.location.assign('/');
-    const handleDelete = () => User.deleteAccount(user._id).then(onSuccess);
-    const handleFormError = (error) => props.updateModal(error, 'error');
+    const handleDelete = () => User.deleteAccount(user._id);
     const confirmDeleteAccount = () => {
         const content = (
-            <Form {...props} onSubmit={handleDelete} handleFormError={handleFormError}
+            <Form {...props} onSubmit={handleDelete} onSuccess={onSuccess}
                   title="Are you sure?"
                   submit={<Submit buttonClass="caution" value="Yes, I'm sure" cancel={props.gracefullyCloseModal} />}>
                 If you proceed, any notes, settings, and other data associated with this account will be irrevocably lost. There is no going back from this!
