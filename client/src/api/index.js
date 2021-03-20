@@ -1,6 +1,8 @@
-import { post, put, del } from "./fetchWrapper";
+import { get, post, put, del } from "./fetchWrapper";
 
 export const User = {
+    auth: async (identifier) => await get(`/auth/${identifier}`),
+    getData: async (_id) => await get(`/user/${_id}/data`),
     createUser: async () => await post('/user'),
     createAccount: async (_id, formData) => await post(`/user/${_id}`, formData),
     editAccount: async (_id, formData) => await put(`/user/${_id}`, formData),

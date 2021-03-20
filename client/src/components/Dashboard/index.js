@@ -5,6 +5,8 @@ import Menu from '../Menu';
 import Sidebar from '../Sidebar';
 import Loading from '../Loading';
 import { Main } from '../Main';
+import { handleError } from '../Form/handleError';
+import { User } from '../../api';
 
 export const Dashboard = (props) => {
     const { id: identifier } = props.match.params;
@@ -21,23 +23,19 @@ export const Dashboard = (props) => {
     const isMobile = window.innerWidth < 900;
     const userId = useRef(null);
     useEffect(() => {
-        const auth = async () => {
-            const response = await fetch(`/auth/${identifier}`);
-            const body = await response.json();
-            if (body.username) return window.location.assign(`/d/${body.username}`); // todo without reload
-            setAccessToken(body.success);
-            userId.current = body._id;
-        }
-        auth();
+        User.auth(identifier).then(({ _id, token, username }) => {
+            if (username) return window.location.assign(`/d/${username}`); // todo without reload
+            setAccessToken(token);
+            userId.current = _id;
+        })/* .catch(err => handleError(err, { updateModal: setModal })) */;
     }, []);
-    const refreshData = useCallback(async () => {
-        if (!accessToken || !userId.current) return null;
-        const response = await fetch(`/user/${userId.current}/data`);
-        const body = await response.json();
-        if (!body.success) return console.dir(body.error);
-        setData(body.data);
-        setIsLoaded(true);
-        return body.data;
+    const refreshData = useCallback(async (_, callback) => {
+        User.getData(userId.current).then(({ data }) => {
+            setData(data);
+            callback?.();
+            setIsLoaded(true);
+            return data;
+        })/* .catch(err => handleError(err, { updateModal: setModal })) */;
     }, [identifier, accessToken]);
     useEffect(() => {
         if (accessToken) return refreshData();

@@ -15,21 +15,21 @@ class Controller {
             if (isObjectId(identifier)) {
                 const [user, findUserError] = await handle(User.findOne({ _id: identifier }));
                 // (just because it's a valid objectID doesn't mean it's a dragonfly user)
-                if (findUserError) throw new Error(`Error finding user ${identifier}`);
-                if (!user) throw new Error(`User ${identifier} not found`);
-                if (user.username) return res.send({ _id: user._id, username: user.username });
-                return res.status(200).send({ success: true, _id: identifier }); // not password protected
+                if (findUserError) throw new ServerError(500, `Error finding user`, findUserError);
+                if (!user) throw new ServerError(500, `User ${identifier} not found`);
+                if (user.username) return res.status(307).send({ _id: user._id, username: user.username });
+                return res.status(200).send({ token: true, _id: identifier }); // not password protected
             }
             // if not, then identifier is a username
             const [protectedUser, findProtectedUserError] = await handle(User.findOne({ username: identifier }));
-            if (findProtectedUserError) throw new Error(`Error finding user ${identifier}`);
-            if (!protectedUser) throw new Error(`User ${identifier} not found`); // and delete cookie? todo figure out
-            if (!accessToken) return res.send({ success: false, accessToken: false, _id: protectedUser._id });
+            if (findProtectedUserError) throw new ServerError(500, `Error finding user`, findProtectedUserError);
+            if (!protectedUser) throw new ServerError(500, `User not found`); // and delete cookie? todo figure out
+            if (!accessToken) return res.status(401).send({ token: false, _id: protectedUser._id });
             const decoded = jwt.verify(accessToken, secretKey);
-            if (protectedUser._id.toString() !== decoded.id) return res.send({ success: false, _id: protectedUser._id });
-            res.status(200).send({ success: true, _id: protectedUser._id });
+            if (protectedUser._id.toString() !== decoded.id) return res.status(401).send({ token: false, _id: protectedUser._id });
+            res.status(200).send({ token: true, _id: protectedUser._id });
         }
-        run().catch(err => res.send({ success: false, error: err.message }));
+        run().catch(({ status, message, error }) => res.status(status ?? 500).send({ message, error }));
     }
     login = (req, res) => {
         const { username } = req.params;
@@ -54,20 +54,20 @@ class Controller {
         const { _id } = req.params;
         const run = async () => {
             const [user, findUserError] = await handle(User.findOne({ _id }));
-            if (findUserError) throw new Error(`Error finding user ${_id}`);
-            if (!user) throw new Error(`User ${_id} not found`);
+            if (findUserError) throw new ServerError(500, `Error finding user`, findUserError);
+            if (!user) throw new ServerError(500, `User ${_id} not found`);
             const userId = _id;
             const [foundData, findDataError] = await handle(Promise.all([
                 Note.find({ userId }).lean().sort({ lastModified: 'desc' }),
                 Collection.find({ userId }),
                 Tag.find({ userId })
             ]));
-            if (findDataError) throw new Error(`Error retrieving data from user ${_id}`);
+            if (findDataError) throw new ServerError(500, `Error retrieving data`, findDataError);
             const [foundNotes, collections, tags] = foundData;
             const notes = foundNotes.map(note => Object.assign(note, { content: JSON.parse(note.content) }));
-            res.status(200).send({ success: true, data: { user, notes, collections, tags } });
+            res.status(200).send({ data: { user, notes, collections, tags } });
         }
-        run().catch(err => res.send({ success: false, error: err.message }));
+        run().catch(({ status, message, error }) => res.status(status ?? 500).send({ message, error }));
     }
     createUser = (req, res) => {
         const run = async () => {

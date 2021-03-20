@@ -118,7 +118,7 @@ const TagNote = (props) => {
     }
     const tagNote = (tagId) => {
         const index = addToInstantToggle(tagId);
-        const onSuccess = () => props.refreshData().then(() => removeFromInstantToggle(index));
+        const onSuccess = () => props.refreshData(null, () => removeFromInstantToggle(index));
         Note.tagNote(currentNote._id, tagId).then(onSuccess);
     }
     const tagList = () => {

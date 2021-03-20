@@ -37,7 +37,7 @@ class UnknownError extends Error {
 }
 
 export const handleError = async (res) => {
-    if (res.ok) return res;
+    if (res.ok || res.status === 401 || res.status === 307) return res; // 401 = unauthorized, 307 = redirect
     const { message, error } = await handleResponse(res);
     switch (res.status) {
         case 422: throw new ValidationError({ error });

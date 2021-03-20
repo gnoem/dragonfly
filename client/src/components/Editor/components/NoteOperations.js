@@ -57,7 +57,7 @@ const StarNote = (props) => {
         setPulse(true);
         setTimeout(() => setPulse(false), 500);
         setInstantToggle(true);
-        const onSuccess = () => props.refreshData().then(() => setInstantToggle(false));
+        const onSuccess = () => props.refreshData(null, () => setInstantToggle(false));
         const onError = (err) => {
             setInstantToggle(false);
             handleError(err, { updateModal });
