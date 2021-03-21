@@ -16,14 +16,14 @@ class Controller {
                 const [user, findUserError] = await handle(User.findOne({ _id: identifier }));
                 // (just because it's a valid objectID doesn't mean it's a dragonfly user)
                 if (findUserError) throw new ServerError(500, `Error finding user`, findUserError);
-                if (!user) throw new ServerError(500, `User ${identifier} not found`);
+                if (!user) throw new ServerError(404, `User not found`);
                 if (user.username) return res.status(307).send({ _id: user._id, username: user.username });
                 return res.status(200).send({ token: true, _id: identifier }); // not password protected
             }
             // if not, then identifier is a username
             const [protectedUser, findProtectedUserError] = await handle(User.findOne({ username: identifier }));
             if (findProtectedUserError) throw new ServerError(500, `Error finding user`, findProtectedUserError);
-            if (!protectedUser) throw new ServerError(500, `User not found`); // and delete cookie? todo figure out
+            if (!protectedUser) throw new ServerError(404, `User not found`); // and delete cookie? todo figure out
             if (!accessToken) return res.status(401).send({ token: false, _id: protectedUser._id });
             const decoded = jwt.verify(accessToken, secretKey);
             if (protectedUser._id.toString() !== decoded.id) return res.status(401).send({ token: false, _id: protectedUser._id });
@@ -36,15 +36,15 @@ class Controller {
         const { password } = req.body;
         const run = async () => {
             const [user, findUserError] = await handle(User.findOne({ username }));
-            if (findUserError) throw new Error(`Error finding user ${username}`);
-            if (!user) throw new Error(`User ${username} not found`);
+            if (findUserError) throw new ServerError(500, `Error finding user`, findUserError);
+            if (!user) throw new ServerError(500, `User not found`);
             const passwordIsValid = bcrypt.compareSync(password, user.password);
-            if (!passwordIsValid) throw new Error(`Invalid password`);
+            if (!passwordIsValid) return res.status(422).send({ error: { password: 'Invalid password' } });
             const accessToken = jwt.sign({ id: user._id }, secretKey, { expiresIn: 86400 }); // 24 hours
             res.cookie('auth', accessToken, { httpOnly: true, secure: false, maxAge: 3600000 });
-            res.status(200).send({ success: true, accessToken });
+            res.status(200).send({ accessToken });
         }
-        run().catch(err => res.send({ success: false, error: err.message }));
+        run().catch(({ status, message, error }) => res.status(status ?? 500).send({ message, error }));
     }
     logout = (req, res) => {
         res.clearCookie('auth');

@@ -11,6 +11,7 @@ import { User } from '../../api';
 export const Dashboard = (props) => {
     const { id: identifier } = props.match.params;
     const [accessToken, setAccessToken] = useState(null);
+    const [loginWarning, setLoginWarning] = useState(null);
     const [view, setView] = useState({ type: 'all-notes' });
     const [data, setData] = useState(null);
     const [modal, setModal] = useState(null);
@@ -23,11 +24,24 @@ export const Dashboard = (props) => {
     const isMobile = window.innerWidth < 900;
     const userId = useRef(null);
     useEffect(() => {
-        User.auth(identifier).then(({ _id, token, username }) => {
-            if (username) return window.location.assign(`/d/${username}`); // todo without reload
+        const handleAuthError = (err) => {
+            setAccessToken(false);
+            if (err.status === 404) {
+                setLoginWarning('User not found');
+                return;
+            }
+            handleError(err, { updateModal: utils.updateModal });
+        }
+        const auth = (customId) => User.auth(customId ?? identifier).then(({ _id, token, username }) => {
+            if (username) {
+                window.history.pushState('', '', `/d/${username}`);
+                auth(username);
+                return;
+            }
             setAccessToken(token);
             userId.current = _id;
-        })/* .catch(err => handleError(err, { updateModal: setModal })) */;
+        }).catch(handleAuthError);
+        auth();
     }, []);
     const refreshData = useCallback(async (_, callback) => {
         User.getData(userId.current).then(({ data }) => {
@@ -68,6 +82,7 @@ export const Dashboard = (props) => {
     }, [data?.tags]);
     const utils = {
         updateModal: (content, type, options) => {
+            console.dir('gettingc alled parently')
             setModal({
                 content,
                 type: type ?? 'normal',
@@ -109,7 +124,15 @@ export const Dashboard = (props) => {
         data, refreshData,
         ...utils
     }
-    if (accessToken === false) return <Login username={identifier} updateAccessToken={setAccessToken} />;
+    if (accessToken === false) return (
+        <div className="Login">
+            {modal
+                ? <Modal {...inherit} {...modal} setModal={setModal} exit={utils.gracefullyCloseModal} />
+                : <Login username={identifier}
+                    loginWarning={loginWarning}
+                    updateAccessToken={setAccessToken} />}
+        </div>
+    );
     if (!isLoaded) return <Loading />;
     return (
         <div className="Dashboard" data-mobile={isMobile}>

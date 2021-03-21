@@ -9,7 +9,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "server": "node ./server/server.js",
     "client": "npm start --prefix ./client",
-    "devserver": "nodemon ./server/server.js",
+    "devserver": "nodemon ./server/server.js --ignore './client/'",
     "dev": "concurrently --kill-others-on-fail \"npm run devserver\" \"npm run client\""
   },
   "author": "",

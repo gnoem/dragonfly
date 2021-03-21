@@ -6,6 +6,14 @@ export class FetchError extends Error {
     }
 }
 
+class ClientError extends Error {
+    constructor({ status, message }) {
+        super(`Client error ${status}: ${message}`);
+        Object.assign(this, { status, message });
+        this.name = 'ClientError';
+    }
+}
+
 class ValidationError extends Error {
     constructor(meta = {}) {
         const errorDescription = "Everything's working on our end, but it looks like you entered an invalid form value and you need to change it before you try to resubmit. Well, not EVERYTHING is working on our end because to tell you the truth, you shouldn't even be seeing this message, there's supposed to be like a detailed error report where the bad input field lights up red and then you can hover over the little error alert icon to see what the problem was and how to fix it. (Probably it's just a minimum/maximum character length thing, or maybe you left a required input empty or something like that.) But yeah, you shouldn't be seeing this message and if you are, I would SO appreciate it if you would contact me so I can fix this. Crazy how I can spend hours and hours trying to program my app to handle errors gracefully and deliver meaningful, descriptive error reports and then this shit happens!!"
@@ -40,6 +48,7 @@ export const handleError = async (res) => {
     if (res.ok || res.status === 401 || res.status === 307) return res; // 401 = unauthorized, 307 = redirect
     const { message, error } = await handleResponse(res);
     switch (res.status) {
+        case 404: throw new ClientError({ status: res.status, message });
         case 422: throw new ValidationError({ error });
         case 500: throw new ServerError({ status: res.status, message, error });
         default: throw new UnknownError();

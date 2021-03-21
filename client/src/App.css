@@ -454,6 +454,9 @@ button .Loading svg * {
     font-weight: normal;
     margin-bottom: 1rem;
 }
+h1.display.button {
+    cursor: pointer;
+}
 .Home button {
     background: var(--dark-gradient);
 }
@@ -1716,6 +1719,7 @@ button.hasCollection:hover::before {
     color: #000;
     opacity: 0;
     transition: 0.2s;
+    text-align: left;
 }
 .modalContainer {
     display: grid;
@@ -1943,8 +1947,6 @@ span.urlpreview {
     height: 80%;
     display: grid;
     place-items: center;
-}
-.Login > form {
     text-align: center;
 }
 .Login h1 {
@@ -1956,6 +1958,12 @@ span.urlpreview {
     margin-bottom: 1rem;
 }
 .Login .giantIcon {
+    font-size: 3rem;
+    display: block;
+    color: #aaa;
+    margin: 2rem auto;
+}
+.Login .fa-lock {
     font-size: 1.5rem;
     color: #aaa;
     margin-right: 0.5rem;
@@ -1963,10 +1971,12 @@ span.urlpreview {
 .Login .passwordProtected p {
     margin: 0;
 }
-.Login form input[type=password] {
+.Login form .Input {
     width: 300px;
-    max-width: 100%;
-    margin: 0.4rem auto 0;
+    margin: 0 auto;
+}
+.Login form input[type=password] {
+    margin-top: 0.4rem;
 }
 .hasStar, .Dashboard .Options button.hasStar {
     color: rgb(247, 189, 0);
