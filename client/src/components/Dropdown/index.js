@@ -71,9 +71,10 @@ export const Dropdown = (props) => {
     );
 }
 
-function AddNew(props) {
+const AddNew = (props) => {
     const { addingNew } = props;
     const [inputValue, setInputValue] = useState(null);
+    const [inputError, setInputError] = useState(null);
     const inputRef = useRef(null);
     useEffect(() => {
         if (!addingNew) return setInputValue(null);
@@ -82,10 +83,13 @@ function AddNew(props) {
             if (e.key === 'Escape') return props.updateAddingNew(false);
             if (e.key === 'Enter') {
                 e.preventDefault();
-                props.addNew(inputRef.current.value);
-                props.updateDisplay(inputRef.current.value);
-                props.updateIsOpen(false);
-                return;
+                props.addNew(inputRef.current.value)
+                    .then(result => {
+                        props.updateDisplay(result);
+                        props.updateIsOpen(false);
+                        setInputError(null);
+                    })
+                    .catch(setInputError);
             }
         }
         window.addEventListener('keydown', handleKeydown);
@@ -100,8 +104,11 @@ function AddNew(props) {
                             type="text"
                             defaultValue={inputValue}
                             onChange={(e) => setInputValue(e.target.value)}
+                            onInput={() => setInputError(null)}
                         />
-                        <span className="inputHint">Press Enter to submit, Esc to cancel.</span>
+                        {inputError
+                            ? <span className="inputHint error">{inputError}</span>
+                            : <span className="inputHint">Press Enter to submit, Esc to cancel.</span>}
                     </button>
                 :   <button type="button" className="addNew" onClick={() => props.updateAddingNew(true)}>
                         {props.buttonContent || 'Add new...'}

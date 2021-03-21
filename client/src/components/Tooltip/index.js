@@ -63,14 +63,20 @@ const MoveNoteToCollection = (props) => {
             .then(props.refreshData)
             .catch(err => handleError(err, { updateModal }));
     }
-    const onSuccess = ({ collection }) => {
-        props.refreshData();
-        handleChange(collection._id);
-    }
-    const handleAddNew = (name) => {
-        Collection.createCollection({ userId: user._id, name })
-            .then(onSuccess)
-            .catch(err => handleError(err, { updateModal }));
+    const handleAddNew = async (name) => {
+        const onSuccess = ({ collection }) => {
+            props.refreshData();
+            handleChange(collection._id);
+            return collection.name;
+        }
+        return Collection.createCollection({ userId: user._id, name })
+                .then(onSuccess)
+                .catch(err => {
+                    const { error } = err;
+                    const handleFormError = error ? () => {} : null; // if form/validation error is undefined, should trigger updateModal fallback
+                    handleError(err, { handleFormError, updateModal });
+                    throw error.name; // ('name' is referring to collectionName input in error object, e.g. { error: { name: 'this field is required' } })
+                });
     };
     const dropdown = {
         style: { minWidth: '9rem' },

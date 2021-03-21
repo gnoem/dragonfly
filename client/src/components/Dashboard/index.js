@@ -107,7 +107,7 @@ export const Dashboard = (props) => {
             await fetch(`/logout`).then(() => {
                 setIsLoaded(false);
                 setTimeout(() => window.location.assign(window.location.href), 500);
-            }).catch(handleError);
+            }).catch(err => handleError(err, { updateModal: utils.updateModal }));
         }
     }
     const inherit = {

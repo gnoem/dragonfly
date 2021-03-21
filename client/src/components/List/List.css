@@ -91,6 +91,15 @@
 .ListHeader span.collectionHeader > span + span {
     font-size: 1.5rem;
 }
+.ListHeaderButton {
+    grid-area: button;
+    position: relative;
+}
+.ListHeaderButton .MiniMenu {
+    right: calc(100% + 0.5rem);
+    top: 0;
+    z-index: 200;
+}
 .ListContent {
     overflow: auto;
     /* animation: 0.2s slideup 1; // todo */
@@ -105,63 +114,6 @@
 }
 .ListContent::-webkit-scrollbar-thumb {
 	background-color: rgba(0, 0, 0, 0.2);
-}
-.ListItem {
-    width: 400px;
-    border-left: 2px solid #C6CBC9;
-    transition: 0.2s;
-}
-.ListItem.grid {
-    display: grid;
-    align-items: center;
-    grid-template: auto auto / 1fr auto;
-    grid-template-areas:
-        'content button'
-        'content button';
-}
-.ListItem > div:first-of-type {
-    padding-bottom: 1rem;
-    padding-left: 2rem;
-}
-.ListHeaderButton,
-.ListItem > div.previewButton {
-    grid-area: button;
-    position: relative;
-}
-.ListHeaderButton .MiniMenu,
-.ListItem > div.previewButton .MiniMenu {
-    right: calc(100% + 0.5rem);
-    top: 0;
-    z-index: 200;
-}
-.ListItem:only-of-type > div:first-of-type {
-    padding: 1rem 0 1rem 2rem;
-}
-.ListItem + .ListItem > div:first-of-type {
-    padding-top: 1rem;
-}
-.ListItem:hover {
-    cursor: pointer;
-    border-left-color: #666;
-}
-.ListItem h2 {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 0.5rem;
-    font-size: 1rem;
-    text-transform: uppercase;
-    margin-bottom: 0.5rem;
-}
-.ListItem span.meta {
-    display: block;
-    font-size: 0.8rem;
-    margin-top: 0.5rem;
-    opacity: 0.7;
-}
-.ListItem .hasStar {
-    color: #52d19e;
-    font-size: 0.8rem;
 }
 .ListFooter {
     padding: 2rem 0 1rem;
