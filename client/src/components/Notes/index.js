@@ -1,22 +1,16 @@
-import { Editor } from '../Editor';
-import { NoteList } from './components/NoteList';
+import { Editor } from "../Editor";
+import { NoteList } from "./NoteList";
+import { GiantCornerButton } from "../Page";
 
 export const Notes = (props) => {
     const { view, currentNote } = props;
+    const back = () => props.updateView({ type: 'collections' });
     return (
         <>
-            {view.type === 'collection' && <GiantBackButton {...props} />}
+            {(view.type === 'collection' && !currentNote)
+                && <GiantCornerButton className="back" onClick={back} />}
             <NoteList {...props} />
             {currentNote && <Editor {...props} />}
         </>
     );
-}
-
-const GiantBackButton = (props) => {
-    const { currentNote } = props;
-    const back = () => {
-        props.updateView({ type: 'collections' });
-    }
-    if (currentNote) return null;
-    return <button className="giantCornerButton back" onClick={back}></button>;
 }

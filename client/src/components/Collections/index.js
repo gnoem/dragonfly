@@ -1,3 +1,3 @@
-import { CollectionsList } from './components/CollectionsList';
+import { CollectionsList } from "./CollectionsList";
 
 export const Collections = (props) => <CollectionsList {...props} />;

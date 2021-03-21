@@ -1,12 +1,12 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { Login } from '../Login';
-import { Modal } from '../Modal';
-import Menu from '../Menu';
-import Sidebar from '../Sidebar';
-import Loading from '../Loading';
-import { Main } from '../Main';
-import { handleError } from '../Form/handleError';
-import { User } from '../../api';
+import "./Dashboard.css";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { handleError } from "../../services";
+import { User } from "../../api";
+import { Loading } from "../Loading";
+import { Modal } from "../Modal";
+import { Login } from "../Login";
+import { Sidebar } from "../Sidebar";
+import { Main } from "../Main";
 
 export const Dashboard = (props) => {
     const { id: identifier } = props.match.params;
@@ -82,7 +82,6 @@ export const Dashboard = (props) => {
     }, [data?.tags]);
     const utils = {
         updateModal: (content, type, options) => {
-            console.dir('gettingc alled parently')
             setModal({
                 content,
                 type: type ?? 'normal',
@@ -105,14 +104,14 @@ export const Dashboard = (props) => {
             }));
         },
         logout: async () => {
-            await fetch(`/logout`);
-            setIsLoaded(false);
-            setTimeout(() => {
-                window.location.assign(window.location.href);
-            }, 500);
+            await fetch(`/logout`).then(() => {
+                setIsLoaded(false);
+                setTimeout(() => window.location.assign(window.location.href), 500);
+            }).catch(handleError);
         }
     }
     const inherit = {
+        isMobile,
         modal, updateModal: setModal,
         view, updateView: setView,
         user: data?.user,
@@ -124,10 +123,11 @@ export const Dashboard = (props) => {
         data, refreshData,
         ...utils
     }
+    const modalComponent = <Modal {...inherit} {...modal} setModal={setModal} exit={utils.gracefullyCloseModal} />;
     if (accessToken === false) return (
         <div className="Login">
             {modal
-                ? <Modal {...inherit} {...modal} setModal={setModal} exit={utils.gracefullyCloseModal} />
+                ? modalComponent
                 : <Login username={identifier}
                     loginWarning={loginWarning}
                     updateAccessToken={setAccessToken} />}
@@ -136,10 +136,8 @@ export const Dashboard = (props) => {
     if (!isLoaded) return <Loading />;
     return (
         <div className="Dashboard" data-mobile={isMobile}>
-            {modal && <Modal {...inherit} {...modal} setModal={setModal} exit={utils.gracefullyCloseModal} />}
-            {isMobile
-                ? ((view.type !== 'note') && <Menu {...inherit} />)
-                : <Sidebar {...inherit} />}
+            {modal && modalComponent}
+            <Sidebar {...inherit} />
             <Main {...inherit} contentType={contentType} />
         </div>
     );

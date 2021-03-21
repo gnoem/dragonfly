@@ -1,3 +1,5 @@
+import "./Nav.css";
+
 export const Nav = (props) => {
     return (
         <div className="Nav">

@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
-import { elementHasParent } from '../../utils';
+import "./Dropdown.css";
+import { useEffect, useRef, useState } from "react";
+import { elementHasParent } from "../../utils";
 
-export default function Dropdown(props) {
+export const Dropdown = (props) => {
     const { defaultValue, listItems, restoreDefault } = props;
     const [display, setDisplay] = useState(() => {
         if (!listItems || !listItems.length) return 'Add new...';

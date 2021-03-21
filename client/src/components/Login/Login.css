@@ -1,0 +1,39 @@
+.Login {
+    width: 100%;
+    height: 80%;
+    display: grid;
+    place-items: center;
+    text-align: center;
+}
+.Login h1 {
+    font-size: 5rem;
+}
+.Login .passwordProtected {
+    display: inline-flex;
+    place-items: center;
+    margin-bottom: 1rem;
+}
+.Login .giantIcon {
+    font-size: 3rem;
+    display: block;
+    color: #aaa;
+    margin: 2rem auto;
+}
+.Login .fa-lock {
+    font-size: 1.5rem;
+    color: #aaa;
+    margin-right: 0.5rem;
+}
+.Login .passwordProtected p {
+    margin: 0;
+}
+.Login .Input {
+    width: 300px;
+    margin: 0 auto;
+}
+.Login input[type=password] {
+    margin-top: 0.4rem;
+}
+.Login .Checkbox label {
+    font-size: 0.9rem;
+}

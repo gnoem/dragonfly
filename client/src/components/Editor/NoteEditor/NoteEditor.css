@@ -1,0 +1,60 @@
+.DraftEditor-root {
+    z-index: 0;
+}
+.NoteEditor {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-rows: auto auto 1fr;
+    animation: slidedown 0.2s 1;
+}
+.NoteEditor input[type=text] {
+    margin-bottom: 1rem;
+    padding: 0;
+    border: 0;
+    background: 0;
+    font-size: 1.5rem;
+    font-weight: 500;
+}
+.NoteEditor .saveChanges {
+    text-align: right;
+    padding-right: 3rem;
+    animation: slideup 0.2s 1;
+}
+.NoteEditor .saveChanges button {
+    background: var(--deep-gradient);
+    display: inline-block;
+}
+.NoteBody {
+    width: 100%;
+}
+.NoteBody blockquote {
+    margin: 0;
+    margin-top: 1rem;
+}
+.NoteBody blockquote + div {
+    margin-top: 1rem;
+}
+.NoteBody blockquote + blockquote {
+    margin-top: 0;
+}
+.NoteBody .align-left, .NoteBody .align-left * {
+    text-align: left;
+}
+.NoteBody .align-center, .NoteBody .align-center * {
+    text-align: center;
+}
+.NoteBody .align-right, .NoteBody .align-right * {
+    text-align: right;
+}
+.NoteBody .align-justify, .NoteBody .align-justify * {
+    text-align: justify;
+}
+@media screen and (max-width: 900px) {
+    .NoteEditor input[type=text] {
+        margin: 0 1.5rem;
+    }
+    .NoteBody {
+        padding: 1.5rem 1.5rem 6.5rem;
+    }
+}

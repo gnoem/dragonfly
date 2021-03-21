@@ -1,0 +1,50 @@
+.Modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9999999;
+    color: #000;
+    opacity: 0;
+    transition: 0.2s;
+    text-align: left;
+}
+.modalContainer {
+    display: grid;
+    height: 100%;
+    padding: 2rem 0;
+}
+.modalContent {
+    width: 55%;
+    min-width: 300px;
+    background: #fff;
+    padding: 2.5rem;
+    border-radius: 1rem;
+    position: relative;
+    margin: auto;
+    opacity: 0;
+    transform: scale(0.8);
+    transition: 0.2s;
+}
+.Modal.active {
+    opacity: 1;
+}
+.Modal.active .modalContent {
+    transform: scale(1);
+    opacity: 1;
+}
+.Modal button.exit {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    font-size: 1.5rem;
+    color: #666;
+    background: 0;
+}
+@media screen and (max-width: 600px) {
+    .modalContainer {
+        width: 90%;
+    }
+}

@@ -1,0 +1,77 @@
+.Tooltip {
+    position: absolute;
+    bottom: 50%;
+    right: 100%;
+    margin-right: 0.75rem;
+    white-space: nowrap;
+    margin-bottom: -1rem;
+    background: #222;
+    font-size: 0.7rem;
+    line-height: 2rem;
+    font-weight: 400;
+    color: #fff;
+    padding: 0 1rem;
+    border-radius: 0.5rem;
+    display: none;
+    max-height: 2rem;
+    transition: 0.2s;
+    overflow: hidden;
+}
+.tooltipArrow {
+    position: absolute;
+    top: 50%;
+    right: 100%;
+    margin-right: 0.5rem;
+    transform: translate3d(0, -50%, 0) rotate(45deg);
+    display: none;
+    width: 0.5rem;
+    height: 0.5rem;
+    background: #222;
+    transition: opacity 0.2s;
+}
+.Tooltip.open {
+    display: inline-block;
+    overflow: auto;
+    padding: 1rem;
+    box-sizing: content-box;
+    line-height: 1.2;
+}
+.Tooltip.open .Dropdown {
+    animation: fadeAndScaleIn 0.2s 1;
+    transform-origin: top center;
+}
+.Tooltip.open.hasDropdown {
+    overflow: visible;
+}
+.Tooltip.open.closing {
+    max-height: 0;
+    overflow: hidden;
+    padding: 0;
+}
+.Tooltip.open.closing > div:first-of-type {
+    animation: fadeAndScaleOut 0.2s 1;
+}
+.Tooltip.open.closing + .tooltipArrow {
+    opacity: 0;
+}
+.Tooltip.open strong {
+    display: block;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+}
+.Tooltip.open .Dropdown {
+    width: 100%;
+    color: #333;
+}
+
+/* TAGLIST IN TOOLTIP */
+.Tooltip .TagList {
+    width: 300px;
+    margin-bottom: 0.2rem;
+}
+.Tooltip .Tag {
+    flex: 1 0 auto;
+}
+.Tooltip .Tag > button {
+    width: 100%;
+}

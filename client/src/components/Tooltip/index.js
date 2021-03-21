@@ -1,9 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
-import Dropdown from '../Dropdown';
-import { elementHasParent } from '../../utils';
-import { Collection, Note } from '../../api';
-import { TagList, Tag } from '../Tags';
-import { handleError } from '../Form/handleError';
+import "./Tooltip.css";
+import { useState, useEffect, useRef } from "react";
+import { elementHasParent } from "../../utils";
+import { Collection, Note } from "../../api";
+import { handleError } from "../../services";
+import { Dropdown } from "../Dropdown";
+import { TagList, Tag } from "../Tags";
 
 export const Tooltip = (props) => {
     const { name, parent, tooltipWillOpen, defaultContent, overflow } = props;

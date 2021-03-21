@@ -1,0 +1,171 @@
+.List {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    row-gap: 2rem;
+    overflow: hidden;
+    padding: 4rem 5rem 5rem;
+    width: 100%;
+    min-width: 400px;
+    height: 100%;
+}
+.Main[data-editor='true'] .List {
+    display: none;
+}
+.ListHeader.grid {
+    width: 400px;
+    display: grid;
+    grid-template-rows: 1fr auto;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+        'dragonfly dragonfly'
+        'header button';
+    column-gap: 0.5rem;
+}
+.ListHeader h1 {
+    margin-bottom: 1.5rem;
+}
+.ListHeader h2 {
+    grid-area: header;
+    font-size: 2rem;
+    font-weight: 300;
+    margin: 0;
+}
+.ListHeader button.createNew {
+    margin: 0;
+    margin-top: 1rem;
+    padding: 0;
+    width: 2.5rem;
+    height: 2.5rem;
+    font-size: 1.4rem;
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    position: relative;
+}
+.ListHeader button.createNew::before {
+    content: '\f067';
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+}
+.ListHeader button.createNew .tooltip {
+    position: absolute;
+    top: 50%;
+    left: 100%;
+    margin-left: 0.75rem;
+    white-space: nowrap;
+    transform: translate3d(0, -50%, 0);
+    background: #333;
+    font-size: 0.7rem;
+    line-height: 2rem;
+    color: #fff;
+    padding: 0 0.75rem;
+    border-radius: 0.5rem;
+    display: none;
+}
+.ListHeader button.createNew .tooltip::before {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    margin-left: -0.25rem;
+    transform: translate3d(0, -50%, 0) rotate(45deg);
+    content: '';
+    display: block;
+    width: 0.5rem;
+    height: 0.5rem;
+    background: #333;
+}
+.ListHeader button.createNew:hover .tooltip {
+    display: block;
+}
+.ListHeader span.collectionHeader {
+    grid-area: header;
+}
+.ListHeader span.collectionHeader > span {
+    display: block;
+}
+.ListHeader span.collectionHeader > span:first-of-type {
+    font-size: 0.7rem;
+    margin-bottom: 0.1rem;
+    font-weight: 400;
+}
+.ListHeader span.collectionHeader > span + span {
+    font-size: 1.5rem;
+}
+.ListContent {
+    overflow: auto;
+    /* animation: 0.2s slideup 1; // todo */
+}
+.ListContent::-webkit-scrollbar {
+	width: 0.5rem;
+	height: 0;
+	background-color: inherit;
+}
+.ListContent::-webkit-scrollbar-track {
+	background-color: inherit;
+}
+.ListContent::-webkit-scrollbar-thumb {
+	background-color: rgba(0, 0, 0, 0.2);
+}
+.ListItem {
+    width: 400px;
+    border-left: 2px solid #C6CBC9;
+    transition: 0.2s;
+}
+.ListItem.grid {
+    display: grid;
+    align-items: center;
+    grid-template: auto auto / 1fr auto;
+    grid-template-areas:
+        'content button'
+        'content button';
+}
+.ListItem > div:first-of-type {
+    padding-bottom: 1rem;
+    padding-left: 2rem;
+}
+.ListHeaderButton,
+.ListItem > div.previewButton {
+    grid-area: button;
+    position: relative;
+}
+.ListHeaderButton .MiniMenu,
+.ListItem > div.previewButton .MiniMenu {
+    right: calc(100% + 0.5rem);
+    top: 0;
+    z-index: 200;
+}
+.ListItem:only-of-type > div:first-of-type {
+    padding: 1rem 0 1rem 2rem;
+}
+.ListItem + .ListItem > div:first-of-type {
+    padding-top: 1rem;
+}
+.ListItem:hover {
+    cursor: pointer;
+    border-left-color: #666;
+}
+.ListItem h2 {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.5rem;
+    font-size: 1rem;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+}
+.ListItem span.meta {
+    display: block;
+    font-size: 0.8rem;
+    margin-top: 0.5rem;
+    opacity: 0.7;
+}
+.ListItem .hasStar {
+    color: #52d19e;
+    font-size: 0.8rem;
+}
+.ListFooter {
+    padding: 2rem 0 1rem;
+    font-weight: 300;
+    font-size: 1.5rem;
+    color: #444;
+}

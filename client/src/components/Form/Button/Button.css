@@ -1,0 +1,36 @@
+button {
+    position: relative;
+}
+button.poof {
+    animation: 0.3s shrinkAllTheWayDown 1 forwards;
+}
+button .Loading, button .SuccessAnimation {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate3d(-50%, -50%, 0);
+}
+button .SuccessAnimation {
+    margin-top: 2px;
+    margin-left: -0.2rem;
+}
+button .SuccessAnimation svg {
+    fill: none;
+    stroke: #fff;
+    stroke-width: 2px;
+    stroke-dasharray: 2rem;
+    stroke-dashoffset: 2rem;
+    height: 1.5rem;
+    transform-origin: center right;
+    animation: 0.7s check 1 forwards, 0.5s checkmark-shrink 1 forwards 1s;
+    transform: rotate(45deg) scale(1);
+}
+button .Loading svg {
+    height: 70%;
+}
+button .Loading svg * {
+    fill: #fff;
+}
+button span[data-ghost='true'] {
+    visibility: hidden;
+}

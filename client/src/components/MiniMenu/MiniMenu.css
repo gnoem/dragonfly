@@ -1,0 +1,30 @@
+.MiniMenu {
+    position: absolute;
+    background: #323741;
+    padding: 0.4rem;
+    border-radius: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    animation: 0.2s fadeAndScaleIn 1;
+    transform-origin: top right;
+    cursor: default;
+}
+.MiniMenu.goodbye {
+    animation: 0.2s fadeAndScaleOut 1;
+}
+.MiniMenu button {
+    background: 0;
+    margin: 0;
+    padding: 0.4rem 0.6rem;
+    padding-right: 2rem;
+    border-radius: 0.5rem;
+    color: #939aaa;
+    white-space: nowrap;
+    transition: 0.2s;
+    text-align: left;
+}
+.MiniMenu button:hover {
+    background: #171a1f;
+    color: #fff;
+}

@@ -1,0 +1,25 @@
+button.GiantCornerButton {
+    position: fixed;
+    top: 2.5rem;
+    right: 3rem;
+    color: #ccc;
+    font-size: 2.5rem;
+    transition: 0.2s;
+    background: 0;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    animation: slideInFromRight 0.2s 1;
+}
+button.GiantCornerButton::before {
+    font: 900 1em 'Font Awesome 5 Free';
+}
+button.GiantCornerButton:hover {
+    color: #aaa;
+}
+button.GiantCornerButton.exit::before {
+    content: '\f00d';
+}
+button.GiantCornerButton.back::before {
+    content: '\f060';
+}

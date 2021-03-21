@@ -1,0 +1,103 @@
+.Dropdown {
+    position: relative;
+    display: inline-block;
+    text-align: left;
+    z-index: 0; /* todo test more */
+}
+.dropdownDisplay {
+    border: 1px solid #ddd;
+    border-radius: 0.5rem;
+    display: inline-block;
+    padding: 0.3rem 0.6rem;
+    padding-right: 3rem;
+    transition: 0.2s;
+    position: relative;
+    z-index: 200;
+    background: #fff;
+    width: 100%;
+}
+.dropdownDisplay::after {
+    font: 900 1em 'Font Awesome 5 Free';
+    content: '\f0d9';
+    position: absolute;
+    top: 50%;
+    right: 0.7rem;
+    transform: translate3d(0, -50%, 0);
+    transition: 0.2s;
+}
+.Dropdown.expanded .dropdownDisplay {
+    border-radius: 0.5rem 0.5rem 0 0;
+}
+.Dropdown.expanded .dropdownDisplay::after {
+    transform: translate3d(0, -50%, 0) rotate(-90deg);
+}
+.dropdownDisplay, .dropdownList button {
+    color: #333;
+    font-weight: 400;
+    font-size: 0.8rem;
+    cursor: pointer;
+    line-height: 1.5;
+}
+.dropdownList, .dropdownList li {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.dropdownList {
+    background: #fff;
+    transition: 0.2s;
+    overflow: hidden;
+    position: absolute;
+    z-index: 150;
+    top: calc(100% - 0.5rem);
+    left: 0;
+    width: 100%;
+    border-radius: 0 0 0.5rem 0.5rem;
+    border: 1px solid #ddd;
+    border-top: 0;
+}
+.Dropdown.expanded .dropdownList {
+    margin-top: 0.5rem;
+}
+.dropdownList li + li {
+    border-top: 1px solid #ddd;
+}
+.dropdownList button {
+    background: #fff;
+    padding: 0.3rem 0.6rem;
+    margin: 0;
+    display: block;
+    width: 100%;
+    text-align: left;
+    border-radius: 0;
+}
+.dropdownList button:hover {
+    background: #f7f7f7;
+}
+.addNew.active {
+    cursor: default;
+    position: relative;
+}
+.addNew.active:hover {
+    background: #fff;
+}
+.addNew input {
+    border: 0;
+    padding: 0;
+    line-height: 1.5;
+    margin-top: 0.2rem;
+    width: 100%;
+    height: auto;
+}
+.addNew .inputHint {
+    top: 100%;
+    left: 0;
+    width: 100%;
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: #666;
+    line-height: normal;
+    display: block;
+    margin: 0.2rem 0;
+    white-space: normal;
+}

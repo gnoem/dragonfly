@@ -1,4 +1,6 @@
-export default function Loading(props) {
+import "./Loading.css";
+
+export const Loading = (props) => {
     const iconSize = props.size ?? '5rem';
     return (
         <div className={`Loading${props.mini ? ' mini' : ''}`}>

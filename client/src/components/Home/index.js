@@ -1,7 +1,7 @@
-import React from 'react';
-import { User } from '../../api';
-import { Button } from '../Form';
-import { Header } from '../Page';
+import "./Home.css";
+import { User } from "../../api";
+import { Button } from "../Form";
+import { Header } from "../Page";
 
 export default function Home() {
     const onSuccess = ({ user }) => window.location.assign(`/d/${user._id}`);
@@ -9,7 +9,7 @@ export default function Home() {
     return (
         <div className="Home">
             <Header />
-            A simple note-taking app for your browser.
+            <p>A simple note-taking app for your browser.</p>
             <Button type="button" onClick={createUser} showLoadingIcon={true}>Get started</Button>
         </div>
     );

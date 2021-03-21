@@ -1,12 +1,13 @@
-import { EditorSpace } from './components/EditorSpace';
-import { NoteOperations } from './components/NoteOperations';
+import "./Editor.css";
+import { NoteEditor } from "./NoteEditor";
+import { NoteOperations } from "./NoteOperations";
 
 export const Editor = (props) => {
     const { currentNote } = props;
     const newNote = !currentNote._id;
     return (
         <div className="Editor">
-            <EditorSpace {...props} />
+            <NoteEditor {...props} />
             {(!currentNote.trash && !newNote) && <NoteOperations {...props} />}
         </div>
     );

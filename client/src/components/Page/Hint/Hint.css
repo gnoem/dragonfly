@@ -1,0 +1,10 @@
+.Hint {
+    font-size: 0.9rem;
+}
+.Hint::before {
+    font: 900 1rem 'Font Awesome 5 Free';
+    margin-right: 0.3rem;
+}
+.Hint.qmark::before {
+    content: '\f05a';
+}

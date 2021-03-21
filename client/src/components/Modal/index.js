@@ -1,7 +1,8 @@
-import { useEffect, useRef } from 'react';
-import { Alert, Error } from './Alert';
-import { elementHasParent } from '../../utils';
-import { formStore } from './forms';
+import "./Modal.css";
+import { useEffect, useRef } from "react";
+import { elementHasParent } from "../../utils";
+import { formStore } from "./formStore";
+import { Alert, Error } from "./Alert";
 
 // custom modals located in: NoteList
 

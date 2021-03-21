@@ -1,0 +1,7 @@
+.Sidebar {
+    grid-area: sidebar;
+    background: var(--sidebar-bg);
+    padding: 1.5rem;
+    height: 100%;
+    overflow: auto;
+}

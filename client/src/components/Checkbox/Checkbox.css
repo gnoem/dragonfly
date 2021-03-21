@@ -1,0 +1,111 @@
+.Checkbox {
+    position: relative;
+    display: inline-grid;
+    place-items: center;
+    column-gap: 0.4rem;
+    grid-template-columns: 1fr auto;
+    grid-template-areas: 'label button';
+}
+form .Checkbox {
+    margin-top: 0.5rem;
+}
+form .Checkbox label {
+    color: #000;
+    font-weight: 300;
+}
+.Checkbox.first {
+    grid-template-columns: auto 1fr;
+    grid-template-areas: 'button label';
+}
+.Checkbox label {
+    grid-area: label;
+    display: inline-block;
+    vertical-align: middle;
+    font-size: inherit;
+    font-weight: inherit;
+    color: inherit;
+    margin: 0;
+    margin-right: 0.5rem;
+}
+.checkboxElement {
+    grid-area: button;
+    position: relative;
+    display: inline-block;
+    vertical-align: middle;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 999px;
+    cursor: pointer;
+}
+.checkboxElement span.svg {
+    display: inline-block;
+    vertical-align: middle;
+    transform: translate3d(0,0,0) scale(1);
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 999px;
+    border: 1px solid var(--element-main-border);
+    background: var(--element-main-bg);
+    transition: all 0.2s ease;
+}
+.checkboxElement span.svg::before {
+    content: '';
+    width: 1.5rem;
+    height: 1.5rem;
+    margin: -1px; /* to offset 1px border on span.svg */
+    background: var(--deep-theme-color);
+    display: block;
+    transform: scale(0);
+    opacity: 1;
+    border-radius: 999px;
+    transition-delay: 0.2s;
+    transform-origin: center;
+    cursor: default;
+}
+.checkboxElement span.svg svg {
+    position: absolute;
+    z-index: 1;
+    top: 0.4375rem;
+    left: 0.3125rem;
+    width: auto;
+    height: 0.5625rem;
+    fill: none;
+    stroke: #fff;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 1rem;
+    stroke-dashoffset: 1rem;
+    transition: all 0.3s ease;
+    transition-delay: 0.2s;
+    transform: translate3d(0,0,0);
+}
+.Checkbox input[type=checkbox] {
+    position: absolute;
+    z-index: 9999;
+    top: 0;
+    left: 0;
+    width: 1.5rem;
+    height: 1.5rem;
+    margin: 0;
+    opacity: 0;
+    user-select: none;
+    cursor: pointer;
+}
+.Checkbox input[type=checkbox]:checked + span.svg {
+    border: 1px solid var(--deep-theme-color);
+    background: var(--deep-theme-color);
+    animation: pulse 0.6s ease;
+}
+.Checkbox input[type=checkbox]:checked + span.svg svg {
+    stroke-dashoffset: 0;
+}
+.Checkbox input[type=checkbox]:checked + span.svg::before {
+    transform: scale(2.2);
+    opacity: 0;
+    transition: all 0.6s ease;
+}
+.checkboxElement:hover span.svg {
+    border-color: var(--deep-theme-color);
+}

@@ -1,0 +1,13 @@
+.TrashOptions {
+    margin-bottom: 2.5rem;
+}
+.TrashOptions .giantIcon {
+    display: block;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    margin-left: 0.5rem;
+    color: #333;
+}
+.TrashOptions .buttons {
+    text-align: left;
+}

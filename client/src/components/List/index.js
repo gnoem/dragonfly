@@ -1,4 +1,5 @@
-import { Header } from '../Page';
+import "./List.css";
+import { Header } from "../Page";
 
 export const List = ({ children }) => {
     return (

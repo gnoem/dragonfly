@@ -1,3 +1,4 @@
-export const Header = ({ onClick }) => {
-    return <h1 className={`display${onClick ? ' button' : ''}`} onClick={onClick}>Dragonfly</h1>;
-};
+import { GiantCornerButton } from "./GiantCornerButton";
+import { Header } from "./Header";
+
+export { GiantCornerButton, Header }

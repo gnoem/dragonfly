@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
-import { Nav } from '../Nav';
+import "./Menu.css";
+import { useState, useEffect } from "react";
+import { Nav } from "../Nav";
 
-export default function Menu(props) {
+export const Menu = (props) => {
     const [showingMenu, setShowingMenu] = useState(false);
     return (
         <div className="Menu" data-expanded={showingMenu}>
@@ -11,7 +12,7 @@ export default function Menu(props) {
     );
 }
 
-function MainMenu(props) {
+const MainMenu = (props) => {
     const [isMounted, setIsMounted] = useState(false);
     useEffect(() => {
         setIsMounted(true);

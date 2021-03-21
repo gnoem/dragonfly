@@ -1,0 +1,63 @@
+.Main[data-editor='true'] .NoteOperations {
+    animation: slideup 0.2s 1;
+}
+.NoteOperations {
+    position: fixed;
+    bottom: 14rem;
+    right: 3rem;
+}
+.NoteOperations::after {
+    content: '';
+    display: block;
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-top: 3rem;
+    margin-left: -0.5px;
+    width: 1px;
+    height: 8rem;
+    background: #666;
+}
+.NoteOperations .OptionItem {
+    text-align: center;
+    position: relative;
+}
+.NoteOperations > .OptionItem + .OptionItem {
+    margin-top: 1.5rem;
+}
+.NoteOperations .OptionItem > button {
+    background: 0;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    font-size: 1.2rem;
+    color: #222;
+    display: inline-block;
+}
+.NoteOperations .OptionItem:hover .Tooltip,
+.NoteOperations .OptionItem:hover .tooltipArrow,
+.NoteOperations .OptionItem .Tooltip.open,
+.NoteOperations .OptionItem .Tooltip.open + .tooltipArrow {
+    display: inline-block;
+}
+.NoteOperations .OptionItem button::before {
+    font: 900 1em 'Font Awesome 5 Free';
+}
+.NoteOperations .OptionItem button.star::before {
+    content: '\f005';
+}
+.NoteOperations .OptionItem button.collection::before {
+    content: '\f02d';
+}
+.NoteOperations .OptionItem button.tags::before {
+    content: '\f02c';
+}
+.NoteOperations .OptionItem button.trash::before {
+    content: '\f1f8';
+}
+.NoteOperations .OptionItem.hasStar > button {
+    color: #2f9e72;
+}
+.NoteOperations .OptionItem.pulse button {
+    animation: 0.5s pulse 1;
+}

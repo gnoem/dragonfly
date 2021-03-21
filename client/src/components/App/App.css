@@ -1,0 +1,374 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+@keyframes fadeAndScaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.5);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+@keyframes fadeAndScaleOut {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: scale(0.5);
+    }
+}
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+@keyframes slideup {
+    from {
+        opacity: 0;
+        transform: translate3d(0, 2rem, 0);
+    }
+    to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+    }
+}
+@keyframes slidedown {
+    from {
+        opacity: 0;
+        transform: translate3d(0, -2rem, 0);
+    }
+    to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+    }
+}
+@keyframes slideInFromRight {
+    from {
+        opacity: 0;
+        transform: translate3d(2rem, 0, 0);
+    }
+    to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+    }
+}
+@keyframes slideInFromLeft {
+    from {
+        opacity: 0;
+        transform: translate3d(-2rem, 0, 0);
+    }
+    to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+    }
+}
+@keyframes showSubMenu {
+    from {
+        opacity: 0;
+        transform: scale(0);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+@keyframes hideSubMenu {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: scale(0);
+    }
+}
+@keyframes invalid-input {
+    16.65% {
+      -webkit-transform: translateX(8px);
+      transform: translateX(8px);
+    }
+    33.3% {
+      -webkit-transform: translateX(-6px);
+      transform: translateX(-6px);
+      border-color: var(--light-caution);
+    }
+    49.95% {
+      -webkit-transform: translateX(4px);
+      transform: translateX(4px);
+      border-color: var(--light-caution);
+    }
+    66.6% {
+      -webkit-transform: translateX(-2px);
+      transform: translateX(-2px);
+      border-color: var(--light-caution);
+    }
+    83.25% {
+      -webkit-transform: translateX(1px);
+      transform: translateX(1px);
+    }
+    100% {
+      -webkit-transform: translateX(0);
+      transform: translateX(0);
+    }
+}
+@keyframes pulse {
+    0% {
+        transform: scale(0.6);
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+@keyframes shrinkAllTheWayDown {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: scale(0);
+    }
+}
+@keyframes check {
+    100% {
+        stroke-dashoffset: 0;
+    }
+}
+@keyframes checkmark-shrink {
+    100% {
+        opacity: 0;
+        transform: rotate(45deg) scale(0);
+    }
+}
+.shrinkit {
+    animation: 0.2s shrinkdown 1;
+}
+#demo {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    border: 1px solid var(--element-main-border);
+    background: var(--element-main-bg);
+    cursor: pointer;
+    z-index: 999999999999999999999999999999999999999;
+}
+.App {
+    width: 100%;
+    height: 100%;
+}
+b, strong {
+    font-weight: 600;
+}
+a, a:visited {
+    color: var(--deep-theme-color);
+    font-weight: 600;
+    text-decoration: none;
+    position: relative;
+}
+a::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 0.5rem;
+    background: var(--light-gradient);
+    opacity: 0.7;
+    transition: transform 0.2s;
+    transform: scaleX(0);
+    transform-origin: bottom right;
+    z-index: -1;
+}
+a:hover::after {
+    transform: scaleX(1);
+    transform-origin: bottom left;
+}
+p {
+    margin-top: 0;
+}
+h1, h2, h3, h4, h5, h6 {
+    margin-top: 0;
+}
+h1 {
+    font-weight: normal;
+}
+h2 {
+    font-weight: 500;
+}
+button, select, textarea, input {
+    font-family: inherit;
+    outline: none;
+}
+input:not([type=submit]) {
+    font-size: inherit;
+    font-weight: inherit;
+}
+button, input[type=submit] {
+    cursor: pointer;
+    border: 0;
+    background: var(--med-gradient);
+    color: #fff;
+    font-weight: normal;
+    padding: 1rem 1.5rem;
+    border-radius: 0.5rem;
+    display: block;
+    margin-top: 1.5rem;
+    font-size: 0.83rem;
+}
+button.stealth {
+    margin: 0;
+    padding: 0;
+    background: 0;
+}
+button:disabled {
+    background: #aaa;
+    cursor: not-allowed;
+}
+button.greyed {
+    background: #aaa;
+}
+button.caution {
+    background: var(--caution);
+}
+button.round-basic {
+    margin: 0;
+    padding: 0;
+    background: 0;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 999px;
+    font-size: 1.4rem;
+    display: grid;
+    place-items: center;
+    color: #666;
+    transition: 0.2s;
+}
+button.round-basic:hover {
+    background: rgba(0, 0, 0, 0.1);
+    color: #333;
+}
+button.icon::before {
+    font: 900 1em 'Font Awesome 5 Free';
+}
+button.bar-menu::before {
+    content: '\f0c9';
+}
+button.ellipsis::before {
+    content: '\f142'
+}
+.buttons {
+    text-align: center;
+    margin-top: 1.5rem;
+}
+.buttons button {
+    display: inline-block;
+    margin: 0;
+}
+.buttons button + button {
+    margin-left: 1rem;
+}
+.buttons.smaller button, button.smaller {
+    padding: 0.7rem 1rem;
+}
+blockquote {
+    margin: 1rem 0;
+    border-left: 0.2rem solid #ddd;
+    padding: 0 1rem;
+    font-style: oblique;
+    font-size: 0.9rem;
+    color: #666;
+}
+blockquote .wisdom {
+    margin-bottom: 0.5rem;
+}
+blockquote .attribution {
+    font-style: normal;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    color: #333;
+}
+code {
+    font-size: 0.8rem;
+    line-height: 1rem;
+    padding: 0 0.2rem;
+    letter-spacing: -0.02rem;
+}
+details summary {
+    font-weight: 400;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    color: #333;
+    outline: none;
+}
+details .errorDetails {
+    white-space: pre-line;
+    word-wrap: break-word;
+    display: block;
+    padding: 0.2rem;
+    margin-top: 0.5rem;
+    border: 1px solid #ddd;
+    max-height: 6rem;
+    overflow: auto;
+}
+details .errorDetails code {
+    font-size: 0.7rem;
+    line-height: 1rem;
+    display: block;
+}
+details .errorDetails code.greyed {
+    color: #666;
+}
+details .errorDetails code + code.greyed {
+    margin-top: 0.5rem;
+}
+
+.nowrap {
+    display: inline-block;
+}
+.nowrap::after {
+    content: '';
+    padding-left: 0.5ch;
+}
+
+form label {
+    font-size: 0.8rem;
+    font-weight: normal;
+    color: #666;
+}
+form input[type=text], form input[type=password] {
+    display: block;
+    width: 100%;
+    margin-top: 0.4rem;
+    padding: 0.7rem;
+    border: 1px solid var(--element-secondary-border);
+    border-radius: 0.5rem;
+    transition: 0.2s;
+}
+form .formGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, calc(50% - 0.5rem));
+    grid-gap: 1rem;
+}
+form input:not([type=submit]):focus {
+    border-color: var(--med-theme-color);
+}
+@media screen and (max-width: 900px) {
+    form .formGrid {
+        grid-gap: 1rem;
+        grid-template-rows: 1fr auto;
+        grid-template-columns: auto;
+    }
+}

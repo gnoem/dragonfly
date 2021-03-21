@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import "./Checkbox.css";
+import { useState } from "react";
 
-export default function Checkbox({ name, label, checkboxFirst, defaultChecked }) {
+export const Checkbox = ({ name, label, checkboxFirst, defaultChecked }) => {
     const [checked, setChecked] = useState(defaultChecked);
     const toggleCheck = () => setChecked(check => !check);
     return (

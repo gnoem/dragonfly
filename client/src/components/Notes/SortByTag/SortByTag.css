@@ -1,0 +1,17 @@
+.SortByTag {
+    margin-top: 1rem;
+}
+.SortByTag h2 {
+    margin: 1rem 0;
+}
+.SortByTag .TagList {
+    margin: 1.5rem 0;
+}
+.SortTagOptions {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+}
+.SortTagOptions .Dropdown {
+    width: 4rem;
+    margin: 0 0.5rem;
+}

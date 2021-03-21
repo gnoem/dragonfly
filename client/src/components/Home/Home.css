@@ -1,0 +1,7 @@
+.Home {
+    padding: 5rem;
+}
+.Home button {
+    background: var(--dark-gradient);
+    margin-top: 2rem;
+}

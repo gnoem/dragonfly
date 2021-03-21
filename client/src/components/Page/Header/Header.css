@@ -1,0 +1,9 @@
+h1.Header {
+    font-family: var(--display-font);
+    font-size: 5rem;
+    font-weight: normal;
+    margin-bottom: 1rem;
+}
+h1.Header.button {
+    cursor: pointer;
+}

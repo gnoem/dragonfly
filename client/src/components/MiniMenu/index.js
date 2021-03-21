@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
+import "./MiniMenu.css";
+import { useState, useEffect, useRef } from "react";
 
 export const MiniMenu = ({ show, updateShow, menuItems, className }) => {
     const [closing, setClosing] = useState(false);
