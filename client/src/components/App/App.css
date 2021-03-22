@@ -362,6 +362,9 @@ form .formGrid {
     grid-template-columns: repeat(auto-fill, calc(50% - 0.5rem));
     grid-gap: 1rem;
 }
+form .formComponent + .formComponent {
+    margin-top: 1rem;
+}
 form input:not([type=submit]):focus {
     border-color: var(--med-theme-color);
 }
