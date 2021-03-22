@@ -9,9 +9,9 @@ import init from './app/routes/index.js';
 const app = express();
 
 if (process.env.NODE_ENV === 'production') {
-    app.use(express.static(path.resolve(__dirname, '../client/build')));
+    app.use(express.static('../client/build'));
     app.get('*', (_, res) => {
-        res.sendFile(path.resolve(__dirname, '../client/build', 'index.html'));
+        res.sendFile('../client/build/index.html');
     });
 }
 
