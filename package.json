@@ -1,7 +1,7 @@
 {
-  "name": "server",
+  "name": "dragonfly",
   "version": "1.0.0",
-  "description": "",
+  "description": "a simple browser app for composing, editing, & organizing rich text notes",
   "main": "./server/server.js",
   "type": "module",
   "proxy": "http://localhost:6000",
@@ -9,10 +9,12 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "server": "node ./server/server.js",
     "client": "npm start --prefix ./client",
+    "start": "cd server && npm install && node server.js",
+    "heroku-postbuild": "cd client && npm install && npm run build",
     "devserver": "nodemon ./server/server.js --ignore './client/'",
     "dev": "concurrently --kill-others-on-fail \"npm run devserver\" \"npm run client\""
   },
-  "author": "",
+  "author": "naomi g.w. // ngw.dev",
   "license": "ISC",
   "dependencies": {
     "bcryptjs": "^2.4.3",
