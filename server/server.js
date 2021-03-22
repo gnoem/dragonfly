@@ -9,7 +9,7 @@ const app = express();
 
 if (process.env.NODE_ENV === 'production') {
     app.use(express.static('../client/build'));
-    app.get('/', (_, res) => {
+    app.get('*', (_, res) => {
         res.sendFile(path.join(__dirname + '../client/build/index.html'));
     });
 }
