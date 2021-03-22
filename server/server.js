@@ -1,5 +1,6 @@
 import './app/config/index.js';
 import express from 'express';
+import * as path from 'path';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import db from './app/config/db.js';
@@ -8,9 +9,9 @@ import init from './app/routes/index.js';
 const app = express();
 
 if (process.env.NODE_ENV === 'production') {
-    app.use(express.static('../client/build'));
+    app.use(express.static(path.resolve(__dirname, '../client/build')));
     app.get('*', (_, res) => {
-        res.sendFile(path.join(__dirname + '../client/build/index.html'));
+        res.sendFile(path.resolve(__dirname, '../client/build', 'index.html'));
     });
 }
 
