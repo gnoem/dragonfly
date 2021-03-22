@@ -31,6 +31,12 @@
 .Dropdown.expanded .dropdownDisplay::after {
     transform: translate3d(0, -50%, 0) rotate(-90deg);
 }
+.Dropdown.expanded .dropdownList {
+    transform: translate3d(0, 0.5rem, 0);
+}
+.Dropdown.scrollable .dropdownList {
+    overflow: auto;
+}
 .dropdownDisplay, .dropdownList button {
     color: #333;
     font-weight: 400;
@@ -55,9 +61,6 @@
     border-radius: 0 0 0.5rem 0.5rem;
     border: 1px solid #ddd;
     border-top: 0;
-}
-.Dropdown.expanded .dropdownList {
-    margin-top: 0.5rem;
 }
 .dropdownList li + li {
     border-top: 1px solid #ddd;

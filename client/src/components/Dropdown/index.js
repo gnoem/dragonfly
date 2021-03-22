@@ -10,6 +10,7 @@ export const Dropdown = (props) => {
         return defaultValue.display;
     });
     const [isOpen, setIsOpen] = useState(false);
+    const [hasScrollbar, setHasScrollbar] = useState(false);
     const [addingNew, setAddingNew] = useState(false);
     const dropdownList = useRef(null);
     useEffect(() => {
@@ -21,17 +22,27 @@ export const Dropdown = (props) => {
         window.addEventListener('click', closeDropdown);
         return () => window.removeEventListener('click', closeDropdown);
     }, []);
+    const dropdownMaxHeight = (dropdown) => {
+        const distanceFromTop = dropdown?.getBoundingClientRect().top;
+        const elementHeight = dropdown?.scrollHeight;
+        if (distanceFromTop + elementHeight < window.innerHeight) return elementHeight + 1; // + 1px to offset 1px bottom border on dropdown element
+        setHasScrollbar(true);
+        return (window.innerHeight - distanceFromTop) - 24; // -24 for some wiggle room
+    }
     useEffect(() => {
-        if (!dropdownList || !dropdownList.current) return;
-        if (isOpen) dropdownList.current.style.maxHeight = dropdownList.current.scrollHeight + 1 + 'px'; // plus 1px to account for 1px bottom border
-        else {
-            dropdownList.current.style.maxHeight = '0px';
-            setAddingNew(false); // unrelated to maxHeight adjustment thing
-        }
+        if (!dropdownList.current) return;
+        dropdownList.current.style.maxHeight = isOpen ? dropdownMaxHeight(dropdownList.current) + 'px' : '0px';
+        if (!isOpen) setAddingNew(false); // unrelated to maxHeight adjustment thing
     }, [isOpen]);
     useEffect(() => {
-        if (addingNew) dropdownList.current.style.maxHeight = dropdownList.current.scrollHeight + 1 + 'px';
-    }, [addingNew]);
+        if (addingNew && hasScrollbar) {
+            dropdownList.current?.scrollTo({
+                top: dropdownMaxHeight(dropdownList.current),
+                left: 0,
+                behavior: 'smooth'
+            });
+        }
+    }, [addingNew, hasScrollbar]);
     useEffect(() => {
         if (restoreDefault) setDisplay(defaultValue.display);
     // defaultValue is guaranteed to stay the same during the lifetime of this component so I think it's safe to include here?
@@ -64,7 +75,7 @@ export const Dropdown = (props) => {
         return array;
     }
     return (
-        <div className={`Dropdown${isOpen ? ' expanded' : ''}`} style={props.style}>
+        <div className={`Dropdown${isOpen ? ' expanded' : ''}${hasScrollbar ? ' scrollable' : ''}`} style={props.style}>
             <div className="dropdownDisplay" onClick={toggleIsOpen}>{display}</div>
             <ul className="dropdownList" ref={dropdownList}>{generateList()}</ul>
         </div>
