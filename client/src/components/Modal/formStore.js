@@ -1,5 +1,5 @@
-import { useState } from "react";
 import { Note, Collection, Tag } from "../../api";
+import { useFormData, useFormError } from '../../hooks';
 import { Form, Input, Submit } from "../Form";
 
 export const formStore = {
@@ -94,29 +94,15 @@ const RestoreTrash = (props) => {
 
 const CreateCollection = (props) => {
     const { user, options } = props;
-    const [formData, setFormData] = useState({ userId: user._id });
-    const [formError, setFormError] = useState({});
-    const updateFormData = (e) => {
-        setFormData(prevState => ({ ...prevState, [e.target.name]: e.target.value }));
-    }
-    const resetFormError = (e) => setFormError(prevState => {
-        if (!prevState?.[e.target.name]) return prevState;
-        const newState = {...prevState};
-        delete newState[e.target.name];
-        return newState;
-    });
-    const inputHint = (inputName) => {
-        if (formError?.[inputName]) return { type: 'error', message: formError[inputName] };
-    }
+    const [formData, updateFormData] = useFormData({ userId: user._id });
+    const [updateFormError, resetFormError, warnFormError] = useFormError({});
     const handleSubmit = () => Collection.createCollection(formData);
     const handleSuccess = () => {
         options?.onSuccess?.();
         props.gracefullyCloseModal();
     }
-    const handleFormError = (errors) => setFormError({ ...errors });
     return (
-        <Form {...props} onSubmit={handleSubmit} onSuccess={handleSuccess} handleFormError={handleFormError}
-              formData={formData}
+        <Form {...props} onSubmit={handleSubmit} onSuccess={handleSuccess} handleFormError={updateFormError}
               title="Create a new collection">
             <Input type="text"
                 name="name"
@@ -124,36 +110,22 @@ const CreateCollection = (props) => {
                 defaultValue={formData?.name}
                 onChange={updateFormData}
                 onInput={resetFormError}
-                hint={inputHint('name')} />
+                hint={warnFormError('name')} />
         </Form>
     );
 }
 
 const EditCollection = (props) => {
     const { options, user } = props;
-    const [formData, setFormData] = useState({ userId: user._id, name: options?.name });
-    const [formError, setFormError] = useState({});
-    const updateFormData = (e) => {
-        setFormData(prevState => ({ ...prevState, [e.target.name]: e.target.value }));
-    }
-    const resetFormError = (e) => setFormError(prevState => {
-        if (!prevState?.[e.target.name]) return prevState;
-        const newState = {...prevState};
-        delete newState[e.target.name];
-        return newState;
-    });
-    const inputHint = (inputName) => {
-        if (formError?.[inputName]) return { type: 'error', message: formError[inputName] };
-    }
+    const [formData, updateFormData] = useFormData({ userId: user._id, name: options?.name });
+    const [updateFormError, resetFormError, warnFormError] = useFormError({});
     const handleSubmit = () => Collection.editCollection(options?._id, formData);
     const handleSuccess = () => {
         options?.onSuccess?.();
         props.gracefullyCloseModal();
     }
-    const handleFormError = (errors) => setFormError({ ...errors });
     return (
-        <Form {...props} onSubmit={handleSubmit} onSuccess={handleSuccess} handleFormError={handleFormError}
-              formData={formData}
+        <Form {...props} onSubmit={handleSubmit} onSuccess={handleSuccess} handleFormError={updateFormError}
               title="Edit this collection">
             <Input type="text"
                 name="name"
@@ -161,7 +133,7 @@ const EditCollection = (props) => {
                 defaultValue={formData?.name}
                 onChange={updateFormData}
                 onInput={resetFormError}
-                hint={inputHint('name')} />
+                hint={warnFormError('name')} />
         </Form>
     );
 }
@@ -184,29 +156,15 @@ const DeleteCollection = (props) => {
 
 const CreateTag = (props) => {
     const { user, options } = props;
-    const [formData, setFormData] = useState({ userId: user._id });
-    const [formError, setFormError] = useState({});
-    const updateFormData = (e) => {
-        setFormData(prevState => ({ ...prevState, [e.target.name]: e.target.value }));
-    }
-    const resetFormError = (e) => setFormError(prevState => {
-        if (!prevState?.[e.target.name]) return prevState;
-        const newState = {...prevState};
-        delete newState[e.target.name];
-        return newState;
-    });
-    const inputHint = (inputName) => {
-        if (formError?.[inputName]) return { type: 'error', message: formError[inputName] };
-    }
+    const [formData, updateFormData] = useFormData({ userId: user._id });
+    const [updateFormError, resetFormError, warnFormError] = useFormError({});
     const handleSubmit = () => Tag.createTag(formData);
     const handleSuccess = () => {
         options?.onSuccess?.();
         props.gracefullyCloseModal();
     }
-    const handleFormError = (errors) => setFormError({ ...errors });
     return (
-        <Form {...props} onSubmit={handleSubmit} onSuccess={handleSuccess} handleFormError={handleFormError}
-              formData={formData}
+        <Form {...props} onSubmit={handleSubmit} onSuccess={handleSuccess} handleFormError={updateFormError}
               title="Create a new tag">
             <Input type="text"
                 name="name"
@@ -214,36 +172,22 @@ const CreateTag = (props) => {
                 defaultValue={formData?.name}
                 onChange={updateFormData}
                 onInput={resetFormError}
-                hint={inputHint('name')} />
+                hint={warnFormError('name')} />
         </Form>
     );
 }
 
 const EditTag = (props) => {
     const { options, user } = props;
-    const [formData, setFormData] = useState({ userId: user._id, name: options?.name });
-    const [formError, setFormError] = useState({});
-    const updateFormData = (e) => {
-        setFormData(prevState => ({ ...prevState, [e.target.name]: e.target.value }));
-    }
-    const resetFormError = (e) => setFormError(prevState => {
-        if (!prevState?.[e.target.name]) return prevState;
-        const newState = {...prevState};
-        delete newState[e.target.name];
-        return newState;
-    });
-    const inputHint = (inputName) => {
-        if (formError?.[inputName]) return { type: 'error', message: formError[inputName] };
-    }
+    const [formData, updateFormData] = useFormData({ userId: user._id, name: options?.name });
+    const [updateFormError, resetFormError, warnFormError] = useFormError({});
     const handleSubmit = () => Tag.editTag(options?._id, formData);
     const handleSuccess = () => {
         options?.onSuccess?.();
         props.gracefullyCloseModal();
     }
-    const handleFormError = (errors) => setFormError({ ...errors });
     return (
-        <Form {...props} onSubmit={handleSubmit} onSuccess={handleSuccess} handleFormError={handleFormError}
-              formData={formData}
+        <Form {...props} onSubmit={handleSubmit} onSuccess={handleSuccess} handleFormError={updateFormError}
               title="Edit this tag">
             <Input type="text"
                 name="name"
@@ -251,7 +195,7 @@ const EditTag = (props) => {
                 defaultValue={formData?.name}
                 onChange={updateFormData}
                 onInput={resetFormError}
-                hint={inputHint('name')} />
+                hint={warnFormError('name')} />
         </Form>
     );
 }

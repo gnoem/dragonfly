@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { User } from "../../api";
+import { useFormData, useFormError } from '../../hooks';
 import { Form, Submit, Button, Input } from "../Form";
 
 export const EditAccount = (props) => {
@@ -14,38 +15,24 @@ export const EditAccount = (props) => {
 
 const AccountDetails = (props) => {
     const { user } = props;
-    const [formData, setFormData] = useState(null);
-    const [formError, setFormError] = useState({});
-    const originalUsername = useRef(user.username);
-    useEffect(() => {
-        setFormData({
-            firstName: user.firstName ?? '',
-            lastName: user.lastName ?? '',
-            username: user.username ?? '',
-            email: user.email ?? ''
-        });
-    }, [user]);
-    const updateFormData = (e) => setFormData(prevState => ({ ...prevState, [e.target.name]: e.target.value }));
-    const resetFormError = (e) => setFormError(prevState => {
-        if (!prevState?.[e.target.name]) return prevState;
-        const newState = {...prevState};
-        delete newState[e.target.name];
-        return newState;
+    const [formData, updateFormData] = useFormData({
+        firstName: user.firstName ?? '',
+        lastName: user.lastName ?? '',
+        username: user.username ?? '',
+        email: user.email ?? ''
     });
-    const onSuccess = ({ user }) => {
+    const [updateFormError, resetFormError, warnFormError] = useFormError({});
+    const originalUsername = useRef(user.username);
+    const handleSubmit = () => User.editAccount(user._id, formData).then(handleSuccess);
+    const handleSuccess = ({ user }) => {
         if (user.username !== originalUsername.current) {
             window.history.pushState('', '', `/d/${user.username}`);
             originalUsername.current = user.username;
         }
         props.refreshData();
     }
-    const handleSubmit = () => User.editAccount(user._id, formData).then(onSuccess);
-    const handleFormError = (errors) => setFormError({ ...errors });
-    const inputHint = (inputName) => {
-        if (formError?.[inputName]) return { type: 'error', message: formError[inputName] };
-    }
     return (
-        <Form {...props} onSubmit={handleSubmit} handleFormError={handleFormError}
+        <Form {...props} onSubmit={handleSubmit} handleFormError={updateFormError}
               formData={formData}
               title="Edit account details"
               submit={<Submit value="Save changes" cancel={false} />}>
@@ -56,28 +43,28 @@ const AccountDetails = (props) => {
                     defaultValue={formData?.firstName}
                     onChange={updateFormData}
                     onInput={resetFormError}
-                    hint={inputHint('firstName')} />
+                    hint={warnFormError('firstName')} />
                 <Input type="text"
                     name="lastName"
                     label="Last name:"
                     defaultValue={formData?.lastName}
                     onChange={updateFormData}
                     onInput={resetFormError}
-                    hint={inputHint('lastName')} />
+                    hint={warnFormError('lastName')} />
                 <Input type="text"
                     name="email"
                     label="Email address:"
                     defaultValue={formData?.email}
                     onChange={updateFormData}
                     onInput={resetFormError}
-                    hint={inputHint('email')} />
+                    hint={warnFormError('email')} />
                 <Input type="text"
                     name="username"
                     label="Username:"
                     defaultValue={formData?.username}
                     onChange={updateFormData}
                     onInput={resetFormError}
-                    hint={inputHint('username')} />
+                    hint={warnFormError('username')} />
             </div>
         </Form>
     );
@@ -148,26 +135,15 @@ const DeleteAccount = (props) => {
 
 export const CreateAccount = (props) => {
     const { user } = props;
-    const [formData, setFormData] = useState({});
-    const [formError, setFormError] = useState({});
-    const updateFormData = (e) => setFormData(prevState => ({ ...prevState, [e.target.name]: e.target.value }));
-    const resetFormError = (e) => setFormError(prevState => {
-        if (!prevState?.[e.target.name]) return prevState;
-        const newState = {...prevState};
-        delete newState[e.target.name];
-        return newState;
-    });
+    const [formData, updateFormData] = useFormData({});
+    const [updateFormError, resetFormError, warnFormError] = useFormError({});
+    const handleSubmit = () => User.createAccount(user._id, formData).then(onSuccess);
     const onSuccess = ({ user }) => {
         window.history.pushState('', '', `/d/${user.username}`);
         props.refreshData();
     };
-    const handleFormError = (errors) => setFormError({ ...errors });
-    const handleSubmit = () => User.createAccount(user._id, formData).then(onSuccess);
-    const inputHint = (inputName) => {
-        if (formError?.[inputName]) return { type: 'error', message: formError[inputName] };
-    }
     return (
-        <Form {...props} onSubmit={handleSubmit} handleFormError={handleFormError}
+        <Form {...props} onSubmit={handleSubmit} handleFormError={updateFormError}
               formData={formData}
               title="Create an account"
               submit={<Submit value="Save changes" cancel={false} />}>
@@ -179,13 +155,13 @@ export const CreateAccount = (props) => {
                     defaultValue={formData?.firstName}
                     onInput={resetFormError}
                     onChange={updateFormData}
-                    hint={inputHint('firstName')} />
+                    hint={warnFormError('firstName')} />
                 <Input type="text"
                     name="lastName"
                     label="Last name:"
                     defaultValue={formData?.lastName}
                     onChange={updateFormData}
-                    hint={inputHint('lastName')} />
+                    hint={warnFormError('lastName')} />
             </div>
             <div className="formComponent">
                 <Input type="text"
@@ -194,7 +170,7 @@ export const CreateAccount = (props) => {
                     defaultValue={formData?.email}
                     onInput={resetFormError}
                     onChange={updateFormData}
-                    hint={inputHint('email')}
+                    hint={warnFormError('email')}
                     note={"For password recovery only. We'll never send you marketing emails or share your contact information with third parties."} />
             </div>
             <div className="formGrid formComponent">
@@ -204,14 +180,14 @@ export const CreateAccount = (props) => {
                     defaultValue={formData?.username}
                     onInput={resetFormError}
                     onChange={updateFormData}
-                    hint={inputHint('username')} />
+                    hint={warnFormError('username')} />
                 <Input type="password"
                     name="password"
                     label="Choose a password:"
                     defaultValue={formData?.password}
                     onInput={resetFormError}
                     onChange={updateFormData}
-                    hint={inputHint('password')} />
+                    hint={warnFormError('password')} />
             </div>
         </Form>
     );

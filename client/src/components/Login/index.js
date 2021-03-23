@@ -1,9 +1,9 @@
 import "./Login.css";
-import { useState } from "react";
 import { User } from "../../api";
 import { Form, Submit, Input } from "../Form";
 import { Header } from "../Page";
 import { Checkbox } from "../Checkbox";
+import { useFormData, useFormError } from "../../hooks";
 
 export const Login = (props) => {
     const { username, loginWarning } = props;
@@ -22,23 +22,12 @@ export const Login = (props) => {
 
 const LoginForm = (props) => {
     const { username } = props;
-    const [formError, setFormError] = useState({});
-    const [formData, setFormData] = useState({});
-    const updateFormData = (e) => setFormData(prevState => ({ ...prevState, [e.target.name]: e.target.value }));
-    const resetFormError = (e) => setFormError(prevState => {
-        if (!prevState?.[e.target.name]) return prevState;
-        const newState = {...prevState};
-        delete newState[e.target.name];
-        return newState;
-    });
+    const [formData, updateFormData] = useFormData({});
+    const [updateFormError, resetFormError, warnFormError] = useFormError({});
     const handleSubmit = () => User.login(username, formData);
-    const onSuccess = () => props.updateAccessToken(true);
-    const handleFormError = (errors) => setFormError({ ...errors });
-    const inputHint = (inputName) => {
-        if (formError?.[inputName]) return { type: 'error', message: formError[inputName] };
-    }
+    const handleSuccess = () => props.updateAccessToken(true);
     return (
-        <Form {...props} onSubmit={handleSubmit} onSuccess={onSuccess} handleFormError={handleFormError}
+        <Form {...props} onSubmit={handleSubmit} onSuccess={handleSuccess} handleFormError={updateFormError}
               submit={<Submit cancel={false} />}>
             <div className="passwordProtected">
                 <i className="lockIcon fas fa-lock"></i>
@@ -50,7 +39,7 @@ const LoginForm = (props) => {
                 label="Enter password:"
                 onChange={updateFormData}
                 onInput={resetFormError}
-                hint={inputHint('password')} />
+                hint={warnFormError('password')} />
             <div className="formCheck">
                 <Checkbox name="rememberThisDevice" label="Remember this device" checkboxFirst={true} defaultChecked={false} />
             </div>            
