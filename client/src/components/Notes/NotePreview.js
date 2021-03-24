@@ -1,13 +1,12 @@
 import dayjs from "dayjs";
 import { ListItem, ListItemTitle, ListItemContent } from "../List/ListItem";
 
-export const NotePreview = (props) => {
-    let { onClick } = props;
+export const NotePreview = ({ title, content, starred, createdAt, lastModified, onClick }) => {
     return (
-        <ListItem title={<Title {...props} />} onClick={onClick}>
+        <ListItem title={<Title {...{ title, starred, createdAt }} />} onClick={onClick}>
             <ListItemContent>
-                <Excerpt {...props} />
-                <Meta {...props} />
+                <Excerpt {...{ content }} />
+                <Meta {...{ createdAt, lastModified }} />
             </ListItemContent>
         </ListItem>
     );

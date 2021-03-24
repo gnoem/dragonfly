@@ -1,9 +1,8 @@
 import "./Loading.css";
 
-export const Loading = (props) => {
-    const iconSize = props.size ?? '5rem';
+export const Loading = () => {
     return (
-        <div className={`Loading${props.mini ? ' mini' : ''}`}>
+        <div className="Loading">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid">
                 <g transform="translate(80,50)">
                     <g transform="rotate(0)">

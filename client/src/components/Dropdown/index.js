@@ -2,8 +2,7 @@ import "./Dropdown.css";
 import { useEffect, useRef, useState } from "react";
 import { elementHasParent } from "../../utils";
 
-export const Dropdown = (props) => {
-    const { defaultValue, listItems, restoreDefault } = props;
+export const Dropdown = ({ defaultValue, listItems, restoreDefault, onChange, addNew, style }) => {
     const [display, setDisplay] = useState(() => {
         if (!listItems || !listItems.length) return 'Add new...';
         if (!defaultValue) return 'Select one';
@@ -33,7 +32,7 @@ export const Dropdown = (props) => {
         if (!dropdownList.current) return;
         dropdownList.current.style.maxHeight = isOpen ? dropdownMaxHeight(dropdownList.current) + 'px' : '0px';
         if (!isOpen) setAddingNew(false); // unrelated to maxHeight adjustment thing
-    }, [isOpen]);
+    }, [isOpen, addingNew]);
     useEffect(() => {
         if (addingNew && hasScrollbar) {
             dropdownList.current?.scrollTo({
@@ -51,18 +50,20 @@ export const Dropdown = (props) => {
     const toggleIsOpen = () => setIsOpen(prevState => !prevState);
     const handleClick = (e) => {
         setDisplay(e.target.innerHTML);
-        props.onChange(e.target.getAttribute('data-value'));
+        onChange(e.target.getAttribute('data-value'));
     }
     const generateList = () => {
         const buttonForAddNew =
-            <AddNew {...props}
-                key="dropdownItem-addNew"
-                addingNew={addingNew}
-                updateAddingNew={setAddingNew}
-                updateIsOpen={setIsOpen}
-                updateDisplay={setDisplay}
+            <AddNew key="dropdownItem-addNew"
+                {...{
+                    addNew,
+                    addingNew,
+                    updateAddingNew: setAddingNew,
+                    updateIsOpen: setIsOpen,
+                    updateDisplay: setDisplay
+                }}
             />;
-        if ((!listItems || !listItems.length) && props.addNew) return buttonForAddNew;
+        if ((!listItems || !listItems.length) && addNew) return buttonForAddNew;
         const array = [];
         for (let item of listItems) {
             array.push(
@@ -71,19 +72,18 @@ export const Dropdown = (props) => {
                 </li>
             );
         }
-        if (props.addNew) array.push(buttonForAddNew);
+        if (addNew) array.push(buttonForAddNew);
         return array;
     }
     return (
-        <div className={`Dropdown${isOpen ? ' expanded' : ''}${hasScrollbar ? ' scrollable' : ''}`} style={props.style}>
+        <div className={`Dropdown${isOpen ? ' expanded' : ''}${hasScrollbar ? ' scrollable' : ''}`} style={style}>
             <div className="dropdownDisplay" onClick={toggleIsOpen}>{display}</div>
             <ul className="dropdownList" ref={dropdownList}>{generateList()}</ul>
         </div>
     );
 }
 
-const AddNew = (props) => {
-    const { addingNew } = props;
+const AddNew = ({ addNew, addingNew, updateAddingNew, updateIsOpen, updateDisplay }) => {
     const [inputValue, setInputValue] = useState(null);
     const [inputError, setInputError] = useState(null);
     const inputRef = useRef(null);
@@ -91,13 +91,13 @@ const AddNew = (props) => {
         if (!addingNew) return setInputValue(null);
         inputRef.current.focus();
         const handleKeydown = (e) => {
-            if (e.key === 'Escape') return props.updateAddingNew(false);
+            if (e.key === 'Escape') return updateAddingNew(false);
             if (e.key === 'Enter') {
                 e.preventDefault();
-                props.addNew(inputRef.current.value)
+                addNew(inputRef.current.value)
                     .then(result => {
-                        props.updateDisplay(result);
-                        props.updateIsOpen(false);
+                        updateDisplay(result);
+                        updateIsOpen(false);
                         setInputError(null);
                     })
                     .catch(setInputError);
@@ -121,8 +121,8 @@ const AddNew = (props) => {
                             ? <span className="inputHint error">{inputError}</span>
                             : <span className="inputHint">Press Enter to submit, Esc to cancel.</span>}
                     </button>
-                :   <button type="button" className="addNew" onClick={() => props.updateAddingNew(true)}>
-                        {props.buttonContent || 'Add new...'}
+                :   <button type="button" className="addNew" onClick={() => updateAddingNew(true)}>
+                        Add new...
                     </button>
                 }
         </li>

@@ -1,14 +1,17 @@
 import "./Tooltip.css";
-import { useState, useEffect, useRef } from "react";
-import { elementHasParent } from "../../utils";
+import { useState, useEffect, useContext, useRef } from "react";
 import { Collection, Note } from "../../api";
+import { DataContext, ModalContext, ViewContext } from "../../contexts";
 import { handleError } from "../../services";
+import { elementHasParent } from "../../utils";
 import { Dropdown } from "../Dropdown";
 import { TagList, Tag } from "../Tags";
 
-export const Tooltip = (props) => {
-    const { name, parent, tooltipWillOpen, defaultContent, overflow } = props;
+export const Tooltip = ({ name, parent, tooltipWillOpen, defaultContent, overflow, ignoreClick }) => {
     const [adjustHeight, setAdjustHeight] = useState(false);
+    const { currentNote } = useContext(ViewContext);
+    const { createModal } = useContext(ModalContext);
+    const { user, tags, collections, refreshData } = useContext(DataContext);
     const tooltipRef = useRef(null);
     useEffect(() => {
         if (!tooltipWillOpen) return;
@@ -18,8 +21,8 @@ export const Tooltip = (props) => {
             tooltipRef.current.style.maxHeight = tooltipRef.current.scrollHeight + 'px';
         }
         const closeTooltip = (e) => {
-            if (props.ignoreClick) { // will be an array like ['.Modal', '#menu li']
-                for (let selector of props.ignoreClick) {
+            if (ignoreClick) { // will be an array like ['.Modal', '#menu li']
+                for (let selector of ignoreClick) {
                     if (elementHasParent(e.target, selector)) return;
                 }
             }
@@ -38,7 +41,15 @@ export const Tooltip = (props) => {
         return () => window.removeEventListener('click', closeTooltip);
     }, [tooltipWillOpen?.tooltipOpen, tooltipRef, adjustHeight]);
     const tooltipContent = () => {
-        const inherit = { ...props, updateAdjustHeight: setAdjustHeight }
+        const inherit = {
+            user,
+            currentNote,
+            tags,
+            collections,
+            refreshData,
+            createModal,
+            updateAdjustHeight: setAdjustHeight
+        }
         if (!tooltipWillOpen) return defaultContent;
         const { tooltipOpen } = tooltipWillOpen;
         if (tooltipOpen) return tooltipStore[name](inherit);
@@ -52,20 +63,19 @@ export const Tooltip = (props) => {
 }
 
 const tooltipStore = {
-    collection: (props) => <MoveNoteToCollection {...props} />,
-    tags: (props) => <TagNote {...props} />
+    collection: (inherit) => <MoveNoteToCollection {...inherit} />,
+    tags: (inherit) => <TagNote {...inherit} />
 }
 
-const MoveNoteToCollection = (props) => {
-    const { user, currentNote, collections, updateModal } = props;
+const MoveNoteToCollection = ({ user, collections, currentNote, createModal, refreshData }) => {
     const handleChange = (collectionId) => {
         Note.moveNoteToCollection(currentNote._id, collectionId)
-            .then(props.refreshData)
-            .catch(err => handleError(err, { updateModal }));
+            .then(() => refreshData())
+            .catch(err => handleError(err, { createModal }));
     }
     const handleAddNew = async (name) => {
         const onSuccess = ({ collection }) => {
-            props.refreshData();
+            refreshData();
             handleChange(collection._id);
             return collection.name;
         }
@@ -74,7 +84,7 @@ const MoveNoteToCollection = (props) => {
                 .catch(err => {
                     const { error } = err;
                     const handleFormError = error ? () => {} : null; // if form/validation error is undefined, should trigger updateModal fallback
-                    handleError(err, { handleFormError, updateModal });
+                    handleError(err, { handleFormError, createModal });
                     throw error.name; // ('name' is referring to collectionName input in error object, e.g. { error: { name: 'this field is required' } })
                 });
     };
@@ -104,8 +114,7 @@ const MoveNoteToCollection = (props) => {
     );
 }
 
-const TagNote = (props) => {
-    const { user, currentNote, tags } = props;
+const TagNote = ({ user, currentNote, tags, refreshData, createModal, updateAdjustHeight }) => {
     const [instantToggle, setInstantToggle] = useState([]);
     const addToInstantToggle = (tagId) => {
         const index = instantToggle.indexOf(tagId);
@@ -125,13 +134,13 @@ const TagNote = (props) => {
     }
     const tagNote = (tagId) => {
         const index = addToInstantToggle(tagId);
-        const onSuccess = () => props.refreshData(null, () => removeFromInstantToggle(index));
+        const onSuccess = () => refreshData(() => removeFromInstantToggle(index));
         Note.tagNote(currentNote._id, tagId).then(onSuccess);
     }
     const tagList = () => {
         const createTag = () => {
-            const onSuccess = () => props.refreshData().then(() => props.updateAdjustHeight(true));
-            props.updateModal('createTag', 'form', { _id: user._id, onSuccess });
+            const onSuccess = () => refreshData().then(() => updateAdjustHeight(true));
+            createModal('createTag', 'form', { _id: user._id, onSuccess });
         }
         const addNew = <Tag key="Tooltip-addNewTag" name="Add new" onClick={createTag} />;
         const list = tags.map(tag => {

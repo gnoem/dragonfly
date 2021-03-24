@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+        "baseUrl": "./src",
+        "paths": {
+            "api": ["./src/api/*"],
+            "assets": ["./src/assets/*"],
+            "components": ["./src/components/*"],
+            "contexts": ["./src/contexts/*"],
+            "hooks": ["./src/hooks/*"],
+            "services": ["./src/services/*"],
+            "utils": ["./src/utils/*"]
+        }
+    },
+    "exclude": ["node_modules", "build", "coverage", "dist", "lib"]
+}

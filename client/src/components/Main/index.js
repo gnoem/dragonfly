@@ -1,8 +1,9 @@
 import "./Main.css";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
+import { DataContext, ViewContext } from "../../contexts";
 import { Notes } from "../Notes";
-import { Collections } from "../Collections";
 import { MyAccount } from "../MyAccount";
+import { CollectionsList } from "../Collections";
 
 const getNotes = (view, allNotes) => {
     const notesTaggedWith = (tagsArray) => {
@@ -31,18 +32,19 @@ const getNotes = (view, allNotes) => {
     }
 }
 
-export const Main = (props) => {
-    const { view, contentType, allNotes, currentNote } = props;
+export const Main = ({ contentType, currentNote }) => {
     const [slideIn, setSlideIn] = useState(false);
+    const { view, updateView } = useContext(ViewContext);
+    const { user, notes: allNotes, refreshData } = useContext(DataContext);
     useEffect(() => {
         if (currentNote) setSlideIn(true);
         else setTimeout(() => setSlideIn(false), 200);
     }, [currentNote]);
     const content = (() => {
         switch (contentType) {
-            case 'notes': return <Notes {...props} notes={getNotes(view, allNotes)} />;
-            case 'collections': return <Collections {...props} />;
-            case 'my-account': return <MyAccount {...props} />;
+            case 'notes': return <Notes {...{ view, currentNote }} notes={getNotes(view, allNotes)} />;
+            case 'collections': return <CollectionsList {...{ allNotes, updateView }} />;
+            case 'my-account': return <MyAccount {...{ user, refreshData }} />;
             default: return <div>figure it out</div>;
         }
     })();

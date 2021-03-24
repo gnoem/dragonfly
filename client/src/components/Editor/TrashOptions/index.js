@@ -2,14 +2,13 @@ import "./TrashOptions.css";
 import { Note } from "../../../api";
 import { Button } from "../../Form";
 
-export const TrashOptions = (props) => {
-    const { currentNote } = props;
+export const TrashOptions = ({ currentNote, refreshData, createModal }) => {
     const restoreNote = () => {
-        Note.trashNote(currentNote._id).then(props.refreshData); // todo keep an eye on this
+        Note.trashNote(currentNote._id).then(() => refreshData()); // todo keep an eye on this
         // choosing not to include updateCurrentNote(null) as callback in case user wants to start editing immediately after removing from trash
     }
     const deletePermanently = () => {
-        props.updateModal('deleteNotePermanently', 'form', { _id: currentNote._id, onSuccess: props.refreshData });
+        createModal('deleteNotePermanently', 'form', { _id: currentNote._id, onSuccess: () => refreshData() });
     }
     return (
         <div className="TrashOptions">

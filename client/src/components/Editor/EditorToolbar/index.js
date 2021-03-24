@@ -1,15 +1,14 @@
 import "./EditorToolbar.css";
 import { RichUtils } from "draft-js";
 
-export const EditorToolbar = (props) => {
-    const { editorState } = props;
+export const EditorToolbar = ({ editorState, updateEditorState }) => {
     // todo if focus is on title input, do nothing
     const controlStyle = (e, type, value) => {
         e.preventDefault(); // onMouseDown + e.preventDefault rather than onClick preserves focus state in text editor
         const newState = (type === 'inline')
             ?   RichUtils.toggleInlineStyle(editorState, value)
             :   RichUtils.toggleBlockType(editorState, value);
-        props.updateEditorState(newState);
+        updateEditorState(newState);
     }
     const isInlineStyleActive = (style) => {
         const inlineStyle = editorState.getCurrentInlineStyle();

@@ -1,144 +1,57 @@
 import "./Dashboard.css";
-import { useState, useEffect, useRef, useCallback } from "react";
-import { handleError } from "../../services";
-import { User } from "../../api";
+import { useState, useEffect, useContext } from "react";
+import { DataContext, ViewContext } from "../../contexts";
 import { Loading } from "../Loading";
-import { Modal } from "../Modal";
-import { Login } from "../Login";
 import { Sidebar } from "../Sidebar";
 import { Main } from "../Main";
 
-export const Dashboard = (props) => {
-    const { id: identifier } = props.match.params;
-    const [accessToken, setAccessToken] = useState(null);
-    const [loginWarning, setLoginWarning] = useState(null);
-    const [view, setView] = useState({ type: 'all-notes' });
-    const [data, setData] = useState(null);
-    const [modal, setModal] = useState(null);
+export const Dashboard = ({ userId, accessToken }) => {
     const [isLoaded, setIsLoaded] = useState(false);
+    const { view, updateView } = useContext(ViewContext);
+    const { notes, collections, tags, refreshData } = useContext(DataContext);
     const contentType = (() => {
         const notesTypes = ['all-notes', 'starred-notes', 'trash', 'collection', 'tags'];
         if (notesTypes.includes(view?.type)) return 'notes';
         return view?.type;
     })();
     const isMobile = window.innerWidth < 900;
-    const userId = useRef(null);
     useEffect(() => {
-        const handleAuthError = (err) => {
-            setAccessToken(false);
-            if (err.status === 404) {
-                setLoginWarning('User not found');
-                return;
-            }
-            handleError(err, { updateModal: utils.updateModal });
-        }
-        const auth = (customId) => User.auth(customId ?? identifier).then(({ _id, token, username }) => {
-            if (username) {
-                window.history.pushState('', '', `/d/${username}`);
-                auth(username);
-                return;
-            }
-            setAccessToken(token);
-            userId.current = _id;
-        }).catch(handleAuthError);
-        auth();
-    }, []);
-    const refreshData = useCallback(async (_, callback) => {
-        User.getData(userId.current).then(({ data }) => {
-            setData(data);
-            callback?.();
+        if (accessToken) return refreshData(null, userId.current).then(() => {
             setIsLoaded(true);
-            return data;
-        })/* .catch(err => handleError(err, { updateModal: setModal })) */;
-    }, [identifier, accessToken]);
+        });
+    }, [userId.current, accessToken]);
     useEffect(() => {
-        if (accessToken) return refreshData();
-        // else reload?
-    }, [refreshData]);
-    useEffect(() => {
-        if (!data?.notes || !view.currentNote) return;
-        // make sure currentNote is up to date after possible change
-        const updatedCurrentNote = data.notes.find(note => note._id === view.currentNote._id);
-        setView(prevView => ({ ...prevView, currentNote: updatedCurrentNote }));
-    }, [data?.notes]);
-    useEffect(() => {
-        if (view.type !== 'collection') return;
-        // make sure current collection is up to date after possible change
-        const updatedCollection = data?.collections?.find(item => item._id === view.collection._id);
-        setView(prevView => ({ ...prevView, collection: updatedCollection }));
-    }, [data?.collections]);
-    useEffect(() => {
-        if (view.type !== 'tags') return;
-        // make sure current tags are up to date after possible change
-        // loop through view.tags, for each, get replaced tag info
-        const updatedTagList = (view) => {
-            const arrayWithPossibleNulls = view.tags.map(tag => {
-                return data?.tags?.find(item => item._id === tag._id);
-            });
-            const filteredArray = arrayWithPossibleNulls.filter(el => el != null);
-            return filteredArray;
+        // make sure currentNote, current collection, and current tags (all stored in 'view' state) are up to date after possible data change
+        const handleCurrentNote = () => {
+            if (!notes || !view.currentNote) return;
+            const updatedCurrentNote = notes.find(note => note._id === view.currentNote._id);
+            updateView(prevView => ({ ...prevView, currentNote: updatedCurrentNote }));
         }
-        setView(prevView => ({ ...prevView, tags: updatedTagList(prevView) }));
-    }, [data?.tags]);
-    const utils = {
-        updateModal: (content, type, options) => {
-            setModal({
-                content,
-                type: type ?? 'normal',
-                options
-            });
-        },
-        gracefullyCloseModal: () => {
-            setModal(prevState => ({ ...prevState, selfDestruct: true }));
-        },
-        updateCurrentNote: (note) => {
-            setView(prevView => ({
-                ...prevView,
-                currentNote: note
-            }));
-        },
-        updateUnsavedChanges: (value) => {
-            setView(prevView => ({
-                ...prevView,
-                unsavedChanges: value
-            }));
-        },
-        logout: async () => {
-            await fetch(`/logout`).then(() => {
-                setIsLoaded(false);
-                setTimeout(() => window.location.assign(window.location.href), 500);
-            }).catch(err => handleError(err, { updateModal: utils.updateModal }));
+        const handleCurrentCollection = () => {
+            if (view.type !== 'collection') return;
+            const updatedCollection = collections?.find(item => item._id === view.collection._id);
+            updateView(prevView => ({ ...prevView, collection: updatedCollection }));
         }
-    }
-    const inherit = {
-        isMobile,
-        modal, updateModal: setModal,
-        view, updateView: setView,
-        user: data?.user,
-        allNotes: data?.notes,
-        collections: data?.collections,
-        tags: data?.tags,
-        currentNote: view?.currentNote,
-        unsavedChanges: view?.unsavedChanges,
-        data, refreshData,
-        ...utils
-    }
-    const modalComponent = <Modal {...inherit} {...modal} setModal={setModal} exit={utils.gracefullyCloseModal} />;
-    if (accessToken === false) return (
-        <div className="Login">
-            {modal
-                ? modalComponent
-                : <Login username={identifier}
-                    loginWarning={loginWarning}
-                    updateAccessToken={setAccessToken} />}
-        </div>
-    );
+        const handleCurrentTags = () => {
+            if (view.type !== 'tags') return;
+            const updatedTagList = (view) => {
+                const arrayWithPossibleNulls = view.tags.map(tag => {
+                    return tags?.find(item => item._id === tag._id);
+                });
+                const filteredArray = arrayWithPossibleNulls.filter(el => el != null);
+                return filteredArray;
+            }
+            updateView(prevView => ({ ...prevView, tags: updatedTagList(prevView) }));
+        }
+        handleCurrentNote();
+        handleCurrentCollection();
+        handleCurrentTags();
+    }, [notes, collections, tags])
     if (!isLoaded) return <Loading />;
     return (
         <div className="Dashboard" data-mobile={isMobile}>
-            {modal && modalComponent}
-            <Sidebar {...inherit} />
-            <Main {...inherit} contentType={contentType} />
+            <Sidebar {...{ isMobile }} />
+            <Main {...{ contentType, currentNote: view?.currentNote }} />
         </div>
     );
 }

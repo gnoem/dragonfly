@@ -1,20 +1,20 @@
-import { useState, useRef } from "react";
+import { useState, useContext, useRef } from "react";
 import { User } from "../../api";
+import { ModalContext } from "../../contexts";
 import { useFormData, useFormError } from '../../hooks';
 import { Form, Submit, Button, Input } from "../Form";
 
-export const EditAccount = (props) => {
+export const EditAccount = ({ user, refreshData }) => {
     return (
         <>
-            <AccountDetails {...props} />
-            <EditPassword {...props} />
-            <DeleteAccount {...props} />
+            <AccountDetails {...{ user, refreshData }} />
+            <EditPassword {...{ user }} />
+            <DeleteAccount {...{ user }} />
         </>
     );
 }
 
-const AccountDetails = (props) => {
-    const { user } = props;
+const AccountDetails = ({ user, refreshData }) => {
     const [formData, updateFormData] = useFormData({
         firstName: user.firstName ?? '',
         lastName: user.lastName ?? '',
@@ -29,10 +29,10 @@ const AccountDetails = (props) => {
             window.history.pushState('', '', `/d/${user.username}`);
             originalUsername.current = user.username;
         }
-        props.refreshData();
+        refreshData();
     }
     return (
-        <Form {...props} onSubmit={handleSubmit} handleFormError={updateFormError}
+        <Form onSubmit={handleSubmit} handleFormError={updateFormError}
               formData={formData}
               title="Edit account details"
               submit={<Submit value="Save changes" cancel={false} />}>
@@ -70,8 +70,7 @@ const AccountDetails = (props) => {
     );
 }
 
-const EditPassword = (props) => {
-    const { user } = props;
+const EditPassword = ({ user }) => {
     const [formReset, setFormReset] = useState(false);
     const [formData, setFormData] = useState({});
     const onSuccess = () => setTimeout(handleCancel, 1000);
@@ -89,7 +88,7 @@ const EditPassword = (props) => {
         setFormReset(true);
     }
     return (
-        <Form {...props} onSubmit={handleSubmit} onSuccess={onSuccess} handleFormError={handleCancel}
+        <Form onSubmit={handleSubmit} onSuccess={onSuccess} handleFormError={handleCancel}
               reset={formReset}
               formData={formData}
               title="Change password"
@@ -108,19 +107,19 @@ const EditPassword = (props) => {
     );
 }
 
-const DeleteAccount = (props) => {
-    const { user } = props;
+const DeleteAccount = ({ user }) => {
+    const { createModal, closeModal } = useContext(ModalContext);
     const onSuccess = () => window.location.assign('/');
     const handleDelete = () => User.deleteAccount(user._id);
     const confirmDeleteAccount = () => {
         const content = (
-            <Form {...props} onSubmit={handleDelete} onSuccess={onSuccess}
+            <Form onSubmit={handleDelete} onSuccess={onSuccess}
                   title="Are you sure?"
-                  submit={<Submit buttonClass="caution" value="Yes, I'm sure" cancel={props.gracefullyCloseModal} />}>
+                  submit={<Submit buttonClass="caution" value="Yes, I'm sure" cancel={closeModal} />}>
                 If you proceed, any notes, settings, and other data associated with this account will be irrevocably lost. There is no going back from this!
             </Form>
         );
-        props.updateModal(content);
+        createModal(content);
     }
     return (
         <div className="deleteAccount">
@@ -133,17 +132,16 @@ const DeleteAccount = (props) => {
     )
 }
 
-export const CreateAccount = (props) => {
-    const { user } = props;
+export const CreateAccount = ({ user, refreshData }) => {
     const [formData, updateFormData] = useFormData({});
     const [updateFormError, resetFormError, warnFormError] = useFormError({});
     const handleSubmit = () => User.createAccount(user._id, formData).then(onSuccess);
     const onSuccess = ({ user }) => {
         window.history.pushState('', '', `/d/${user.username}`);
-        props.refreshData();
+        refreshData();
     };
     return (
-        <Form {...props} onSubmit={handleSubmit} handleFormError={updateFormError}
+        <Form onSubmit={handleSubmit} handleFormError={updateFormError}
               formData={formData}
               title="Create an account"
               submit={<Submit value="Save changes" cancel={false} />}>

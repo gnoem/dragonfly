@@ -1,7 +1,8 @@
 import "./NoteEditor.css";
 import "draft-js/dist/Draft.css";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useContext, useRef } from "react";
 import { Note } from "../../../api";
+import { DataContext, ViewContext } from "../../../contexts";
 import { EditorState, convertToRaw, convertFromRaw } from "draft-js";
 import { EditorToolbar } from "../EditorToolbar";
 import { TrashOptions } from "../TrashOptions";
@@ -9,8 +10,9 @@ import { NoteTitle, NoteBody } from "./components";
 import { Button } from "../../Form";
 import { GiantCornerButton } from "../../Page";
 
-export const NoteEditor = (props) => {
-    const { user, currentNote, unsavedChanges } = props;
+export const NoteEditor = ({ currentNote, refreshData, createModal }) => {
+    const { updateCurrentNote, unsavedChanges, updateUnsavedChanges } = useContext(ViewContext);
+    const { user } = useContext(DataContext);
     const newNote = !currentNote._id;
     const [editorTitle, setEditorTitle] = useState(newNote ? '' : currentNote.title);
     const [editorState, setEditorState] = useState(
@@ -48,14 +50,14 @@ export const NoteEditor = (props) => {
     const handleSubmit = async (optionalCallback) => {
         const contentState = editorState.getCurrentContent();
         const defaultCallback = () => {
-            props.updateUnsavedChanges(false);
+            updateUnsavedChanges(false);
             if (!newNote && simulateSaveButtonClick) setSimulateSaveButtonClick(false);
             // ^^^ error (can't perform state update on unmounted component) if i don't include !newNote
-            if (newNote) props.updateCurrentNote(null); //idk why but this feels right
+            if (newNote) updateCurrentNote(null); //idk why but this feels right
             // when saving a new note, close the editor afterwards
             // won't happen when editing existing notes - you open something up to work on it
             // todo come back to this
-            props.refreshData();
+            refreshData();
         }
         const handleCreateNote = () => {
             const formData = {
@@ -77,29 +79,35 @@ export const NoteEditor = (props) => {
     }
     const warnUnsavedChanges = () => {
         const closeEditor = () => {
-            props.updateUnsavedChanges(false);
-            props.updateCurrentNote(null);
-            props.refreshData();
+            updateUnsavedChanges(false);
+            updateCurrentNote(null);
+            refreshData();
         }
-        props.updateModal('warnUnsavedChanges', 'form', { saveChanges: () => handleSubmit(closeEditor), discardChanges: closeEditor });
+        createModal('warnUnsavedChanges', 'form', { saveChanges: () => handleSubmit(closeEditor), discardChanges: closeEditor });
     }
     const handleExit = () => {
         if (unsavedChanges) return warnUnsavedChanges();
-        props.updateCurrentNote(null);
+        updateCurrentNote(null);
     }
-    const inherit = {
-        ...props,
+    const editorShouldInherit = {
         newNote,
-        editorTitle, updateEditorTitle: setEditorTitle,
-        editorState, updateEditorState: setEditorState,
+        currentNote,
+        editorState,
+        updateEditorState: setEditorState,
+        updateEditorTitle: setEditorTitle,
+        unsavedChanges,
+        updateUnsavedChanges
     }
     return (
         <>
             <GiantCornerButton className="exit" onClick={handleExit} />
             <div className="NoteEditor">
-                {currentNote.trash ? <TrashOptions {...inherit} /> : <EditorToolbar {...inherit} />}
-                <NoteTitle {...inherit} />
-                <NoteBody {...inherit} />
+                {currentNote.trash
+                    ? <TrashOptions {...{ currentNote, refreshData, createModal }} />
+                    : <EditorToolbar {...{ editorState, updateEditorState: setEditorState }} />
+                }
+                <NoteTitle {...editorShouldInherit} />
+                <NoteBody {...editorShouldInherit} />
                 {showSaveChangesButton && <div className="saveChanges">
                     <Button type="button"
                             onClick={handleSubmit}

@@ -2,16 +2,15 @@ import { useEffect, useRef } from "react";
 import Immutable from 'immutable';
 import { Editor, EditorState, RichUtils, DefaultDraftBlockRenderMap } from 'draft-js';
 
-export const NoteTitle = (props) => {
-    const { newNote, currentNote, unsavedChanges } = props;
+export const NoteTitle = ({ newNote, currentNote, updateEditorTitle, unsavedChanges, updateUnsavedChanges }) => {
     useEffect(() => {
         if (newNote) titleInput?.current?.focus();
     }, [newNote]);
     const titleInput = useRef(null);
     const title = newNote ? '' : currentNote.title;
     const handleInput = (e) => {
-        props.updateEditorTitle(e.target.value);
-        if (!unsavedChanges) props.updateUnsavedChanges(true);
+        updateEditorTitle(e.target.value);
+        if (!unsavedChanges) updateUnsavedChanges(true);
     }
     return (
         <input
@@ -24,27 +23,26 @@ export const NoteTitle = (props) => {
     );
 }
 
-export const NoteBody = (props) => {
-    const { currentNote, editorState, unsavedChanges } = props;
+export const NoteBody = ({ currentNote, editorState, updateEditorState, unsavedChanges, updateUnsavedChanges }) => {
     const editorRef = useRef(null);
     const handleChange = (newState) => {
         const currentContent = editorState.getCurrentContent();
         const newContent = newState.getCurrentContent();
-        props.updateEditorState(newState);
+        updateEditorState(newState);
         if (currentContent === newContent) return;
-        if (!unsavedChanges) props.updateUnsavedChanges(true);
+        if (!unsavedChanges) updateUnsavedChanges(true);
     }
     const handleKeyCommand = (command, editorState) => {
         const newState = RichUtils.handleKeyCommand(editorState, command);
         if (newState) {
-            props.updateEditorState(newState);
-            if (!unsavedChanges) props.updateUnsavedChanges(true);
+            updateEditorState(newState);
+            if (!unsavedChanges) updateUnsavedChanges(true);
             return 'handled';
         }
         return 'not-handled';
     }
     const focusEditor = (e) => {
-        if (!editorRef.current.editor.contains(e.target)) props.updateEditorState(EditorState.moveFocusToEnd(editorState));
+        if (!editorRef.current.editor.contains(e.target)) updateEditorState(EditorState.moveFocusToEnd(editorState));
     }
     const blockRenderMap = Immutable.Map({
         'ALIGN-LEFT': {
@@ -80,8 +78,7 @@ export const NoteBody = (props) => {
     );
 }
 
-const CustomBlock = (props) => {
-    const { type, children } = props;
+const CustomBlock = ({ type, children }) => {
     return (
         <div className={type}>
             {children}

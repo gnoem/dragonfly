@@ -1,46 +1,46 @@
 import "./NoteOperations.css";
-import { useState, useRef } from "react";
+import { useState, useContext, useRef } from "react";
 import { Note } from "../../../api";
+import { ViewContext } from "../../../contexts";
 import { handleError } from "../../../services";
 import { Tooltip } from "../../Tooltip";
 
-export const NoteOperations = (props) => {
+export const NoteOperations = ({ currentNote, refreshData, createModal }) => {
+    const { updateCurrentNote } = useContext(ViewContext);
     const [collectionsTooltip, setCollectionsTooltip] = useState(false);
     const [tagsTooltip, setTagsTooltip] = useState(false);
     return (
         <div className="NoteOperations">
-            <StarNote {...props} />
-            <OptionItem {...props}
+            <StarNote {...{ currentNote, refreshData, createModal }} />
+            <OptionItem
                 name="collection"
                 onClick={() => setCollectionsTooltip(true)}
                 tooltipWillOpen={{ tooltipOpen: collectionsTooltip, updateTooltipOpen: setCollectionsTooltip }}
                 overflow={true}
                 defaultContent="Move to collection" />
-            <OptionItem {...props}
+            <OptionItem
                 name="tags"
                 onClick={() => setTagsTooltip(true)}
                 ignoreClick={['.Modal']}
                 tooltipWillOpen={{ tooltipOpen: tagsTooltip, updateTooltipOpen: setTagsTooltip }}
                 defaultContent="Tag this note" />
-            <TrashNote {...props} />
+            <TrashNote {...{ currentNote, updateCurrentNote, refreshData, createModal }} />
         </div>
     );
 }
 
-const OptionItem = (props) => {
-    const { name, className, onClick } = props;
+const OptionItem = ({ name, className, onClick, tooltipWillOpen, overflow, ignoreClick, defaultContent }) => {
     const tooltipParent = useRef(null);
     return (
         <div className={`OptionItem ${className ?? ''}`}>
             <button className={name} onClick={onClick} ref={tooltipParent}></button>
-            <Tooltip {...props} parent={tooltipParent} />
+            <Tooltip {...{ name, tooltipWillOpen, overflow, ignoreClick, defaultContent }} parent={tooltipParent} />
             <div className="tooltipArrow"></div>
         </div>
     );
 }
 
-const StarNote = (props) => {
-    const { currentNote, updateModal } = props;
+const StarNote = ({ currentNote, refreshData, createModal }) => {
     const [pulse, setPulse] = useState(false);
     const [instantToggle, setInstantToggle] = useState(null);
     const isStarred = (() => {
@@ -57,17 +57,17 @@ const StarNote = (props) => {
         setPulse(true);
         setTimeout(() => setPulse(false), 500);
         setInstantToggle(true);
-        const onSuccess = () => props.refreshData(null, () => setInstantToggle(false));
+        const onSuccess = () => refreshData(() => setInstantToggle(false));
         const onError = (err) => {
             setInstantToggle(false);
-            handleError(err, { updateModal });
+            handleError(err, { createModal });
         }
         Note.starNote(currentNote._id)
             .then(onSuccess)
             .catch(onError);
     }
     return (
-        <OptionItem {...props}
+        <OptionItem
             name="star"
             className={className}
             onClick={handleClick}
@@ -75,20 +75,19 @@ const StarNote = (props) => {
     );
 }
 
-const TrashNote = (props) => {
-    const { currentNote } = props;
+const TrashNote = ({ currentNote, updateCurrentNote, refreshData, createModal }) => {
     const handleClick = () => {
         const formOptions = {
             _id: currentNote._id,
             onSuccess: () => {
-                props.refreshData();
-                props.updateCurrentNote(null);
+                refreshData();
+                updateCurrentNote(null);
             }
         }
-        props.updateModal('trashNote', 'form', formOptions);
+        createModal('trashNote', 'form', formOptions);
     }
     return (
-        <OptionItem {...props}
+        <OptionItem
             name="trash"
             onClick={handleClick}
             defaultContent="Move to Trash" />

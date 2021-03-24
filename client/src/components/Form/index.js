@@ -1,12 +1,13 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
+import { ModalContext } from "../../contexts";
 import { handleError } from "../../services";
 import { Button } from "./Button";
 import { Input } from "./Input";
 
-export const Form = (props) => {
-    const { title, children, formClass, submit, formData, onSubmit, onSuccess, handleFormError, reset, updateModal } = props;
+export const Form = ({ title, children, formClass, submit, onSubmit, onSuccess, handleFormError, reset }) => {
     const [success, setSuccess] = useState(null);
     const [successPending, setSuccessPending] = useState(false);
+    const { modal, createModal } = useContext(ModalContext);
     const formRef = useRef(null);
     useEffect(() => {
         if (reset && formRef) formRef.current.reset();
@@ -15,30 +16,31 @@ export const Form = (props) => {
         e.preventDefault();
         setTimeout(() => {
             setSuccessPending(true);
-            onSubmit(formData) // does formData even need to be here? should already be in the declaration for onSubmit
-            // maybe as a fallback
+            onSubmit()
                 .then(() => setSuccess(true))
                 .then(() => setSuccess(false))
                 .catch(err => {
                     setSuccessPending(false);
-                    handleError(err, { handleFormError, updateModal });
+                    handleError(err, { handleFormError, createModal });
                 });
         }, 300);
     }
-    const customSubmit = submit ? React.cloneElement(submit, { ...props, success, onSuccess, successPending }) : null;
+    const submitShouldInherit = { modal, success, onSuccess, successPending };
+    const customSubmit = submit ? React.cloneElement(submit, submitShouldInherit) : null;
     return (
         <form onSubmit={handleSubmit} className={formClass} autoComplete="off" ref={formRef}>
             <h2>{title}</h2>
             {children}
-            {customSubmit ?? <Submit {...props} success={success} onSuccess={onSuccess} successPending={successPending} />}
+            {customSubmit ?? <Submit {...submitShouldInherit} />}
         </form>
     );
 }
 
-export const Submit = ({ modal, value, buttonClass, nvm, cancel, success, onSuccess, successPending, disabled, gracefullyCloseModal }) => {
+export const Submit = ({ modal, value, buttonClass, nvm, cancel, success, onSuccess, successPending, disabled }) => {
+    const { closeModal } = useContext(ModalContext);
     const handleCancel = () => {
         if (cancel) cancel();
-        if (modal) gracefullyCloseModal();
+        if (modal) closeModal();
     }
     return (
         <div className="buttons">

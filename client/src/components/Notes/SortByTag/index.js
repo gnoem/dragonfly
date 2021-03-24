@@ -1,16 +1,17 @@
 import "./SortByTag.css";
+import { useContext } from "react";
+import { DataContext } from "../../../contexts";
 import { Tag, TagList } from "../../Tags";
 import { Dropdown } from "../../Dropdown";
 
-export const SortByTag = (props) => {
-    const { view } = props;
-    const { sortMethod } = view;
+export const SortByTag = ({ user, view, updateView, refreshData, createModal }) => {
+    const { tags } = useContext(DataContext);
     return (
         <div className="SortByTag">
             {/* <Hint className="qmark">Right-click on a tag for more options.</Hint> */}
-            <SortTagTitle {...props} viewingTags={view.tags.length > 0} />
-            <SortTagGrid {...props} sortMethod={sortMethod ?? 'all'} />
-            <SortTagOptions {...props} />
+            <SortTagTitle {...{ tags }} viewingTags={view.tags.length > 0} />
+            <SortTagGrid {...{ user, tags, view, updateView, refreshData, createModal }} />
+            <SortTagOptions {...{ tags, updateView }} />
         </div>
     );
 }
@@ -20,8 +21,7 @@ const SortTagTitle = ({ tags, viewingTags }) => {
     return <h2>{viewingTags ? 'Viewing' : 'View'} notes tagged:</h2>;
 }
 
-const SortTagGrid = (props) => {
-    const { user, view, tags } = props;
+const SortTagGrid = ({ user, tags, view, updateView, refreshData, createModal }) => {
     const toggleTag = (tag) => {
         const updatedArray = (prevView) => {
             const tagsArray = [...prevView.tags];
@@ -30,7 +30,7 @@ const SortTagGrid = (props) => {
             if (isInArray) tagsArray.splice(index, 1); else tagsArray.push(tag);
             return tagsArray;
         }
-        props.updateView(prevView => ({
+        updateView(prevView => ({
             ...prevView,
             tags: updatedArray(prevView)
         }));
@@ -38,9 +38,9 @@ const SortTagGrid = (props) => {
     const tagList = () => {
         const formOptions = {
             _id: user._id,
-            onSuccess: props.refreshData
+            onSuccess: () => refreshData()
         }
-        const createTag = () => props.updateModal('createTag', 'form', formOptions);
+        const createTag = () => createModal('createTag', 'form', formOptions);
         const addNew = <Tag key="SortByTag-addNew" name="Add new" onClick={createTag} />;
         const list = tags.map(tag => {
             const { _id, name } = tag;
@@ -48,9 +48,9 @@ const SortTagGrid = (props) => {
                 const index = view.tags.findIndex(viewingTag => viewingTag._id === _id);
                 return index !== -1;
             })();
-            const formOptions = { _id, name, onSuccess: props.refreshData }
-            const editTag = () => props.updateModal('editTag', 'form', formOptions);
-            const deleteTag = () => props.updateModal('deleteTag', 'form', formOptions);
+            const formOptions = { _id, name, onSuccess: () => refreshData() }
+            const editTag = () => createModal('editTag', 'form', formOptions);
+            const deleteTag = () => createModal('deleteTag', 'form', formOptions);
             const tagContextMenu = {
                 menuItems: [{ label: 'Edit', onClick: editTag }, { label: 'Delete', onClick: deleteTag }]
             }
@@ -73,10 +73,9 @@ const SortTagGrid = (props) => {
     );
 }
 
-const SortTagOptions = (props) => {
-    const { tags } = props;
+const SortTagOptions = ({ tags, updateView }) => {
     const updateSortMethod = (value) => {
-        props.updateView(prevView => ({
+        updateView(prevView => ({
             ...prevView,
             sortMethod: value
         }));

@@ -1,26 +1,27 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
+import { DataContext, ViewContext } from "../../contexts";
 import { List, ListHeader, ListHeaderButton, ListContent, ListFooter } from "../List";
 import { NotePreview } from "./NotePreview";
 import { SortByTag } from "./SortByTag";
 import { MiniMenu } from "../MiniMenu";
 
-export const NoteList = (props) => {
-    const { notes } = props;
+export const NoteList = ({ notes, view, refreshData, createModal, closeModal }) => {
     if (!notes) return null;
     return (
         <List>
-            <NoteListHeader {...props} />
-            <NoteListContent {...props} />
+            <NoteListHeader {...{ notes, view, refreshData, createModal, closeModal }} />
+            <NoteListContent {...{ notes, view }} />
         </List>
     );
 }
 
-const NoteListHeader = (props) => {
-    const { view } = props;
+const NoteListHeader = ({ notes, view, refreshData, createModal, closeModal }) => {
+    const { updateView } = useContext(ViewContext);
+    const { user } = useContext(DataContext);
     switch (view.type) {
         case 'all-notes': return (
             <ListHeader title="All notes">
-                <NewNoteButton {...props} />
+                <NewNoteButton {...{ updateView }} />
             </ListHeader>
         );
         case 'starred-notes': return (
@@ -29,26 +30,26 @@ const NoteListHeader = (props) => {
         case 'trash': return (
             <ListHeader
                 title="Trash"
-                button={<TrashMenuButton {...props} />}
+                button={<TrashMenuButton {...{ user, notes, refreshData, createModal, closeModal }} />}
                 grid={true} />
         );
         case 'collection': return (
             <ListHeader
                 title={<CollectionTitle name={view.collection.name} />}
-                button={<CollectionMenuButton {...props} collection={view.collection} />}
+                button={<CollectionMenuButton {...{ createModal, refreshData, updateView }} collection={view.collection} />}
                 grid={true} />
         );
         case 'tags': return (
             <ListHeader>
-                <SortByTag {...props} />
+                <SortByTag {...{ user, view, updateView, refreshData, createModal }} />
             </ListHeader>
         );
         default: return null;
     }
 }
 
-const NewNoteButton = (props) => {
-    const newNote = () => props.updateView(prevView => ({ ...prevView, currentNote: true }));
+const NewNoteButton = ({ updateView }) => {
+    const newNote = () => updateView(prevView => ({ ...prevView, currentNote: true }));
     return (
         <ListHeaderButton>
             <button className="createNew" onClick={newNote}>
@@ -58,26 +59,25 @@ const NewNoteButton = (props) => {
     );
 }
 
-const TrashMenuButton = (props) => {
-    const { user, notes } = props;
+const TrashMenuButton = ({ user, notes, refreshData, createModal, closeModal }) => {
     const [showingMenu, setShowingMenu] = useState(false);
     const trashIsEmpty = (word) => (
         <div>
             <h2>Your Trash is empty</h2>
             No notes here to {word ?? 'select'}!
             <div className="buttons">
-                <button type="button" className="gryed" onClick={props.gracefullyCloseModal}>Close</button>
+                <button type="button" onClick={closeModal}>Close</button>
             </div>
         </div>
     );
-    const formData = { _id: user._id, onSuccess: props.refreshData };
+    const formData = { _id: user._id, onSuccess: () => refreshData() };
     const restoreAll = () => {
-        if (notes.length) props.updateModal('restoreTrash', 'form', formData);
-        else props.updateModal(trashIsEmpty('restore'));
+        if (notes.length) createModal('restoreTrash', 'form', formData);
+        else createModal(trashIsEmpty('restore'));
     }
     const emptyTrash = () => {
-        if (notes.length) props.updateModal('emptyTrash', 'form', formData);
-        else props.updateModal(trashIsEmpty('delete'));
+        if (notes.length) createModal('emptyTrash', 'form', formData);
+        else createModal(trashIsEmpty('delete'));
     }
     const menuItems = [{ label: 'Restore all', onClick: restoreAll }, { label: 'Empty Trash', onClick: emptyTrash }];
     return (
@@ -88,15 +88,15 @@ const TrashMenuButton = (props) => {
     );
 }
 
-const CollectionMenuButton = (props) => {
-    const { _id, name } = props.collection;
+const CollectionMenuButton = ({ collection, updateView, createModal, refreshData }) => {
+    const { _id, name } = collection;
     const [showingMenu, setShowingMenu] = useState(false);
     const onSuccessDelete = () => {
-        props.refreshData();
-        props.updateView({ type: 'collections' });
+        refreshData();
+        updateView({ type: 'collections' });
     }
-    const editCollection = () => props.updateModal('editCollection', 'form', { _id, name, onSuccess: props.refreshData });
-    const deleteCollection = () => props.updateModal('deleteCollection', 'form', { _id, name, onSuccess: onSuccessDelete });
+    const editCollection = () => createModal('editCollection', 'form', { _id, name, onSuccess: () => refreshData() });
+    const deleteCollection = () => createModal('deleteCollection', 'form', { _id, name, onSuccess: onSuccessDelete });
     const menuItems = [{ label: 'Edit', onClick: editCollection }, { label: 'Delete', onClick: deleteCollection }]
     return (
         <ListHeaderButton>
@@ -115,19 +115,19 @@ const CollectionTitle = ({ name }) => {
     );
 }
 
-const NoteListContent = (props) => {
-    const { notes, view } = props;
+const NoteListContent = ({ view, notes }) => {
+    const { updateCurrentNote } = useContext(ViewContext);
     const notesList = () => {
         return notes.map(note => (
             <NotePreview
                 key={`NotePreview-${note._id}`}
                 {...note}
-                onClick={() => props.updateCurrentNote(note)}
+                onClick={() => updateCurrentNote(note)}
             />
         ));
     }
     return (
-        <ListContent className={(view.type === 'collection') && 'slideUpIn'} footer={<NoteListFooter {...props} />}>
+        <ListContent className={(view.type === 'collection') && 'slideUpIn'} footer={<NoteListFooter {...{ view, notes }} />}>
             {notesList()}
         </ListContent>
     );

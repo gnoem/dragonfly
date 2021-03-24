@@ -2,12 +2,11 @@ import "./MyAccount.css";
 import { EditAccount, CreateAccount } from "./forms.js";
 import { Header } from "../Page";
 
-export const MyAccount = (props) => {
-    const { user } = props;
+export const MyAccount = ({ user, refreshData }) => {
     return (
         <div className="MyAccount">
             <Header />
-            {user.username ? <EditAccount {...props} /> : <CreateAccount {...props} />}
+            {user.username ? <EditAccount {...{ user, refreshData }} /> : <CreateAccount {...{ user, refreshData }} />}
         </div>
     );
 }

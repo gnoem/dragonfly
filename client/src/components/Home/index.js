@@ -3,7 +3,7 @@ import { User } from "../../api";
 import { Button } from "../Form";
 import { Header } from "../Page";
 
-export default function Home() {
+export const Home = () => {
     const onSuccess = ({ user }) => window.location.assign(`/d/${user._id}`);
     const createUser = () => User.createUser().then(onSuccess);
     return (
