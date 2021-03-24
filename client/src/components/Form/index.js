@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
-import { ModalContext } from "../../contexts";
-import { handleError } from "../../services";
+import { ModalContext } from "contexts";
+import { handleError } from "services";
 import { Button } from "./Button";
 import { Input } from "./Input";
 

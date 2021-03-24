@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { DataContext, ModalContext } from "../../contexts";
+import { DataContext, ModalContext } from "contexts";
 import { List, ListHeader, ListContent, ListFooter } from "../List";
 import { CollectionPreview } from "./CollectionPreview";
 

@@ -1,6 +1,6 @@
 import "./Login.css";
-import { User } from "../../api";
-import { useFormData, useFormError } from "../../hooks";
+import { User } from "api";
+import { useFormData, useFormError } from "hooks";
 import { Form, Submit, Input } from "../Form";
 import { Header } from "../Page";
 import { Checkbox } from "../Checkbox";

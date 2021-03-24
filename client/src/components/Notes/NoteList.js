@@ -1,5 +1,5 @@
 import { useContext, useState } from "react";
-import { DataContext, ViewContext } from "../../contexts";
+import { DataContext, ViewContext } from "contexts";
 import { List, ListHeader, ListHeaderButton, ListContent, ListFooter } from "../List";
 import { NotePreview } from "./NotePreview";
 import { SortByTag } from "./SortByTag";

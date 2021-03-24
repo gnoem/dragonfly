@@ -1,7 +1,7 @@
 import { useState, useContext, useRef } from "react";
-import { User } from "../../api";
-import { ModalContext } from "../../contexts";
-import { useFormData, useFormError } from '../../hooks';
+import { User } from "api";
+import { ModalContext } from "contexts";
+import { useFormData, useFormError } from 'hooks';
 import { Form, Submit, Button, Input } from "../Form";
 
 export const EditAccount = ({ user, refreshData }) => {

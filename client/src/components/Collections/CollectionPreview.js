@@ -1,5 +1,5 @@
 import { useContext, useState } from "react";
-import { ModalContext, DataContext } from "../../contexts";
+import { ModalContext, DataContext } from "contexts";
 import { ListItem, ListItemContent } from "../List/ListItem";
 import { MiniMenu } from "../MiniMenu";
 

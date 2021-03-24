@@ -1,7 +1,7 @@
 import "./App.css";
-import { AppContextProvider } from "./contexts";
-import { Home } from "./components/Home";
-import { Gateway } from "./components/Gateway";
+import { AppContextProvider } from "contexts";
+import { Home } from "components/Home";
+import { Gateway } from "components/Gateway";
 import {
     BrowserRouter as Router,
     Switch,

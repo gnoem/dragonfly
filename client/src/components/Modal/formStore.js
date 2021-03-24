@@ -1,5 +1,5 @@
-import { Note, Collection, Tag } from "../../api";
-import { useFormData, useFormError } from '../../hooks';
+import { Note, Collection, Tag } from "api";
+import { useFormData, useFormError } from 'hooks';
 import { Form, Input, Submit } from "../Form";
 
 export const formStore = {

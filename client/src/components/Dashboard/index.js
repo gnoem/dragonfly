@@ -1,6 +1,6 @@
 import "./Dashboard.css";
 import { useState, useEffect, useContext } from "react";
-import { DataContext, ViewContext } from "../../contexts";
+import { DataContext, ViewContext } from "contexts";
 import { Loading } from "../Loading";
 import { Sidebar } from "../Sidebar";
 import { Main } from "../Main";

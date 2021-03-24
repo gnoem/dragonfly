@@ -1,6 +1,6 @@
 import "./Dropdown.css";
 import { useEffect, useRef, useState } from "react";
-import { elementHasParent } from "../../utils";
+import { elementHasParent } from "utils";
 
 export const Dropdown = ({ defaultValue, listItems, restoreDefault, onChange, addNew, style }) => {
     const [display, setDisplay] = useState(() => {

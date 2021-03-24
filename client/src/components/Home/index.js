@@ -1,5 +1,5 @@
 import "./Home.css";
-import { User } from "../../api";
+import { User } from "api";
 import { Button } from "../Form";
 import { Header } from "../Page";
 

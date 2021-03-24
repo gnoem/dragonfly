@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext, useRef } from "react";
 import { User } from "api";
-import { ModalContext } from "../../contexts";
+import { ModalContext } from "contexts";
 import { handleError } from "services";
 import { Modal } from "../Modal";
 import { Dashboard } from "../Dashboard";

@@ -1,6 +1,6 @@
 import "./SortByTag.css";
 import { useContext } from "react";
-import { DataContext } from "../../../contexts";
+import { DataContext } from "contexts";
 import { Tag, TagList } from "../../Tags";
 import { Dropdown } from "../../Dropdown";
 

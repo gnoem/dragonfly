@@ -1,7 +1,7 @@
 import "./Modal.css";
 import { useEffect, useContext, useRef } from "react";
-import { DataContext, ModalContext } from "../../contexts";
-import { elementHasParent } from "../../utils";
+import { DataContext, ModalContext } from "contexts";
+import { elementHasParent } from "utils";
 import { formStore } from "./formStore";
 import { Error, customErrorStore } from "./Alert";
 
