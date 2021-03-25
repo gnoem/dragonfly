@@ -13,8 +13,12 @@ export const customErrorStore = {
     somethingWentWrong: (props) => <SomethingWentWrong {...props} />
 }
 
-const SomethingWentWrong = ({ options }) => {
+const SomethingWentWrong = ({ options, closeModal }) => {
     const { status, message, error, stack, wisdom, attribution } = options;
+    const handleCancel = () => {
+        closeModal();
+        setTimeout(() => window.location.assign('/'), 200);
+    }
     return (
         <Error>
             <blockquote>
@@ -31,7 +35,7 @@ const SomethingWentWrong = ({ options }) => {
                         {stack && <code>{JSON.stringify(stack)}</code>}
                     </div>
                 </details>}
-            <Submit value="Send error report" nvm="Close and reload" />
+            <Submit value="Send error report" nvm="Close and reload" onCancel={handleCancel} />
         </Error>
     );
 }

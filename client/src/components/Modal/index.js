@@ -14,7 +14,7 @@ export const Modal = ({ children, content, type, options, ignoreClick, selfDestr
         switch (type) {
             case 'form': return formStore[content]({ user, options, closeModal });
             case 'error': return <Error>{content}</Error>;
-            case 'customError': return customErrorStore[content]({ options });
+            case 'customError': return customErrorStore[content]({ options, closeModal });
             default: return content;
         }
     }

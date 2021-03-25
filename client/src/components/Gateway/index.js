@@ -10,7 +10,7 @@ export const Gateway = ({ match }) => {
     const { id: identifier } = match.params;
     const [accessToken, setAccessToken] = useState(null);
     const [loginWarning, setLoginWarning] = useState(null);
-    const { modal, setModal, closeModal } = useContext(ModalContext);
+    const { modal, createModal } = useContext(ModalContext);
     const userId = useRef(null);
     useEffect(() => {
         const handleAuthError = (err) => {
@@ -19,7 +19,7 @@ export const Gateway = ({ match }) => {
                 setLoginWarning('User not found');
                 return;
             }
-            handleError(err, { updateModal: setModal });
+            handleError(err, { createModal });
         }
         const auth = (customId) => User.auth(customId ?? identifier).then(({ _id, token, username }) => {
             if (username) {
