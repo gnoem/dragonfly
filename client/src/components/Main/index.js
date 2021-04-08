@@ -2,8 +2,9 @@ import "./Main.css";
 import { useState, useEffect, useContext } from "react";
 import { DataContext, ViewContext } from "contexts";
 import { Notes } from "../Notes";
-import { MyAccount } from "../MyAccount";
 import { CollectionsList } from "../Collections";
+import { MyAccount } from "../MyAccount";
+import { Settings } from "../Settings";
 
 const getNotes = (view, allNotes) => {
     const notesTaggedWith = (tagsArray) => {
@@ -45,6 +46,7 @@ export const Main = ({ contentType, currentNote }) => {
             case 'notes': return <Notes {...{ view, currentNote }} notes={getNotes(view, allNotes)} />;
             case 'collections': return <CollectionsList {...{ allNotes, updateView }} />;
             case 'my-account': return <MyAccount {...{ user, refreshData }} />;
+            case 'settings': return <Settings {...{ user, refreshData }} />;
             default: return <div>figure it out</div>;
         }
     })();

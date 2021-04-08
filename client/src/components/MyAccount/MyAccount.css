@@ -1,7 +1,4 @@
 .MyAccount {
-    padding: 4rem 5rem 5rem 5rem;
-    height: 100%;
-    overflow: auto;
     display: flex;
     flex-direction: column;
     gap: 2rem;
