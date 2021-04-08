@@ -23,3 +23,10 @@ button.GiantCornerButton.exit::before {
 button.GiantCornerButton.back::before {
     content: '\f060';
 }
+@media (max-width: 900px) {
+    button.GiantCornerButton {
+        font-size: 1.9rem;
+        top: 1rem;
+        right: 1.1rem;
+    }
+}

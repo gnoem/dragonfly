@@ -31,3 +31,11 @@
 .Login .Checkbox label {
     font-size: 0.9rem;
 }
+@media (max-width: 900px) {
+    .Login {
+        width: 100%;
+    }
+    .Login .Input {
+        width: 100%;
+    }
+}

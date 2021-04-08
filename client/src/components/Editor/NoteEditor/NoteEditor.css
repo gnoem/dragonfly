@@ -4,9 +4,10 @@
 .NoteEditor {
     width: 100%;
     height: 100%;
+    overflow: hidden;
     display: grid;
     grid-template-rows: auto auto 1fr;
-    animation: slidedown 0.2s 1;
+    animation: slideDownIn 0.2s 1;
 }
 .NoteEditor input[type=text] {
     margin-bottom: 1rem;
@@ -19,7 +20,7 @@
 .NoteEditor .saveChanges {
     text-align: right;
     padding-right: 3rem;
-    animation: slideup 0.2s 1;
+    animation: slideUpIn 0.2s 1;
 }
 .NoteEditor .saveChanges button {
     background: var(--deep-gradient);
@@ -27,6 +28,7 @@
 }
 .NoteBody {
     width: 100%;
+    overflow: auto;
 }
 .NoteBody blockquote {
     margin: 0;
@@ -50,11 +52,14 @@
 .NoteBody .align-justify, .NoteBody .align-justify * {
     text-align: justify;
 }
-@media screen and (max-width: 900px) {
-    .NoteEditor input[type=text] {
-        margin: 0 1.5rem;
+@media (max-width: 900px) {
+    .NoteEditor {
+        padding: 2rem 2.5rem 0 2rem;
+        overflow: auto;
+        animation: none;
     }
-    .NoteBody {
-        padding: 1.5rem 1.5rem 6.5rem;
+    .NoteEditor input[type=text] {
+        width: 100%;
+        font-size: 1.2rem;
     }
 }

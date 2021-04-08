@@ -1,7 +1,8 @@
 .EditorToolbar {
     display: flex;
     flex-wrap: wrap;
-    place-items: center;
+    align-items: center;
+    justify-content: flex-start;
     margin-bottom: 2rem;
 }
 .EditorToolbar hr {
@@ -32,4 +33,22 @@
 }
 .EditorToolbar button + button {
     margin-left: 0.5rem;
+}
+@media (max-width: 900px) {
+    .EditorToolbar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        margin: 0;
+        padding: 1.5rem 1rem;
+        flex-wrap: nowrap;
+        overflow: auto;
+    }
+    .EditorToolbar hr {
+        margin: auto 0.5rem;
+    }
+    .EditorToolbar .group:last-of-type {
+        padding-right: 3.5rem;
+    }
 }

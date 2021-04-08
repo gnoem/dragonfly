@@ -75,3 +75,13 @@
 .Tooltip .Tag > button {
     width: 100%;
 }
+@media (max-width: 900px) {
+    .Tooltip .TagListContainer {
+        height: 7rem;
+        overflow: auto;
+    }
+    .Tooltip .TagList {
+        width: calc(100vw - 7rem);
+        height: 100%;
+    }
+}

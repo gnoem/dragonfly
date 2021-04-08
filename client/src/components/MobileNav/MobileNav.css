@@ -1,0 +1,60 @@
+.MobileNav {
+    background: transparent;
+}
+.MobileNav button.menuButton {
+    position: fixed;
+    z-index: 999;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    font-size: 1.7rem;
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 999px;
+    background: var(--med-gradient);
+    margin: 0;
+    padding: 0;
+    display: grid;
+    place-items: center;
+    box-shadow: 0.2rem 0.2rem 1rem rgba(0, 0, 0, 0.2);
+}
+.MobileNav button.menuButton::before {
+    content: '\f0c9';
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+}
+
+.NavMenu {
+    position: fixed;
+    z-index: 9999;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--darkest-theme-color);
+    transform-origin: center;
+    animation: 0.2s slideUpIn 1 forwards;
+}
+.NavMenu.goodbye {
+    animation: 0.2s slideDownOut 1 forwards;
+}
+.NavMenu button.exit {
+    position: fixed;
+    top: 1.5rem;
+    right: 1.5rem;
+    font-size: 1.5rem;
+    color: #fff;
+    background: 0;
+    border: 0;
+    padding: 0;
+    margin: 0;
+}
+.NavMenu button.exit::before {
+    content: '\f00d';
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+}
+.NavMenu .Nav {
+    padding: 1rem 1.5rem 1.5rem;
+    height: 100%;
+    overflow: auto;
+}

@@ -4,3 +4,11 @@
     height: 100%;
     position: relative;
 }
+@media (max-width: 900px) {
+    .Editor {
+        padding: 0;
+        height: calc(100% - 4.5rem);
+        display: grid;
+        grid-template-columns: 1fr auto;
+    }
+}

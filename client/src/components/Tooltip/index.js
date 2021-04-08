@@ -152,7 +152,7 @@ const TagNote = ({ user, currentNote, tags, refreshData, createModal, updateAdju
         return list;
     }
     return (
-        <div>
+        <div className="TagListContainer">
             <strong>Tag this note</strong>
             <TagList>
                 {tagList()}

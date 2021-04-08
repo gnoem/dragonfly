@@ -10,3 +10,12 @@
 .Guest h1 {
     font-size: 5rem;
 }
+@media (max-width: 900px) {
+    .Guest {
+        padding: 2rem;
+    }
+    .Guest h1 {
+        font-size: 3rem;
+        margin-bottom: 0;
+    }
+}

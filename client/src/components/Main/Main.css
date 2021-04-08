@@ -3,11 +3,6 @@
     height: 100%;
     overflow: hidden;
 }
-.Main h1 {
-    font-family: var(--display-font);
-    font-size: 10vh;
-    line-height: 1;
-}
 .Main.slide .List {
     animation: slideInFromLeft 0.2s 1;
 }

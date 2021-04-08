@@ -102,7 +102,7 @@
 }
 .ListContent {
     overflow: auto;
-    /* animation: 0.2s slideup 1; // todo */
+    /* animation: 0.2s slideUpIn 1; // todo */
 }
 .ListContent::-webkit-scrollbar {
 	width: 0.5rem;
@@ -120,4 +120,24 @@
     font-weight: 300;
     font-size: 1.5rem;
     color: #444;
+}
+@media (max-width: 900px) {
+    .List {
+        padding: 2rem;
+        min-width: unset;
+    }
+    .ListHeader h2 {
+        font-size: 1.5rem;
+    }
+    .ListHeader button.createNew {
+        width: 2rem;
+        height: 2rem;
+        font-size: 1.1rem;
+    }
+    .ListContent {
+        width: 100%;
+    }
+    .ListFooter {
+        font-size: 1.2rem;
+    }
 }

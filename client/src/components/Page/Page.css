@@ -6,3 +6,8 @@
 .Page h1.Header {
     margin-bottom: 1.5rem;
 }
+@media (max-width: 900px) {
+    .Page {
+        padding: 2rem;
+    }
+}

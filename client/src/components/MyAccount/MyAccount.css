@@ -28,3 +28,14 @@
 .deleteAccount .buttons {
     margin: 0;
 }
+@media (max-width: 900px) {
+    .deleteAccount {
+        grid-template:
+            'header'    auto
+            'text'      1fr
+            'button'    auto / 100%;
+    }
+    .deleteAccount .buttons {
+        margin-top: 1rem;
+    }
+}

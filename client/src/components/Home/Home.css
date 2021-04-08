@@ -5,3 +5,15 @@
     background: var(--dark-gradient);
     margin-top: 2rem;
 }
+@media (max-width: 900px) {
+    .Home {
+        padding: 2rem;
+    }
+    .Home h1.Header {
+        font-size: 3rem;
+        margin-bottom: 1.5rem;
+    }
+    .Home button {
+        margin-top: 1.5rem;
+    }
+}

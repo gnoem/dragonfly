@@ -1,5 +1,5 @@
 .Main[data-editor='true'] .NoteOperations {
-    animation: slideup 0.2s 1;
+    animation: slideUpIn 0.2s 1;
 }
 .NoteOperations {
     position: fixed;
@@ -60,4 +60,16 @@
 }
 .NoteOperations .OptionItem.pulse button {
     animation: 0.5s pulse 1;
+}
+@media (max-width: 900px) {
+    .NoteOperations {
+        top: 4.5rem;
+        right: 1.1rem;
+    }
+    .NoteOperations::after {
+        display: none;
+    }
+    .NoteOperations .OptionItem > button {
+        font-size: 1rem;
+    }
 }

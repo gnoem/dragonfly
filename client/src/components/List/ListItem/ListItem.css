@@ -53,3 +53,26 @@
     color: #52d19e;
     font-size: 0.8rem;
 }
+@media (max-width: 900px) {
+    .ListItem {
+        width: 100%;
+    }
+    .ListItem > div:first-of-type {
+        width: 100%;
+        padding-left: 1rem;
+        padding-bottom: 1rem;
+    }
+    .ListItem + .ListItem > div:first-of-type {
+        padding-top: 0;
+    }
+    .ListItem h2 {
+        font-size: 0.9rem;
+        margin-bottom: 0.2rem;
+    }
+    .ListItem span.excerpt {
+        font-size: 0.8rem;
+    }
+    .ListItem span.meta {
+        font-size: 0.7rem;
+    }
+}

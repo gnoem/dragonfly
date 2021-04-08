@@ -1,5 +1,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.6);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
@@ -28,7 +38,7 @@
     from { opacity: 1; }
     to { opacity: 0; }
 }
-@keyframes slideup {
+@keyframes slideUpIn {
     from {
         opacity: 0;
         transform: translate3d(0, 2rem, 0);
@@ -38,7 +48,7 @@
         transform: translate3d(0, 0, 0);
     }
 }
-@keyframes slidedown {
+@keyframes slideDownIn {
     from {
         opacity: 0;
         transform: translate3d(0, -2rem, 0);
@@ -46,6 +56,16 @@
     to {
         opacity: 1;
         transform: translate3d(0, 0, 0);
+    }
+}
+@keyframes slideDownOut {
+    from {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+    }
+    to {
+        opacity: 0;
+        transform: translate3d(0, 2rem, 0);
     }
 }
 @keyframes slideInFromRight {
@@ -290,6 +310,19 @@ button.ellipsis::before {
 .buttons.smaller button, button.smaller {
     padding: 0.7rem 1rem;
 }
+@media (max-width: 600px) {
+    .buttons {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+    }
+    .buttons button + button {
+        margin: 0;
+    }
+}
+
 blockquote {
     margin: 1rem 0;
     border-left: 0.2rem solid #ddd;
@@ -376,10 +409,15 @@ form .formComponent + .formComponent {
 form input:not([type=submit]):focus {
     border-color: var(--med-theme-color);
 }
-@media screen and (max-width: 900px) {
+@media (max-width: 900px) {
     form .formGrid {
         grid-gap: 1rem;
         grid-template-rows: 1fr auto;
         grid-template-columns: auto;
+    }
+}
+@media (max-width: 600px) {
+    form .formGrid {
+        grid-gap: 0.5rem;
     }
 }
