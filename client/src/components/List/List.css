@@ -123,8 +123,13 @@
 }
 @media (max-width: 900px) {
     .List {
-        padding: 2rem;
+        padding: 4rem;
         min-width: unset;
+    }
+}
+@media (max-width: 600px) {
+    .List {
+        padding: 2rem;
     }
     .ListHeader h2 {
         font-size: 1.5rem;

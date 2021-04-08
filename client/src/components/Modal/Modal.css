@@ -54,13 +54,15 @@
     .modalContainer {
         width: 100%;
     }
+    .modalContent h2 {
+        width: calc(100% - 1.5rem);
+        font-size: 1.3rem;
+    }
+}
+@media (max-width: 600px) {
     .modalContent {
         min-width: unset;
         width: 90vw;
         padding: 1.5rem;
-    }
-    .modalContent h2 {
-        width: calc(100% - 1.5rem);
-        font-size: 1.3rem;
     }
 }

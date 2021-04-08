@@ -8,7 +8,7 @@ import { MobileContext } from "contexts";
 
 export const Dashboard = ({ userId, accessToken }) => {
     const [isLoaded, setIsLoaded] = useState(false);
-    const { isMobile } = useContext(MobileContext);
+    const { mobileLayout } = useContext(MobileContext);
     const { view, updateView } = useContext(ViewContext);
     const { notes, collections, tags, refreshData } = useContext(DataContext);
     const contentType = (() => {
@@ -51,7 +51,7 @@ export const Dashboard = ({ userId, accessToken }) => {
     if (!isLoaded) return <Loading />;
     return (
         <div className="Dashboard">
-            <Sidebar {...{ isMobile }} />
+            <Sidebar {...{ mobileLayout }} />
             <Main {...{ contentType, currentNote: view?.currentNote }} />
         </div>
     );

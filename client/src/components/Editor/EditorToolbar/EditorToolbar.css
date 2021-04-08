@@ -36,19 +36,27 @@
 }
 @media (max-width: 900px) {
     .EditorToolbar {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 100%;
         margin: 0;
-        padding: 1.5rem 1rem;
-        flex-wrap: nowrap;
-        overflow: auto;
+        justify-content: space-between;
     }
     .EditorToolbar hr {
-        margin: auto 0.5rem;
+        background: none;
+        width: 100%;
+        height: 0.5rem;
     }
-    .EditorToolbar .group:last-of-type {
-        padding-right: 3.5rem;
+    .EditorToolbar .group {
+        width: 100%;
+        justify-content: center;
+    }
+    .EditorToolbar button {
+        color: #ddd;
+    }
+    .EditorToolbar button.active {
+        background: rgba(255, 255, 255, 0.2);
+    }
+}
+@media (max-width: 600px) {
+    .EditorToolbar {
+        justify-content: flex-start;
     }
 }

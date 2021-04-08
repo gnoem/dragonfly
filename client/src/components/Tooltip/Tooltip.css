@@ -67,7 +67,6 @@
 /* TAGLIST IN TOOLTIP */
 .Tooltip .TagList {
     width: 300px;
-    margin-bottom: 0.2rem;
 }
 .Tooltip .Tag {
     flex: 1 0 auto;
@@ -76,6 +75,12 @@
     width: 100%;
 }
 @media (max-width: 900px) {
+    .Tooltip:first-of-type {
+        top: -50%;
+        bottom: unset; 
+    }
+}
+@media (max-width: 600px) {
     .Tooltip .TagListContainer {
         height: 7rem;
         overflow: auto;

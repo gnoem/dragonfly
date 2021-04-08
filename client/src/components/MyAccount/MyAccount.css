@@ -1,7 +1,9 @@
 .MyAccount {
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+}
+.MyAccount form + form, .deleteAccount {
+    margin-top: 2rem;
 }
 .MyAccount h1 {
     margin: 0;
@@ -29,6 +31,9 @@
     margin: 0;
 }
 @media (max-width: 900px) {
+    .MyAccount .buttons {
+        justify-content: flex-start;
+    }
     .deleteAccount {
         grid-template:
             'header'    auto
@@ -36,6 +41,6 @@
             'button'    auto / 100%;
     }
     .deleteAccount .buttons {
-        margin-top: 1rem;
+        margin-top: 1.5rem;
     }
 }

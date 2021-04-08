@@ -43,6 +43,9 @@
 .NoteOperations .OptionItem button::before {
     font: 900 1em 'Font Awesome 5 Free';
 }
+.NoteOperations .OptionItem button.format::before {
+    content: '\f031';
+}
 .NoteOperations .OptionItem button.star::before {
     content: '\f005';
 }
@@ -63,13 +66,19 @@
 }
 @media (max-width: 900px) {
     .NoteOperations {
-        top: 4.5rem;
-        right: 1.1rem;
+        top: 5.5rem;
+        right: 2rem;
     }
     .NoteOperations::after {
         display: none;
     }
     .NoteOperations .OptionItem > button {
         font-size: 1rem;
+    }
+}
+@media (max-width: 600px) {
+    .NoteOperations {
+        top: 4.5rem;
+        right: 1.1rem;
     }
 }

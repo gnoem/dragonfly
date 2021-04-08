@@ -38,7 +38,6 @@
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    gap: 0.5rem;
     font-size: 1rem;
     text-transform: uppercase;
     margin-bottom: 0.5rem;
@@ -52,18 +51,11 @@
 .ListItem .hasStar {
     color: #52d19e;
     font-size: 0.8rem;
+    margin-left: 0.5rem;
 }
 @media (max-width: 900px) {
-    .ListItem {
-        width: 100%;
-    }
-    .ListItem > div:first-of-type {
-        width: 100%;
-        padding-left: 1rem;
-        padding-bottom: 1rem;
-    }
-    .ListItem + .ListItem > div:first-of-type {
-        padding-top: 0;
+    .ListItem:hover {
+        border-left-color: #C6CBC9;
     }
     .ListItem h2 {
         font-size: 0.9rem;
@@ -74,5 +66,17 @@
     }
     .ListItem span.meta {
         font-size: 0.7rem;
+    }
+}
+@media (max-width: 600px) {
+    .ListItem {
+        width: 100%;
+    }
+    .ListItem > div:first-of-type {
+        padding-left: 1rem;
+        padding-bottom: 1rem;
+    }
+    .ListItem + .ListItem > div:first-of-type {
+        padding-top: 0;
     }
 }

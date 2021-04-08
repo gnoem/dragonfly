@@ -1,16 +1,18 @@
 import "./NoteEditor.css";
 import "draft-js/dist/Draft.css";
-import { useState, useEffect, useContext, useRef } from "react";
+import { useState, useEffect, useContext } from "react";
 import { Note } from "api";
-import { DataContext, ViewContext } from "contexts";
+import { DataContext, ViewContext, MobileContext } from "contexts";
 import { EditorState, convertToRaw, convertFromRaw } from "draft-js";
 import { EditorToolbar } from "../EditorToolbar";
 import { TrashOptions } from "../TrashOptions";
 import { NoteTitle, NoteBody } from "./components";
 import { Button } from "../../Form";
+import { NoteOperations } from "../NoteOperations";
 import { GiantCornerButton } from "../../Page";
 
 export const NoteEditor = ({ currentNote, refreshData, createModal }) => {
+    const { mobileLayout } = useContext(MobileContext);
     const { updateCurrentNote, unsavedChanges, updateUnsavedChanges } = useContext(ViewContext);
     const { user } = useContext(DataContext);
     const newNote = !currentNote._id;
@@ -20,9 +22,7 @@ export const NoteEditor = ({ currentNote, refreshData, createModal }) => {
     );
     const [showSaveChangesButton, setShowSaveChangesButton] = useState(false);
     const [simulateSaveButtonClick, setSimulateSaveButtonClick] = useState(false); // prop for button, to simulate click event after Ctrl + S
-    const isMounted = useRef(false);
     useEffect(() => {
-        isMounted.current = true;
         const keys = [];
         const keydown = (e) => {
             keys[e.key] = true;
@@ -41,7 +41,6 @@ export const NoteEditor = ({ currentNote, refreshData, createModal }) => {
         return () => {
             window.removeEventListener('keydown', keydown);
             window.removeEventListener('keyup', keyup);
-            isMounted.current = false;
         }
     }, []);
     useEffect(() => {
@@ -102,10 +101,8 @@ export const NoteEditor = ({ currentNote, refreshData, createModal }) => {
         <>
             <GiantCornerButton className="exit" onClick={handleExit} />
             <div className="NoteEditor">
-                {currentNote.trash
-                    ? <TrashOptions {...{ currentNote, refreshData, createModal }} />
-                    : <EditorToolbar {...{ editorState, updateEditorState: setEditorState }} />
-                }
+                {(currentNote.trash) && <TrashOptions {...{ currentNote, refreshData, createModal }} />}
+                {(!currentNote.trash && !mobileLayout) && <EditorToolbar {...{ editorState, updateEditorState: setEditorState }} />}
                 <NoteTitle {...editorShouldInherit} />
                 <NoteBody {...editorShouldInherit} />
                 {showSaveChangesButton && <div className="saveChanges">
@@ -119,6 +116,8 @@ export const NoteEditor = ({ currentNote, refreshData, createModal }) => {
                     </Button>
                 </div>}
             </div>
+            {(!currentNote.trash && !newNote) &&
+                <NoteOperations {...{ currentNote, editorState, updateEditorState: setEditorState, refreshData, createModal }} />}
         </>
     );
 }

@@ -1,6 +1,5 @@
 .Checkbox {
     display: flex;
-    gap: 0.4rem;
     align-items: center;
 }
 .Checkbox + .Checkbox {
@@ -21,6 +20,7 @@
     border-radius: 999px;
     cursor: pointer;
     flex: 0 0 auto;
+    margin-right: 0.4rem;
 }
 .checkboxElement span.svg {
     transform: translate3d(0,0,0) scale(1);

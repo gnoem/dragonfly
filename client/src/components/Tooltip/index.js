@@ -6,19 +6,21 @@ import { handleError } from "services";
 import { elementHasParent } from "utils";
 import { Dropdown } from "../Dropdown";
 import { TagList, Tag } from "../Tags";
+import { EditorToolbar } from "components/Editor/EditorToolbar";
 
-export const Tooltip = ({ name, parent, tooltipWillOpen, defaultContent, overflow, ignoreClick }) => {
+export const Tooltip = ({ name, parent, tooltipWillOpen, defaultContent, editorState, updateEditorState, overflow, ignoreClick }) => {
     const [adjustHeight, setAdjustHeight] = useState(false);
     const { currentNote } = useContext(ViewContext);
     const { createModal } = useContext(ModalContext);
     const { user, tags, collections, refreshData } = useContext(DataContext);
     const tooltipRef = useRef(null);
     useEffect(() => {
+        const { current: tooltip } = tooltipRef;
         if (!tooltipWillOpen) return;
-        if (!tooltipRef.current) return;
+        if (!tooltip) return;
         const { tooltipOpen, updateTooltipOpen } = tooltipWillOpen;
         if (tooltipOpen) {
-            tooltipRef.current.style.maxHeight = tooltipRef.current.scrollHeight + 'px';
+            tooltip.style.maxHeight = tooltip.scrollHeight + 'px';
         }
         const closeTooltip = (e) => {
             if (ignoreClick) { // will be an array like ['.Modal', '#menu li']
@@ -26,19 +28,20 @@ export const Tooltip = ({ name, parent, tooltipWillOpen, defaultContent, overflo
                     if (elementHasParent(e.target, selector)) return;
                 }
             }
-            if (!tooltipRef.current || !parent.current) return () => window.removeEventListener('click', closeTooltip);
-            if (tooltipRef.current.contains(e.target)) return;
+            if (!tooltip || !parent.current) return () => window.removeEventListener('mousedown', closeTooltip);
+            if (tooltip.contains(e.target)) return;
             if (parent.current.contains(e.target)) return;
-            tooltipRef.current.classList.add('closing');
-            tooltipRef.current.style.maxHeight = '0';
+            tooltip.classList.add('closing');
+            tooltip.style.maxHeight = '0';
             setTimeout(() => {
+                if (!tooltip) return;
                 updateTooltipOpen(false);
-                tooltipRef.current.classList.remove('closing');
-                tooltipRef.current.style = '';
+                tooltip.classList.remove('closing');
+                tooltip.style = '';
             }, 200);
         }
-        window.addEventListener('click', closeTooltip);
-        return () => window.removeEventListener('click', closeTooltip);
+        window.addEventListener('mousedown', closeTooltip);
+        return () => window.removeEventListener('mousedown', closeTooltip);
     }, [tooltipWillOpen?.tooltipOpen, tooltipRef, adjustHeight]);
     const tooltipContent = () => {
         const inherit = {
@@ -46,6 +49,8 @@ export const Tooltip = ({ name, parent, tooltipWillOpen, defaultContent, overflo
             currentNote,
             tags,
             collections,
+            editorState,
+            updateEditorState,
             refreshData,
             createModal,
             updateAdjustHeight: setAdjustHeight
@@ -63,8 +68,18 @@ export const Tooltip = ({ name, parent, tooltipWillOpen, defaultContent, overflo
 }
 
 const tooltipStore = {
+    format: (inherit) => <FormattingOptions {...inherit} />,
     collection: (inherit) => <MoveNoteToCollection {...inherit} />,
     tags: (inherit) => <TagNote {...inherit} />
+}
+
+const FormattingOptions = ({ editorState, updateEditorState }) => {
+    return (
+        <div className="FormattingOptions">
+            <strong>Formatting options</strong>
+            <EditorToolbar {...{ editorState, updateEditorState }} />
+        </div>
+    );
 }
 
 const MoveNoteToCollection = ({ user, collections, currentNote, createModal, refreshData }) => {

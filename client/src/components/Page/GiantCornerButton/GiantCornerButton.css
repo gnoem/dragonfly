@@ -25,6 +25,13 @@ button.GiantCornerButton.back::before {
 }
 @media (max-width: 900px) {
     button.GiantCornerButton {
+        font-size: 2.1rem;
+        top: 1.7rem;
+        right: 1.9rem;
+    }
+}
+@media (max-width: 600px) {
+    button.GiantCornerButton {
         font-size: 1.9rem;
         top: 1rem;
         right: 1.1rem;

@@ -8,6 +8,7 @@ export const EditorToolbar = ({ editorState, updateEditorState }) => {
         const newState = (type === 'inline')
             ?   RichUtils.toggleInlineStyle(editorState, value)
             :   RichUtils.toggleBlockType(editorState, value);
+        // todo: if input is not focused, then focus it - maybe just for mobile/tablet
         updateEditorState(newState);
     }
     const isInlineStyleActive = (style) => {

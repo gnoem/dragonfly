@@ -54,12 +54,23 @@
 }
 @media (max-width: 900px) {
     .NoteEditor {
-        padding: 2rem 2.5rem 0 2rem;
+        padding: 4rem;
+        padding-right: 4.5rem;
         overflow: auto;
         animation: none;
+        display: block;
     }
     .NoteEditor input[type=text] {
         width: 100%;
         font-size: 1.2rem;
+    }
+}
+@media (max-width: 600px) {
+    .NoteEditor {
+        padding: 2rem 2.5rem 2rem 2rem;
+    }
+    .NoteEditor .saveChanges {
+        text-align: center;
+        padding: 0;
     }
 }

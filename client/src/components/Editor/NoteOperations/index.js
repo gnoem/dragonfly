@@ -4,13 +4,24 @@ import { Note } from "api";
 import { ViewContext } from "contexts";
 import { handleError } from "services";
 import { Tooltip } from "../../Tooltip";
+import { MobileContext } from "contexts";
 
-export const NoteOperations = ({ currentNote, refreshData, createModal }) => {
+export const NoteOperations = ({ currentNote, editorState, updateEditorState, refreshData, createModal }) => {
+    const { mobileLayout } = useContext(MobileContext);
     const { updateCurrentNote } = useContext(ViewContext);
     const [collectionsTooltip, setCollectionsTooltip] = useState(false);
     const [tagsTooltip, setTagsTooltip] = useState(false);
+    const [formatTooltip, setFormatTooltip] = useState(false);
     return (
         <div className="NoteOperations">
+            {mobileLayout && (
+                <OpenFormattingOptions {...{
+                    formatTooltip,
+                    updateFormatTooltip: setFormatTooltip,
+                    editorState,
+                    updateEditorState
+                }} />
+            )}
             <StarNote {...{ currentNote, refreshData, createModal }} />
             <OptionItem
                 name="collection"
@@ -29,15 +40,38 @@ export const NoteOperations = ({ currentNote, refreshData, createModal }) => {
     );
 }
 
-const OptionItem = ({ name, className, onClick, tooltipWillOpen, overflow, ignoreClick, defaultContent }) => {
+const OptionItem = ({ name, className, onClick, onMouseDown, tooltipWillOpen, overflow, editorState, updateEditorState, ignoreClick, defaultContent }) => {
     const tooltipParent = useRef(null);
     return (
         <div className={`OptionItem ${className ?? ''}`}>
-            <button className={name} onClick={onClick} ref={tooltipParent}></button>
-            <Tooltip {...{ name, tooltipWillOpen, overflow, ignoreClick, defaultContent }} parent={tooltipParent} />
+            <button className={name} onMouseDown={onMouseDown} onClick={onMouseDown ? null : onClick} ref={tooltipParent}></button>
+            <Tooltip {...{
+                name,
+                tooltipWillOpen,
+                overflow,
+                editorState,
+                updateEditorState,
+                ignoreClick,
+                defaultContent
+            }} parent={tooltipParent} />
             <div className="tooltipArrow"></div>
         </div>
     );
+}
+
+const OpenFormattingOptions = ({ formatTooltip, updateFormatTooltip, editorState, updateEditorState }) => {
+    const handleMouseDown = (e) => {
+        e.preventDefault();
+        updateFormatTooltip(true);
+    }
+    return (
+        <OptionItem
+            name="format"
+            onMouseDown={handleMouseDown}
+            tooltipWillOpen={{ tooltipOpen: formatTooltip, updateTooltipOpen: updateFormatTooltip }}
+            defaultContent="Formatting options"
+            {...{ editorState, updateEditorState }} />
+    )
 }
 
 const StarNote = ({ currentNote, refreshData, createModal }) => {

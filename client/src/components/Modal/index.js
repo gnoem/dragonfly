@@ -7,7 +7,8 @@ import { Error, customErrorStore } from "./Alert";
 
 // custom modals located in: NoteList ("trash is empty")
 
-export const Modal = ({ children, content, type, options, ignoreClick, selfDestruct }) => {
+export const Modal = ({ children, content, type, options, selfDestruct }) => {
+    const { ignoreClick } = options;
     const { user } = useContext(DataContext);
     const { setModal, closeModal } = useContext(ModalContext);
     const formContent = () => {
@@ -39,6 +40,8 @@ const ModalWrapper = ({ children, setModal, closeModal, ignoreClick, selfDestruc
         }, 10); // for custom error messages this is necessary for fadein effect!! todo FIGURE OUT WHY AND FIX BETTER!!!!! UGH!!!!!
         const destroyModal = (e) => {
             if (ignoreClick) { // will be an array of selectors like ['button', '#menu li']
+                console.dir(ignoreClick);
+                console.dir(e.target);
                 for (let selector of ignoreClick) {
                     if (elementHasParent(e.target, selector)) return;
                 }

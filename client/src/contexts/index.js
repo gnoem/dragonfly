@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { User } from "api";
 
 export const MobileContext = React.createContext(null);
@@ -7,18 +7,24 @@ export const DataContext = React.createContext(null);
 export const ViewContext = React.createContext(null);
 
 const MobileContextProvider = ({ children }) => {
-    const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
-    useEffect(() => {
-        const resize = () => {
-            if (!isMobile && window.innerWidth <= 900) return setIsMobile(true);
-            if (isMobile && window.innerWidth > 900) return setIsMobile(false);
-            // not debouncing since setIsMobile is called conditionally
+    const [mobileLayout, setMobileLayout] = useState(null);
+    const resize = useCallback(() => {
+        if (window.innerWidth <= 600) {
+            if (mobileLayout !== 'mobile') return setMobileLayout('mobile');
         }
+        else if (window.innerWidth <= 900) {
+            if (mobileLayout !== 'tablet') return setMobileLayout('tablet');
+        }
+        else if (mobileLayout) return setMobileLayout(false);
+        // not debouncing since setMobileLayout is called conditionally
+    }, [mobileLayout]);
+    useEffect(() => {
+        resize();
         window.addEventListener('resize', resize);
-        return () => window.addEventListener('resize', resize);
-    }, []);
+        return () => window.removeEventListener('resize', resize);
+    }, [resize]);
     return (
-        <MobileContext.Provider value={{ isMobile }}>
+        <MobileContext.Provider value={{ mobileLayout }}>
             {children}
         </MobileContext.Provider>
     );

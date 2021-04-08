@@ -8,6 +8,11 @@
 }
 @media (max-width: 900px) {
     .Page {
+        padding: 4rem;
+    }
+}
+@media (max-width: 600px) {
+    .Page {
         padding: 2rem;
     }
 }

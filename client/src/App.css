@@ -411,13 +411,13 @@ form input:not([type=submit]):focus {
 }
 @media (max-width: 900px) {
     form .formGrid {
-        grid-gap: 1rem;
+        grid-gap: 0.5rem;
         grid-template-rows: 1fr auto;
         grid-template-columns: auto;
     }
 }
 @media (max-width: 600px) {
     form .formGrid {
-        grid-gap: 0.5rem;
+        grid-gap: 0.2rem;
     }
 }

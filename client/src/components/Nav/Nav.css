@@ -6,15 +6,15 @@
     background: #333;
     width: 90%;
 }
-.Nav nav ul {
+.Nav ul {
     margin: 0;
     padding: 0;
     list-style: none;
 }
-.Nav nav ul li {
+.Nav ul li {
     margin: 1.5rem 0;
 }
-.Nav nav button {
+.Nav button {
     font-weight: normal;
     margin: 0 0.5rem;
     display: grid;
@@ -24,7 +24,7 @@
     padding: 0;
     background: 0;
 }
-.Nav nav button::before {
+.Nav button::before {
     font-family: 'Font Awesome 5 Free';
     font-weight: 900;
     font-size: 1.2rem;
@@ -32,7 +32,7 @@
     margin-right: 0.5rem;
     transition: 0.2s;
 }
-.Nav nav button:hover::before {
+.Nav button:hover::before {
     transform: scale(1.2);
     text-shadow: 0 0 0.5rem #fff;
 }
@@ -62,4 +62,19 @@
 }
 .Nav button.logout::before {
     content: '\f2f5';
+}
+@media (max-width: 900px) and (min-width: 601px) {
+    .Nav li:first-of-type {
+        margin-top: 1rem;
+    }
+    .Nav button {
+        font-size: 0;
+        margin: 0 auto;
+    }
+    .Nav button::before {
+        margin: 0 auto;
+    }
+    .Nav button:hover::before {
+        text-shadow: none;
+    }
 }
