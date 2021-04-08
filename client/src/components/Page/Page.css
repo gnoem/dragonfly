@@ -1,0 +1,8 @@
+.Page {
+    padding: 4rem 5rem 5rem 5rem;
+    height: 100%;
+    overflow: auto;
+}
+.Page h1.Header {
+    margin-bottom: 1.5rem;
+}
