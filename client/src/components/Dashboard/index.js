@@ -4,9 +4,11 @@ import { DataContext, ViewContext } from "contexts";
 import { Loading } from "../Loading";
 import { Sidebar } from "../Sidebar";
 import { Main } from "../Main";
+import { MobileContext } from "contexts";
 
 export const Dashboard = ({ userId, accessToken }) => {
     const [isLoaded, setIsLoaded] = useState(false);
+    const { isMobile } = useContext(MobileContext);
     const { view, updateView } = useContext(ViewContext);
     const { notes, collections, tags, refreshData } = useContext(DataContext);
     const contentType = (() => {
@@ -14,7 +16,6 @@ export const Dashboard = ({ userId, accessToken }) => {
         if (notesTypes.includes(view?.type)) return 'notes';
         return view?.type;
     })();
-    const isMobile = window.innerWidth < 900;
     useEffect(() => {
         if (accessToken) return refreshData(null, userId.current).then(() => {
             setIsLoaded(true);
@@ -49,7 +50,7 @@ export const Dashboard = ({ userId, accessToken }) => {
     }, [notes, collections, tags])
     if (!isLoaded) return <Loading />;
     return (
-        <div className="Dashboard" data-mobile={isMobile}>
+        <div className="Dashboard">
             <Sidebar {...{ isMobile }} />
             <Main {...{ contentType, currentNote: view?.currentNote }} />
         </div>

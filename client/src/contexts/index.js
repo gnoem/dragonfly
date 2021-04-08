@@ -1,9 +1,28 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { User } from "api";
 
+export const MobileContext = React.createContext(null);
 export const ModalContext = React.createContext(null);
 export const DataContext = React.createContext(null);
 export const ViewContext = React.createContext(null);
+
+const MobileContextProvider = ({ children }) => {
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
+    useEffect(() => {
+        const resize = () => {
+            if (!isMobile && window.innerWidth <= 900) return setIsMobile(true);
+            if (isMobile && window.innerWidth > 900) return setIsMobile(false);
+            // not debouncing since setIsMobile is called conditionally
+        }
+        window.addEventListener('resize', resize);
+        return () => window.addEventListener('resize', resize);
+    }, []);
+    return (
+        <MobileContext.Provider value={{ isMobile }}>
+            {children}
+        </MobileContext.Provider>
+    );
+}
 
 const ModalContextProvider = ({ children }) => {
     const [modal, setModal] = useState(null);
@@ -83,12 +102,14 @@ const ViewContextProvider = ({ children }) => {
 
 export const AppContextProvider = ({ children }) => {
     return (
-        <ModalContextProvider>
-            <DataContextProvider>
-                <ViewContextProvider>
-                    {children}
-                </ViewContextProvider>
-            </DataContextProvider>
-        </ModalContextProvider>
+        <MobileContextProvider>
+            <ModalContextProvider>
+                <DataContextProvider>
+                    <ViewContextProvider>
+                        {children}
+                    </ViewContextProvider>
+                </DataContextProvider>
+            </ModalContextProvider>
+        </MobileContextProvider>
     );
 }
