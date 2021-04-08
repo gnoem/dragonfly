@@ -8,7 +8,9 @@ export const User = {
     createAccount: async (_id, formData) => await post(`/user/${_id}`, formData),
     editAccount: async (_id, formData) => await put(`/user/${_id}`, formData),
     changePassword: async (_id, formData) => await put(`/user/${_id}/password`, formData),
-    deleteAccount: async (_id) => await del(`/user/${_id}`)
+    deleteAccount: async (_id) => await del(`/user/${_id}`),
+    resetPassword: async ({ email }) => await post(`/token`, { email }),
+    validateToken: async (token) => await get(`/token/${token}`)
 }
 
 export const Note = {

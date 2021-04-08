@@ -1,5 +1,7 @@
 import "./App.css";
-import { AppContextProvider } from "contexts";
+import { useContext } from "react";
+import { ModalContext } from "contexts";
+import { Modal } from "components/Modal";
 import { Home } from "components/Home";
 import { Gateway } from "components/Gateway";
 import {
@@ -7,20 +9,26 @@ import {
     Switch,
     Route
 } from "react-router-dom";
+import { AccountRecovery } from "components/AccountRecovery";
 
-export default function App() {
+export const App = () => {
+    const { modal, createModal } = useContext(ModalContext);
     return (
-        <AppContextProvider>
-            <div className="App">
-                <Router>
-                    <Switch>
-                        <Route path="/d/:id" render={(props) => <Gateway {...props} />} />
-                        <Route path="/">
-                            <Home />
-                        </Route>
-                    </Switch>
-                </Router>
-            </div>
-        </AppContextProvider>
+        <div className="App">
+            {modal && <Modal {...modal} />}
+            <Router>
+                <Switch>
+                    <Route path="/recover/:token">
+                        <AccountRecovery {...{ createModal }} />
+                    </Route>
+                    <Route path="/d/:identifier">
+                        <Gateway {...{ createModal }} />
+                    </Route>
+                    <Route path="/">
+                        <Home />
+                    </Route>
+                </Switch>
+            </Router>
+        </div>
     );
 }

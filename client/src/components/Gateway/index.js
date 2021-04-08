@@ -1,16 +1,14 @@
-import React, { useState, useEffect, useContext, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { useParams } from "react-router-dom";
 import { User } from "api";
-import { ModalContext } from "contexts";
 import { handleError } from "services";
-import { Modal } from "../Modal";
 import { Dashboard } from "../Dashboard";
 import { Login } from "../Login";
 
-export const Gateway = ({ match }) => {
-    const { id: identifier } = match.params;
+export const Gateway = ({ createModal }) => {
+    const { identifier } = useParams();
     const [accessToken, setAccessToken] = useState(null);
     const [loginWarning, setLoginWarning] = useState(null);
-    const { modal, createModal } = useContext(ModalContext);
     const userId = useRef(null);
     useEffect(() => {
         const handleAuthError = (err) => {
@@ -32,15 +30,13 @@ export const Gateway = ({ match }) => {
         }).catch(handleAuthError);
         auth();
     }, []);
-    return (
-        <>
-            {modal && <Modal {...modal} />}
-            {(accessToken === false)
-                ? <Login
-                    username={identifier}
-                    loginWarning={loginWarning}
-                    updateAccessToken={setAccessToken} />
-                : <Dashboard {...{ userId, accessToken }} />}
-        </>
+    if (accessToken === false) return (
+        <Login
+            username={identifier}
+            loginWarning={loginWarning}
+            updateAccessToken={setAccessToken}
+            createModal={createModal}
+        />
     );
+    return <Dashboard {...{ userId, accessToken }} />;
 }

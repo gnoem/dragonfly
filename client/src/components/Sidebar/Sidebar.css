@@ -1,6 +1,6 @@
 .Sidebar {
     grid-area: sidebar;
-    background: var(--sidebar-bg);
+    background: var(--darkest-theme-color);
     padding: 1.5rem;
     height: 100%;
     overflow: auto;

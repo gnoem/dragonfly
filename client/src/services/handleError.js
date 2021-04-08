@@ -3,5 +3,6 @@ export const handleError = (err, handlers = {}) => {
     if (err.name === 'ValidationError') {
         return handleFormError ? handleFormError(err.error) : createModal(err.message, 'error');
     }
+    console.dir(err);
     return createModal('somethingWentWrong', 'customError', err);
 }

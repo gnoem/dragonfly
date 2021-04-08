@@ -1,15 +1,3 @@
-.Login {
-    width: 100%;
-    height: 80%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-}
-.Login h1 {
-    font-size: 5rem;
-}
 .Login .passwordProtected {
     display: inline-flex;
     place-items: center;
@@ -35,6 +23,10 @@
 }
 .Login input[type=password] {
     margin-top: 0.4rem;
+}
+.Login .Checkbox {
+    margin-top: 1rem;
+    justify-content: center;
 }
 .Login .Checkbox label {
     font-size: 0.9rem;

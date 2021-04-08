@@ -49,3 +49,20 @@ export const Tag = mongoose.model(
     }),
     'tags'
 );
+
+export const Token = mongoose.model(
+    'Token',
+    new Schema({
+        userId: {
+            type: String,
+            required: true
+        },
+        token: {
+            type: String,
+            required: true
+        }
+    }, { timestamps: true }).index({ 'updatedAt': 1 }, {
+        expireAfterSeconds: (process.env.NODE_ENV === 'production') ? 7200 : 600
+    }),
+    'tokens'
+);

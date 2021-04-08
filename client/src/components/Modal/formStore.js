@@ -1,8 +1,11 @@
+import { User } from "api";
 import { Note, Collection, Tag } from "api";
 import { useFormData, useFormError } from 'hooks';
+import { useState } from "react";
 import { Form, Input, Submit } from "../Form";
 
 export const formStore = {
+    resetPassword: (props) => <ResetPassword {...props} />,
     warnUnsavedChanges: (props) => <WarnUnsavedChanges {...props} />,
     trashNote: (props) => <TrashNote {...props} />,
     deleteNotePermanently: (props) => <DeleteNote {...props} />,
@@ -14,6 +17,38 @@ export const formStore = {
     createTag: (props) => <CreateTag {...props} />,
     editTag: (props) => <EditTag {...props} />,
     deleteTag: (props) => <DeleteTag {...props} />,
+}
+
+const ResetPassword = ({ closeModal }) => {
+    const [success, setSuccess] = useState(false);
+    const [formData, updateFormData] = useFormData({});
+    const [updateFormError, resetFormError, warnFormError] = useFormError({});
+    const handleSubmit = () => User.resetPassword(formData);
+    const handleSuccess = () => setSuccess(true);
+    if (success) return (
+        <div>
+            <h2>Success!</h2>
+            <p>An email containing a link to reset your password has been sent to <b>{formData.email}</b>. The link will expire in 2 hours. Be sure to check your spam folder if you can't find the email in your regular inbox.</p>
+            <div className="buttons">
+                <button type="button" onClick={closeModal}>Close</button>
+            </div>
+        </div>
+    );
+    return (
+        <Form onSubmit={handleSubmit} onSuccess={handleSuccess} handleFormError={updateFormError}
+              title="Forgot your password?"
+              submit={<Submit value="Send email" />}>
+            <p>Enter your email address to receive a password reset link in your inbox.</p>
+            <Input
+                type="text"
+                name="email"
+                label="Email address:"
+                onChange={updateFormData}
+                onInput={resetFormError}
+                hint={warnFormError('email')}
+            />
+        </Form>
+    );
 }
 
 const WarnUnsavedChanges = ({ options, closeModal }) => {

@@ -11,7 +11,7 @@ export const FormError = (fieldName, errorMessage) => ({ [fieldName]: errorMessa
 export class ServerError extends Error {
     constructor(status, message, error) {
         super(status && message ? `Server error ${status}: ${message}` : 'Server error');
-        Object.assign(this, { status, message, error });
+        Object.assign(this, { status, message, error: error.toString() });
         this.name = 'ServerError';
     }
 }

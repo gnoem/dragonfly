@@ -1,5 +1,5 @@
 import "./MyAccount.css";
-import { EditAccount, CreateAccount } from "./forms.js";
+import { EditAccount, CreateAccount, EditPassword } from "./forms.js";
 import { Header } from "../Page";
 
 export const MyAccount = ({ user, refreshData }) => {
@@ -10,3 +10,5 @@ export const MyAccount = ({ user, refreshData }) => {
         </div>
     );
 }
+
+export { EditPassword }

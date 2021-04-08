@@ -70,10 +70,15 @@ const AccountDetails = ({ user, refreshData }) => {
     );
 }
 
-const EditPassword = ({ user }) => {
+export const EditPassword = ({ resetMode, resetSuccess, user }) => {
     const [formReset, setFormReset] = useState(false);
-    const [formData, setFormData] = useState({});
-    const onSuccess = () => setTimeout(handleCancel, 1000);
+    const [formData, setFormData] = useState({
+        reset: resetMode
+    });
+    const onSuccess = () => {
+        if (resetMode) return resetSuccess();
+        setTimeout(handleCancel, 1000);
+    }
     const handleSubmit = () => User.changePassword(user._id, formData);
     const updateFormData = (e) => {
         if (formReset) setFormReset(false);
@@ -91,7 +96,7 @@ const EditPassword = ({ user }) => {
         <Form onSubmit={handleSubmit} onSuccess={onSuccess} handleFormError={handleCancel}
               reset={formReset}
               formData={formData}
-              title="Change password"
+              title={resetMode ? false : "Change password"}
               submit={<Submit value="Save changes" cancel={passwordsMatch ? handleCancel : false} disabled={!passwordsMatch} />}>
             <div className="formGrid">
                 <Input type="password"

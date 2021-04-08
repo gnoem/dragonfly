@@ -1,7 +1,9 @@
 import { validationResult } from 'express-validator';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { User, Note, Collection, Tag } from '../models/index.js';
+import { v4 } from 'uuid';
+import { User, Note, Collection, Tag, Token } from '../models/index.js';
+import { sendPasswordResetEmail } from './email/index.js';
 import { handle, isObjectId, ServerError, formErrorReport } from './utils.js';
 
 const secretKey = process.env.SECRET_KEY;
@@ -31,6 +33,16 @@ class Controller {
         }
         run().catch(({ status, message, error }) => res.status(status ?? 500).send({ message, error }));
     }
+    storeLoginCookie = (res, user) => {
+        const accessToken = jwt.sign({ id: user.id }, secretKey, {
+            expiresIn: 86400 // 24 hours
+        });
+        res.cookie('auth', accessToken, {
+            httpOnly: true,
+            secure: false,
+            maxAge: 3600000 // 1,000 hours
+        });
+    }
     login = (req, res) => {
         const { username } = req.params;
         const { password } = req.body;
@@ -40,9 +52,8 @@ class Controller {
             if (!user) throw new ServerError(500, `User not found`);
             const passwordIsValid = bcrypt.compareSync(password, user.password);
             if (!passwordIsValid) return res.status(422).send({ error: { password: 'Invalid password' } });
-            const accessToken = jwt.sign({ id: user._id }, secretKey, { expiresIn: 86400 }); // 24 hours
-            res.cookie('auth', accessToken, { httpOnly: true, secure: false, maxAge: 3600000 });
-            res.status(200).send({ accessToken });
+            this.storeLoginCookie(res, user);
+            res.status(204).end();
         }
         run().catch(({ status, message, error }) => res.status(status ?? 500).send({ message, error }));
     }
@@ -97,6 +108,7 @@ class Controller {
             foundUser = Object.assign(foundUser, formData);
             const [user, saveError] = await handle(foundUser.save());
             if (saveError) throw new ServerError(500, `Error saving user`, saveError);
+            this.storeLoginCookie(res, user);
             res.status(201).send({ user });
         }
         run().catch(({ status, message, error }) => res.status(status ?? 500).send({ message, error }));
@@ -119,7 +131,7 @@ class Controller {
     }
     editPassword = (req, res) => {
         const { _id } = req.params;
-        const { password } = req.body;
+        const { reset, password } = req.body;
         const run = async () => {
             let [foundUser, findUserError] = await handle(User.findOne({ _id }));
             if (findUserError) throw new ServerError(500, `Error retrieving user`, findUserError);
@@ -127,6 +139,11 @@ class Controller {
             foundUser = Object.assign(foundUser, { password: bcrypt.hashSync(password, 8) });
             const [user, saveError] = await handle(foundUser.save());
             if (saveError) throw new ServerError(500, `Error saving user`, saveError);
+            if (reset) {
+                this.storeLoginCookie(res, user);
+                const [foundToken, _] = await handle(Token.findOne({ userId: user._id }));
+                if (foundToken) await foundToken.deleteOne();
+            }
             res.status(200).send({ user });
         }
         run().catch(({ status, message, error }) => res.status(status ?? 500).send({ message, error }));
@@ -145,6 +162,42 @@ class Controller {
             ]));
             if (findAndDeleteError) throw new ServerError(500, `Error deleting user`, saveError);
             res.status(204).end();
+        }
+        run().catch(({ status, message, error }) => res.status(status ?? 500).send({ message, error }));
+    }
+    resetPassword = (req, res) => {
+        const { errors } = validationResult(req);
+        if (errors.length) return res.status(422).send({ error: formErrorReport(errors) });
+        const { email } = req.body;
+        const run = async () => {
+            const [foundUser, findUserError] = await handle(User.findOne({ email }));
+            if (findUserError) throw new ServerError(500, `Error finding user`, findUserError);
+            if (!foundUser) return res.status(422).send({ error: { email: `No user with this email address in our system` } });
+            const token = v4().toString().replace(/-/g, '');
+            const [_, updateTokenError] = await handle(Token.updateOne(
+                { userId: foundUser._id },
+                { userId: foundUser._id, token },
+                { upsert: true }
+            ));
+            if (updateTokenError) throw new ServerError(500, `Error generating password reset token`, updateTokenError);
+            const resetLink = `${process.env.DOMAIN}/recover/${token}`;
+            const [sentEmail, sendEmailError] = await handle(sendPasswordResetEmail({
+                to: email,
+                subject: 'Your Dragonfly account',
+                resetLink
+            }));
+            if (sendEmailError) throw new ServerError(500, `Error sending email`, sendEmailError);
+            console.log(sentEmail);
+            res.status(204).end();
+        }
+        run().catch(({ status, message, error }) => res.status(status ?? 500).send({ message, error }));
+    }
+    validateToken = (req, res) => {
+        const { token } = req.params;
+        const run = async () => {
+            const [foundToken, findTokenError] = await handle(Token.findOne({ token }));
+            if (findTokenError) throw new ServerError(500, `Error finding token`, findTokenError);
+            res.status(200).send({ isValid: !!foundToken, userId: foundToken?.userId });
         }
         run().catch(({ status, message, error }) => res.status(status ?? 500).send({ message, error }));
     }

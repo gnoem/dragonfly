@@ -1,3 +1,4 @@
+import { check } from 'express-validator';
 import Controller from '../controllers/index.js';
 import { validate } from '../middleware/index.js';
 
@@ -8,6 +9,10 @@ export default (app) => {
         .post(Controller.login);
     app.route('/logout')
         .get(Controller.logout);
+    app.route('/token')
+        .post([check('email').notEmpty().withMessage('This field is required')], Controller.resetPassword);
+    app.route('/token/:token')
+        .get(Controller.validateToken);
     app.route('/user/:_id/data')
         .get(Controller.getUser);
     app.route('/user')

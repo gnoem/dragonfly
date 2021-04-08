@@ -1,18 +1,21 @@
 import "./Checkbox.css";
-import { useState } from "react";
 
-export const Checkbox = ({ name, label, checkboxFirst, defaultChecked }) => {
-    const [checked, setChecked] = useState(defaultChecked);
-    const toggleCheck = () => setChecked(check => !check);
+export const Checkbox = ({ label, detailedLabel, checked, onChange }) => {
     return (
-        <div className={`Checkbox${checkboxFirst ? ' first' : ''}`}>
+        <div className={`Checkbox${detailedLabel ? ' detailed' : ''}`}>
             <div className="checkboxElement">
-            <input type="checkbox" name={name} checked={checked} onChange={toggleCheck} />
+                <input type="checkbox" onChange={onChange} checked={checked} />
                 <span className="svg">
-                    <svg viewBox="0 0 12 9"><polyline points="1 5 4 8 11 1"></polyline></svg>
+                    <svg viewBox="0 0 16 16"><polyline points="3 9 6 12 13 5"></polyline></svg>
                 </span>
             </div>
-            <label htmlFor={name}>{label}</label>
+            {label
+                ? <label>{label}</label>
+                : <div className="label">
+                    <label>{detailedLabel[0]}</label>
+                    <span>{detailedLabel[1]}</span>
+                  </div>
+            }
         </div>
     );
 }
