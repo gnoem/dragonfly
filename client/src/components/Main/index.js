@@ -1,6 +1,6 @@
 import "./Main.css";
 import { useState, useEffect, useContext } from "react";
-import { DataContext, ViewContext } from "contexts";
+import { DataContext, ViewContext } from "../../contexts";
 import { Notes } from "../Notes";
 import { CollectionsList } from "../Collections";
 import { MyAccount } from "../MyAccount";

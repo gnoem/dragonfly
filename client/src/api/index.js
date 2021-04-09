@@ -3,6 +3,8 @@ import { get, post, put, del } from "./fetchWrapper";
 export const User = {
     auth: async (identifier) => await get(`/auth/${identifier}`),
     login: async (username, { password }) => await post(`/login/${username}`, { password }),
+    validateUser: async ({ identifier }) => await put(`/user`, { identifier }),
+    updateWelcomed: async (_id, formData) => await put(`/user/${_id}/welcomed`, formData),
     getData: async (_id) => await get(`/user/${_id}/data`),
     createUser: async () => await post('/user'),
     createAccount: async (_id, formData) => await post(`/user/${_id}`, formData),

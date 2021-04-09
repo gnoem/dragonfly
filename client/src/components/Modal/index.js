@@ -1,9 +1,9 @@
 import "./Modal.css";
 import { useEffect, useContext, useRef } from "react";
-import { DataContext, ModalContext } from "contexts";
-import { elementHasParent } from "utils";
-import { formStore } from "./formStore";
-import { Error, customErrorStore } from "./Alert";
+import { DataContext, ModalContext } from "../../contexts";
+import { elementHasParent } from "../../utils";
+import { modalFormStore } from "../ModalForm";
+import { Error, customAlertStore } from "./Alert";
 
 // custom modals located in: NoteList ("trash is empty")
 
@@ -13,9 +13,9 @@ export const Modal = ({ children, content, type, options, selfDestruct }) => {
     const { setModal, closeModal } = useContext(ModalContext);
     const formContent = () => {
         switch (type) {
-            case 'form': return formStore[content]({ user, options, closeModal });
+            case 'form': return modalFormStore[content]({ user, options, closeModal });
             case 'error': return <Error>{content}</Error>;
-            case 'customError': return customErrorStore[content]({ options, closeModal });
+            case 'customAlert': return customAlertStore[content]({ options, closeModal });
             default: return content;
         }
     }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { User } from "api";
+import { User } from "../api";
 
 export const MobileContext = React.createContext(null);
 export const ModalContext = React.createContext(null);

@@ -1,6 +1,6 @@
-import { Nav } from "components/Nav";
-import { useRef, useState } from "react";
 import "./MobileNav.css";
+import { useRef, useState } from "react";
+import { Nav } from "../Nav";
 
 export const MobileNav = ({ updateView }) => {
     const [expanded, setExpanded] = useState(false);

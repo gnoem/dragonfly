@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
-import { User } from "api";
-import { handleError } from "services";
+import { User } from "../../api";
+import { handleError } from "../../services";
 import { Dashboard } from "../Dashboard";
 import { Login } from "../Login";
 
-export const Gateway = ({ createModal }) => {
+export const Gateway = ({ createModal, closeModal }) => {
     const { identifier } = useParams();
     const [accessToken, setAccessToken] = useState(null);
     const [loginWarning, setLoginWarning] = useState(null);
@@ -38,5 +38,5 @@ export const Gateway = ({ createModal }) => {
             createModal={createModal}
         />
     );
-    return <Dashboard {...{ userId, accessToken }} />;
+    return <Dashboard {...{ userId, accessToken, createModal, closeModal }} />;
 }

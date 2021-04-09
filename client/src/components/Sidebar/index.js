@@ -1,6 +1,6 @@
 import "./Sidebar.css";
 import { useContext } from "react";
-import { ViewContext } from "contexts";
+import { ViewContext } from "../../contexts";
 import { Nav } from "../Nav";
 import { MobileNav } from "../MobileNav";
 

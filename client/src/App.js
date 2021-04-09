@@ -1,18 +1,19 @@
 import "./App.css";
 import { useContext } from "react";
-import { ModalContext } from "contexts";
-import { Modal } from "components/Modal";
-import { Home } from "components/Home";
-import { Gateway } from "components/Gateway";
 import {
     BrowserRouter as Router,
     Switch,
     Route
 } from "react-router-dom";
-import { AccountRecovery } from "components/AccountRecovery";
+import { ModalContext } from "./contexts";
+import { Modal } from "./components/Modal";
+import { Home } from "./components/Home";
+import { Gateway } from "./components/Gateway";
+import { AccountRecovery } from "./components/AccountRecovery";
+import { ValidateUser } from "./components/Login";
 
 export const App = () => {
-    const { modal, createModal } = useContext(ModalContext);
+    const { modal, createModal, closeModal } = useContext(ModalContext);
     return (
         <div className="App">
             {modal && <Modal {...modal} />}
@@ -22,7 +23,10 @@ export const App = () => {
                         <AccountRecovery {...{ createModal }} />
                     </Route>
                     <Route path="/d/:identifier">
-                        <Gateway {...{ createModal }} />
+                        <Gateway {...{ createModal, closeModal }} />
+                    </Route>
+                    <Route path="/login">
+                        <ValidateUser {...{ createModal }} />
                     </Route>
                     <Route path="/">
                         <Home />

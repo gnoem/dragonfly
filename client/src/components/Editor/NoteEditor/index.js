@@ -1,8 +1,8 @@
 import "./NoteEditor.css";
 import "draft-js/dist/Draft.css";
 import { useState, useEffect, useContext } from "react";
-import { Note } from "api";
-import { DataContext, ViewContext, MobileContext } from "contexts";
+import { Note } from "../../../api";
+import { DataContext, ViewContext, MobileContext } from "../../../contexts";
 import { EditorState, convertToRaw, convertFromRaw } from "draft-js";
 import { EditorToolbar } from "../EditorToolbar";
 import { TrashOptions } from "../TrashOptions";

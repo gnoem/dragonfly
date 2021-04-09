@@ -1,10 +1,12 @@
-import { User } from "api";
-import { Note, Collection, Tag } from "api";
-import { useFormData, useFormError } from 'hooks';
+import { User, Note, Collection, Tag } from "../../api";
+import { useFormData, useFormError } from "../../hooks";
 import { useState } from "react";
-import { Form, Input, Submit } from "../Form";
+import { ModalForm } from ".";
+import { Input, Submit } from "../Form";
+import { Checkbox } from "../Checkbox";
 
-export const formStore = {
+export const modalFormStore = {
+    welcomeForm: (props) => <WelcomeForm {...props} />,
     resetPassword: (props) => <ResetPassword {...props} />,
     warnUnsavedChanges: (props) => <WarnUnsavedChanges {...props} />,
     trashNote: (props) => <TrashNote {...props} />,
@@ -17,6 +19,29 @@ export const formStore = {
     createTag: (props) => <CreateTag {...props} />,
     editTag: (props) => <EditTag {...props} />,
     deleteTag: (props) => <DeleteTag {...props} />,
+}
+
+const WelcomeForm = ({ options, closeModal }) => {
+    const { userId } = options;
+    const [formData, setFormData] = useState({ hideWelcomeMessage: true });
+    const handleSubmit = () => User.updateWelcomed(userId, formData);
+    const handleSuccess = () => closeModal();
+    const handleCheckboxChange = (e) => setFormData({ hideWelcomeMessage: e.target.checked });
+    return (
+        <ModalForm onSubmit={handleSubmit} onSuccess={handleSuccess}
+                   noLoad={true}
+                   className="WelcomeMessage"
+                   title="Welcome to Dragonfly!"
+                   submit={false}>
+            <p>Your public Dragonfly dashboard URL is:</p>
+            <div className="dashboardURL"><strong>{window.location.origin}/d/{userId}</strong></div>
+            <p>Any notes you create will be publicly accessible at this link. To customize your dashboard URL and password-protect your notes, finalize your account registration under the "My Account" tab in the sidebar.</p>
+            <Checkbox label="Don't show this message again" onChange={handleCheckboxChange} />
+            <div className="buttons">
+                <button type="submit">Got it</button>
+            </div>
+        </ModalForm>
+    );
 }
 
 const ResetPassword = ({ closeModal }) => {
@@ -35,7 +60,7 @@ const ResetPassword = ({ closeModal }) => {
         </div>
     );
     return (
-        <Form onSubmit={handleSubmit} onSuccess={handleSuccess} handleFormError={updateFormError}
+        <ModalForm onSubmit={handleSubmit} onSuccess={handleSuccess} handleFormError={updateFormError}
               title="Forgot your password?"
               submit={<Submit value="Send email" />}>
             <p>Enter your email address to receive a password reset link in your inbox.</p>
@@ -47,18 +72,18 @@ const ResetPassword = ({ closeModal }) => {
                 onInput={resetFormError}
                 hint={warnFormError('email')}
             />
-        </Form>
+        </ModalForm>
     );
 }
 
 const WarnUnsavedChanges = ({ options, closeModal }) => {
     const { saveChanges, discardChanges } = options;
     return (
-        <Form onSubmit={saveChanges} onSuccess={closeModal}
+        <ModalForm onSubmit={saveChanges} onSuccess={closeModal}
               title="Unsaved changes"
               submit={<Submit value="Save changes" nvm="Discard changes" cancel={discardChanges} />}>
             It looks like you have unsaved changes. Would you like to save changes or discard?
-        </Form>
+        </ModalForm>
     );
 }
 
@@ -69,11 +94,11 @@ const TrashNote = ({ options, closeModal }) => {
     }
     const handleSubmit = () => Note.trashNote(options?._id);
     return (
-        <Form onSubmit={handleSubmit} onSuccess={handleSuccess}
+        <ModalForm onSubmit={handleSubmit} onSuccess={handleSuccess}
               title="Move to Trash?"
               submit={<Submit value="Yes, I'm sure" />}>
             Are you sure you want to move this note to the Trash?
-        </Form>
+        </ModalForm>
     );
 }
 
@@ -84,11 +109,11 @@ const DeleteNote = ({ options, closeModal }) => {
     }
     const handleSubmit = () => Note.deleteNote(options?._id);
     return (
-        <Form onSubmit={handleSubmit} onSuccess={handleSuccess}
+        <ModalForm onSubmit={handleSubmit} onSuccess={handleSuccess}
               title="Delete note permanently"
               submit={<Submit value="Yes, I'm sure" />}>
             Are you sure you want to permanently delete this note? This action cannot be undone.
-        </Form>
+        </ModalForm>
     );
 }
 
@@ -99,11 +124,11 @@ const EmptyTrash = ({ options, closeModal }) => {
     }
     const handleSubmit = () => Note.emptyTrash(options?._id);
     return (
-        <Form onSubmit={handleSubmit} onSuccess={handleSuccess}
+        <ModalForm onSubmit={handleSubmit} onSuccess={handleSuccess}
               title="Empty Trash"
               submit={<Submit value="Yes, I'm sure" />}>
             Are you sure you want to permanently delete all the notes in your Trash? This action cannot be undone.
-        </Form>
+        </ModalForm>
     );
 }
 
@@ -114,11 +139,11 @@ const RestoreTrash = ({ options, closeModal }) => {
     }
     const handleSubmit = () => Note.restoreTrash(options?._id);
     return (
-        <Form onSubmit={handleSubmit} onSuccess={handleSuccess}
+        <ModalForm onSubmit={handleSubmit} onSuccess={handleSuccess}
               title="Restore all"
               submit={<Submit value="Yes, I'm sure" />}>
             Are you sure you want to restore all the notes in your Trash?
-        </Form>
+        </ModalForm>
     );
 }
 
@@ -131,7 +156,7 @@ const CreateCollection = ({ user, options, closeModal }) => {
         closeModal();
     }
     return (
-        <Form onSubmit={handleSubmit} onSuccess={handleSuccess} handleFormError={updateFormError}
+        <ModalForm onSubmit={handleSubmit} onSuccess={handleSuccess} handleFormError={updateFormError}
               title="Create a new collection">
             <Input type="text"
                 name="name"
@@ -140,7 +165,7 @@ const CreateCollection = ({ user, options, closeModal }) => {
                 onChange={updateFormData}
                 onInput={resetFormError}
                 hint={warnFormError('name')} />
-        </Form>
+        </ModalForm>
     );
 }
 
@@ -153,7 +178,7 @@ const EditCollection = ({ user, options, closeModal }) => {
         closeModal();
     }
     return (
-        <Form onSubmit={handleSubmit} onSuccess={handleSuccess} handleFormError={updateFormError}
+        <ModalForm onSubmit={handleSubmit} onSuccess={handleSuccess} handleFormError={updateFormError}
               title="Edit this collection">
             <Input type="text"
                 name="name"
@@ -162,7 +187,7 @@ const EditCollection = ({ user, options, closeModal }) => {
                 onChange={updateFormData}
                 onInput={resetFormError}
                 hint={warnFormError('name')} />
-        </Form>
+        </ModalForm>
     );
 }
 
@@ -173,11 +198,11 @@ const DeleteCollection = ({ options, closeModal }) => {
         closeModal();
     }
     return (
-        <Form onSubmit={handleSubmit} onSuccess={handleSuccess}
+        <ModalForm onSubmit={handleSubmit} onSuccess={handleSuccess}
               title="Delete this collection"
               submit={<Submit value="Yes, I'm sure" />}>
             Are you sure you want to delete the collection <b>{options?.name}</b>? Doing so will not delete any of its contents, only the collection itself.
-        </Form>
+        </ModalForm>
     );
 }
 
@@ -190,7 +215,7 @@ const CreateTag = ({ user, options, closeModal }) => {
         closeModal();
     }
     return (
-        <Form onSubmit={handleSubmit} onSuccess={handleSuccess} handleFormError={updateFormError}
+        <ModalForm onSubmit={handleSubmit} onSuccess={handleSuccess} handleFormError={updateFormError}
               title="Create a new tag">
             <Input type="text"
                 name="name"
@@ -199,7 +224,7 @@ const CreateTag = ({ user, options, closeModal }) => {
                 onChange={updateFormData}
                 onInput={resetFormError}
                 hint={warnFormError('name')} />
-        </Form>
+        </ModalForm>
     );
 }
 
@@ -212,7 +237,7 @@ const EditTag = ({ user, options, closeModal }) => {
         closeModal();
     }
     return (
-        <Form onSubmit={handleSubmit} onSuccess={handleSuccess} handleFormError={updateFormError}
+        <ModalForm onSubmit={handleSubmit} onSuccess={handleSuccess} handleFormError={updateFormError}
               title="Edit this tag">
             <Input type="text"
                 name="name"
@@ -221,7 +246,7 @@ const EditTag = ({ user, options, closeModal }) => {
                 onChange={updateFormData}
                 onInput={resetFormError}
                 hint={warnFormError('name')} />
-        </Form>
+        </ModalForm>
     );
 }
 
@@ -232,10 +257,10 @@ const DeleteTag = ({ options, closeModal }) => {
         closeModal();
     }
     return (
-        <Form onSubmit={handleSubmit} onSuccess={handleSuccess}
+        <ModalForm onSubmit={handleSubmit} onSuccess={handleSuccess}
               title="Delete this tag"
               submit={<Submit value="Yes, I'm sure" />}>
             Are you sure you want to delete the tag <b>{options?.name}</b>? Doing so will not delete any notes with this tag, only the tag itself.
-        </Form>
+        </ModalForm>
     );
 }

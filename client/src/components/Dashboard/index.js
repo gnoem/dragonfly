@@ -1,21 +1,25 @@
 import "./Dashboard.css";
 import { useState, useEffect, useContext } from "react";
-import { DataContext, ViewContext } from "contexts";
+import { DataContext, ViewContext, MobileContext } from "../../contexts";
 import { Loading } from "../Loading";
 import { Sidebar } from "../Sidebar";
 import { Main } from "../Main";
-import { MobileContext } from "contexts";
 
-export const Dashboard = ({ userId, accessToken }) => {
+export const Dashboard = ({ userId, accessToken, createModal, closeModal }) => {
     const [isLoaded, setIsLoaded] = useState(false);
     const { mobileLayout } = useContext(MobileContext);
     const { view, updateView } = useContext(ViewContext);
-    const { notes, collections, tags, refreshData } = useContext(DataContext);
+    const { user, notes, collections, tags, refreshData } = useContext(DataContext);
     const contentType = (() => {
         const notesTypes = ['all-notes', 'starred-notes', 'trash', 'collection', 'tags'];
         if (notesTypes.includes(view?.type)) return 'notes';
         return view?.type;
     })();
+    useEffect(() => {
+        if (!userId.current) return;
+        if (user.hideWelcomeMessage) return;
+        createModal('welcomeForm', 'form', { closeModal, userId: userId.current });
+    }, [userId.current]);
     useEffect(() => {
         if (accessToken) return refreshData(null, userId.current).then(() => {
             setIsLoaded(true);

@@ -4,5 +4,5 @@ export const handleError = (err, handlers = {}) => {
         return handleFormError ? handleFormError(err.error) : createModal(err.message, 'error');
     }
     console.dir(err);
-    return createModal('somethingWentWrong', 'customError', err);
+    return createModal('somethingWentWrong', 'customAlert', err);
 }

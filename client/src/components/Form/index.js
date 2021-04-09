@@ -1,42 +1,51 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
-import { ModalContext } from "contexts";
-import { handleError } from "services";
+import { ModalContext } from "../../contexts";
+import { handleError } from "../../services";
 import { Button } from "./Button";
 import { Input } from "./Input";
 
-export const Form = ({ title, children, formClass, submit, onSubmit, onSuccess, handleFormError, reset }) => {
+export const Form = ({ modal, title, children, noLoad, loadingOnly, className, submit, onSubmit, onSuccess, handleFormError, reset }) => {
     const [success, setSuccess] = useState(null);
     const [successPending, setSuccessPending] = useState(false);
-    const { modal, createModal } = useContext(ModalContext);
+    const { createModal } = useContext(ModalContext);
     const formRef = useRef(null);
     useEffect(() => {
         if (reset && formRef) formRef.current.reset();
     }, [reset, formRef]);
     const handleSubmit = async (e) => {
         e.preventDefault();
+        const initialDelay = noLoad ? 0 : 300;
         setTimeout(() => {
-            setSuccessPending(true);
+            if (!noLoad) setSuccessPending(true);
             onSubmit()
-                .then(() => setSuccess(true))
-                .then(() => setSuccess(false))
+                .then(result => {
+                    if (!noLoad && !loadingOnly) {
+                        setSuccess(true)
+                        setSuccess(false);
+                    }
+                    const successDelay = noLoad ? 0 : 1200;
+                    setTimeout(() => {
+                        onSuccess?.(result);
+                    }, successDelay);
+                })
                 .catch(err => {
                     setSuccessPending(false);
                     handleError(err, { handleFormError, createModal });
                 });
-        }, 300);
+        }, initialDelay);
     }
     const submitShouldInherit = { modal, success, onSuccess, successPending };
     const customSubmit = submit ? React.cloneElement(submit, submitShouldInherit) : null;
     return (
-        <form onSubmit={handleSubmit} className={formClass} autoComplete="off" ref={formRef}>
+        <form onSubmit={handleSubmit} className={className} autoComplete="off" ref={formRef}>
             <h2>{title}</h2>
             {children}
-            {customSubmit ?? <Submit {...submitShouldInherit} />}
+            {(submit === false) || (customSubmit ?? <Submit {...submitShouldInherit} />)}
         </form>
     );
 }
 
-export const Submit = ({ modal, value, buttonClass, nvm, cancel, success, onSuccess, successPending, disabled }) => {
+export const Submit = ({ modal, value, buttonClass, nvm, cancel, success, successPending, disabled }) => {
     const { closeModal } = useContext(ModalContext);
     const handleCancel = () => {
         if (cancel) cancel();
@@ -48,7 +57,6 @@ export const Submit = ({ modal, value, buttonClass, nvm, cancel, success, onSucc
                     className={buttonClass}
                     showLoadingIcon={true}
                     success={success}
-                    reportSuccess={onSuccess}
                     successPending={successPending}
                     disabled={disabled}>
                 {value || 'Submit'}

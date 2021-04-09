@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import { v4 } from 'uuid';
 import { User, Note, Collection, Tag, Token } from '../models/index.js';
 import { sendPasswordResetEmail } from './email/index.js';
-import { handle, isObjectId, ServerError, formErrorReport } from './utils.js';
+import { handle, isObjectId, ServerError, formErrorReport, isEmail } from './utils.js';
 
 const secretKey = process.env.SECRET_KEY;
 
@@ -42,6 +42,29 @@ class Controller {
             secure: false,
             maxAge: 3600000 // 1,000 hours
         });
+    }
+    validateUsernameOrEmail = (req, res) => {
+        const { errors } = validationResult(req);
+        if (errors.length) return res.status(422).send({ error: formErrorReport(errors) });
+        const { identifier } = req.body;
+        const run = async () => {
+            const userEnteredEmail = isEmail(identifier);
+            let user;
+            if (userEnteredEmail) {
+                const [foundUser, findUserError] = await handle(User.findOne({ email: identifier }));
+                if (findUserError) throw new ServerError(500, `Error finding user`, findUserError);
+                if (!foundUser) return res.status(422).send({ error: { identifier: 'No user with this email address in our system' } });
+                user = foundUser;
+            }
+            else {
+                const [foundUser, findUserError] = await handle(User.findOne({ username: identifier }));
+                if (findUserError) throw new ServerError(500, `Error finding user`, findUserError);
+                if (!foundUser) return res.status(422).send({ error: { identifier: 'User not found' } });
+                user = foundUser;
+            }
+            res.status(200).send({ user });
+        }
+        run().catch(({ status, message, error }) => res.status(status ?? 500).send({ message, error }));
     }
     login = (req, res) => {
         const { username } = req.params;
@@ -144,6 +167,20 @@ class Controller {
                 const [foundToken, _] = await handle(Token.findOne({ userId: user._id }));
                 if (foundToken) await foundToken.deleteOne();
             }
+            res.status(200).send({ user });
+        }
+        run().catch(({ status, message, error }) => res.status(status ?? 500).send({ message, error }));
+    }
+    updateWelcomed = (req, res) => {
+        const { _id } = req.params;
+        const { hideWelcomeMessage } = req.body;
+        const run = async () => {
+            const [foundUser, findUserError] = await handle(User.findOne({ _id }));
+            if (findUserError) throw new ServerError(500, `Error finding user`, findUserError);
+            if (!foundUser) throw new ServerError(500, `User ${_id} not found`);
+            foundUser.hideWelcomeMessage = hideWelcomeMessage;
+            const [user, saveError] = await handle(foundUser.save());
+            if (saveError) throw new ServerError(500, `Error saving user`, saveError);
             res.status(200).send({ user });
         }
         run().catch(({ status, message, error }) => res.status(status ?? 500).send({ message, error }));

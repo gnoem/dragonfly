@@ -1,5 +1,5 @@
 import "./TrashOptions.css";
-import { Note } from "api";
+import { Note } from "../../../api";
 import { Button } from "../../Form";
 
 export const TrashOptions = ({ currentNote, refreshData, createModal }) => {

@@ -1,5 +1,5 @@
 import "./Home.css";
-import { User } from "api";
+import { User } from "../../api";
 import { Button } from "../Form";
 import { Header } from "../Page";
 
@@ -10,7 +10,10 @@ export const Home = () => {
         <div className="Home">
             <Header />
             <p>A simple note-taking app for your browser.</p>
-            <Button type="button" onClick={createUser} showLoadingIcon={true}>Get started</Button>
+            <div className="buttons">
+                <Button className="createAccount" type="button" onClick={createUser} showLoadingIcon={true}>Create an account</Button>
+                <Button className="logIn" type="button" onClick={() => window.location.assign('/login')}>Log in</Button>
+            </div>
         </div>
     );
 }

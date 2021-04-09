@@ -1,19 +1,44 @@
 .Home {
     padding: 5rem;
 }
-.Home button {
-    background: var(--dark-gradient);
+.Home h1.Header {
+    margin-bottom: 1.5rem;
+}
+.Home .buttons {
+    text-align: left;
     margin-top: 2rem;
 }
+.Home .buttons button.createAccount {
+    background: var(--dark-gradient);
+    padding: calc(1rem + 2px) calc(1.5rem + 2px);
+}
+.Home .buttons button.logIn {
+    background: 0;
+    border: 1px solid var(--deep-theme-color);
+    color: var(--deep-theme-color)
+}
+.Home div.gettingStarted button {
+    display: block;
+}
+.Home div.gettingStarted button::before {
+    content: '\f101';
+    font: 900 0.8em 'Font Awesome 5 Free';
+    display: inline-block;
+    margin-right: 0.3rem;
+}
 @media (max-width: 900px) {
+    .Home {
+        padding: 4rem;
+    }
+}
+@media (max-width: 500px) {
     .Home {
         padding: 2rem;
     }
     .Home h1.Header {
         font-size: 3rem;
-        margin-bottom: 1.5rem;
     }
-    .Home button {
+    .Home button.getStarted {
         margin-top: 1.5rem;
     }
 }

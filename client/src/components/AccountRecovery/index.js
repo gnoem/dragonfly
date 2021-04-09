@@ -1,10 +1,9 @@
 import "./AccountRecovery.css";
-import { User } from "api";
-import { Form } from "components/Form";
-import { Loading } from "components/Loading";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { handleError } from "services";
+import { User } from "../../api";
+import { handleError } from "../../services";
+import { Loading } from "../Loading";
 import { Guest } from "../Guest";
 import { EditPassword } from "../MyAccount";
 

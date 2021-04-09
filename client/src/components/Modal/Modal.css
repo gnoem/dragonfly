@@ -66,3 +66,15 @@
         padding: 1.5rem;
     }
 }
+
+.WelcomeMessage div.dashboardURL {
+    font-size: 0.9rem;
+    text-align: center;
+}
+.WelcomeMessage div.dashboardURL strong {
+    display: inline-block;
+    border: 1px solid #ddd;
+    background: #f7f7f7;
+    padding: 1rem 2rem;
+    margin: 0 auto 1rem;
+}

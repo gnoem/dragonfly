@@ -5,6 +5,8 @@ import { validate } from '../middleware/index.js';
 export default (app) => {
     app.route('/auth/:identifier')
         .get(Controller.auth);
+    app.route('/user')
+        .put([check('identifier').notEmpty().withMessage('This field is required')], Controller.validateUsernameOrEmail);
     app.route('/login/:username')
         .post(Controller.login);
     app.route('/logout')
@@ -23,6 +25,8 @@ export default (app) => {
         .delete(Controller.deleteAccount);
     app.route('/user/:_id/password')
         .put(Controller.editPassword);
+    app.route('/user/:_id/welcomed')
+        .put(Controller.updateWelcomed);
     app.route('/note')
         .post(Controller.createNote);
     app.route('/note/:_id')

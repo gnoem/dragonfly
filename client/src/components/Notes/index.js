@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { DataContext, ViewContext, ModalContext } from "contexts";
+import { DataContext, ViewContext, ModalContext } from "../../contexts";
 import { Editor } from "../Editor";
 import { NoteList } from "./NoteList";
 import { GiantCornerButton } from "../Page";

@@ -8,7 +8,11 @@ export const User = mongoose.model(
         lastName: String,
         email: String,
         username: String,
-        password: String
+        password: String,
+        hideWelcomeMessage: {
+            type: Boolean,
+            default: false
+        }
     }),
     'users'
 );

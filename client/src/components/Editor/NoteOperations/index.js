@@ -1,10 +1,9 @@
 import "./NoteOperations.css";
 import { useState, useContext, useRef } from "react";
-import { Note } from "api";
-import { ViewContext } from "contexts";
-import { handleError } from "services";
+import { Note } from "../../../api";
+import { ViewContext, MobileContext } from "../../../contexts";
+import { handleError } from "../../../services";
 import { Tooltip } from "../../Tooltip";
-import { MobileContext } from "contexts";
 
 export const NoteOperations = ({ currentNote, editorState, updateEditorState, refreshData, createModal }) => {
     const { mobileLayout } = useContext(MobileContext);

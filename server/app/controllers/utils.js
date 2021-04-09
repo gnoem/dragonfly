@@ -4,13 +4,15 @@ export const handle = (promise) => {
     return promise.then(data => ([data, undefined])).catch(err => Promise.resolve([undefined, err]));
 }
 
+export const isEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
 export const isObjectId = (id) => mongoose.Types.ObjectId.isValid(id) && (new mongoose.Types.ObjectId(id)).toString() === id;
 
 export const FormError = (fieldName, errorMessage) => ({ [fieldName]: errorMessage });
 
 export class ServerError extends Error {
-    constructor(status, message, error) {
-        super(status && message ? `Server error ${status}: ${message}` : 'Server error');
+    constructor(status = 500, message = 'Unknown error', error = '') {
+        super(`Server error ${status}: ${message}`);
         Object.assign(this, { status, message, error: error.toString() });
         this.name = 'ServerError';
     }

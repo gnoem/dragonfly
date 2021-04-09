@@ -1,12 +1,12 @@
 import "./Tooltip.css";
 import { useState, useEffect, useContext, useRef } from "react";
-import { Collection, Note } from "api";
-import { DataContext, ModalContext, ViewContext } from "contexts";
-import { handleError } from "services";
-import { elementHasParent } from "utils";
+import { Collection, Note } from "../../api";
+import { DataContext, ModalContext, ViewContext } from "../../contexts";
+import { handleError } from "../../services";
+import { elementHasParent } from "../../utils";
 import { Dropdown } from "../Dropdown";
 import { TagList, Tag } from "../Tags";
-import { EditorToolbar } from "components/Editor/EditorToolbar";
+import { EditorToolbar } from "../Editor/EditorToolbar";
 
 export const Tooltip = ({ name, parent, tooltipWillOpen, defaultContent, editorState, updateEditorState, overflow, ignoreClick }) => {
     const [adjustHeight, setAdjustHeight] = useState(false);

@@ -1,7 +1,7 @@
 import { useState, useContext, useRef } from "react";
-import { User } from "api";
-import { ModalContext } from "contexts";
-import { useFormData, useFormError } from 'hooks';
+import { User } from "../../api";
+import { ModalContext } from "../../contexts";
+import { useFormData, useFormError } from "../../hooks";
 import { Form, Submit, Button, Input } from "../Form";
 
 export const EditAccount = ({ user, refreshData }) => {
@@ -119,6 +119,7 @@ const DeleteAccount = ({ user }) => {
     const confirmDeleteAccount = () => {
         const content = (
             <Form onSubmit={handleDelete} onSuccess={onSuccess}
+                  loadingOnly={true}
                   title="Are you sure?"
                   submit={<Submit buttonClass="caution" value="Yes, I'm sure" cancel={closeModal} />}>
                 If you proceed, any notes, settings, and other data associated with this account will be irrevocably lost. There is no going back from this!

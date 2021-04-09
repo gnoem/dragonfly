@@ -2,7 +2,7 @@ import "./Button.css";
 import { useState, useEffect, useRef } from "react";
 import { Loading } from "../../Loading";
 
-export const Button = ({ type, onClick, isClicked, className, disabled, showLoadingIcon, success, reportSuccess, successPending, unmountButton, children }) => {
+export const Button = ({ type, onClick, isClicked, className, disabled, showLoadingIcon, success, successPending, unmountButton, children }) => {
     const [poof, setPoof] = useState(false);
     const [loadingIcon, setLoadingIcon] = useState(false);
     const [successAnimation, setSuccessAnimation] = useState(false);
@@ -20,7 +20,6 @@ export const Button = ({ type, onClick, isClicked, className, disabled, showLoad
         if (success) {
             setLoadingIcon(false);
             setSuccessAnimation(true);
-            if (reportSuccess) setTimeout(reportSuccess, 500);
             buttonResolve();
         }
     }, [success, buttonRef?.current]);
