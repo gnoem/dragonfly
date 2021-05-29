@@ -16,8 +16,6 @@ export const Nav = ({ updateView }) => {
             <hr />
             <NavList>
                 <NavItem {...{ updateView }} name="my-account">My Account</NavItem>
-                <NavItem {...{ updateView }} name="settings">Settings</NavItem>
-                <NavItem {...{ updateView }} name="help">Help</NavItem>
                 <NavItem {...{ updateView }} name="logout" onClick={logout}>Logout</NavItem>
             </NavList>
         </div>
