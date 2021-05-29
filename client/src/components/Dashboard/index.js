@@ -16,8 +16,9 @@ export const Dashboard = ({ userId, accessToken, createModal, closeModal }) => {
         return view?.type;
     })();
     useEffect(() => {
-        if (!userId.current) return;
-        if (user.hideWelcomeMessage) return;
+        if (!user || !userId.current) return;
+        if (user?.username) return;
+        if (user?.hideWelcomeMessage) return;
         createModal('welcomeForm', 'form', { closeModal, userId: userId.current });
     }, [userId.current]);
     useEffect(() => {

@@ -23,7 +23,7 @@ export const modalFormStore = {
 
 const WelcomeForm = ({ options, closeModal }) => {
     const { userId } = options;
-    const [formData, setFormData] = useState({ hideWelcomeMessage: true });
+    const [formData, setFormData] = useState({ hideWelcomeMessage: false });
     const handleSubmit = () => User.updateWelcomed(userId, formData);
     const handleSuccess = () => closeModal();
     const handleCheckboxChange = (e) => setFormData({ hideWelcomeMessage: e.target.checked });
