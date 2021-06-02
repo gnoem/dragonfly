@@ -10,7 +10,7 @@ Built with:
 - JWT for user authentication
 - [Draft.js](https://draftjs.org/)
 
-<img src="https://ngw.dev/src/images/portfolio/dragonflypreview.png" alt="dragonfly preview" />
+<img src="https://ngw.dev/images/portfolio/dragonfly.png" alt="dragonfly preview" />
 
 ## Try it out
 
